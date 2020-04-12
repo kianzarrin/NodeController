@@ -65,5 +65,6 @@
     <Copy SourceFiles="$(TargetDir)CitiesHarmony.API.dll" DestinationFolder="$(DeployDir)" />
     <Delete Files="$(DeployDir)$(TargetName)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DeployDir)" />
+    <Message Importance="high" Text="AssemblyVersion=$(AssemblyVersion)"/>
   </Target>
 </Project>
