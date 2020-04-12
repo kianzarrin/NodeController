@@ -24,7 +24,7 @@ namespace BlendRoadManager.Patches
                 typeof(ushort),
                 typeof(Vector3),
                 typeof(uint).MakeByRefType(),
-                typeof(RenderManager).MakeByRefType()
+                typeof(RenderManager.Instance).MakeByRefType()
             });
         }
 

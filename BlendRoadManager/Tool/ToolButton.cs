@@ -1,6 +1,7 @@
 using ColossalFramework.UI;
 using UnityEngine;
 using BlendRoadManager.Util;
+using ColossalFramework;
 
 namespace BlendRoadManager.Tool
 {
@@ -59,7 +60,7 @@ namespace BlendRoadManager.Tool
 
         public static void OnClick(UIComponent component, UIMouseEventParameter eventParam) {
             Log.Debug("ToolButton:OnClick() called");
-            
+            Singleton<BlendRoadTool>.instance.EnableTool();
         }
     }
 

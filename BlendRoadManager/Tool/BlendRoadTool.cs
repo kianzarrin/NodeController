@@ -76,7 +76,6 @@ namespace BlendRoadManager.Tool {
                 return;
             if (!IsGood())
                 return;
-
             DrawNodeCircle(cameraInfo, Color.yellow, HoveredNodeId, false);
             DrawOverlayCircle(cameraInfo, Color.red, HitPos, 1, true);
         }
@@ -98,6 +97,7 @@ namespace BlendRoadManager.Tool {
             {
                 bool overflow = data.IncrementType();
             }
+            NetManager.instance.UpdateNode(HoveredNodeId);
 
         }
 
@@ -106,7 +106,7 @@ namespace BlendRoadManager.Tool {
         }
 
         bool IsGood(){
-            return HoveredNodeId.ToNode().CountSegments() == 2 || HoveredNodeId.ToNode().Info.m_netAI is RoadAI;
+            return HoveredNodeId.ToNode().CountSegments() == 2 && HoveredNodeId.ToNode().Info.m_netAI is RoadAI;
         }
 
     } //end class

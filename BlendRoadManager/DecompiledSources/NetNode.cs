@@ -310,6 +310,8 @@ public partial struct NetNode2
 
 	// NetNode
 	// Token: 0x060034C6 RID: 13510 RVA: 0x0023D1EC File Offset: 0x0023B5EC
+
+	/// <param name="centerPos">position between left corner and right corner of segmentID (or something like that).</param>
 	private static void RefreshJunctionData(ref NetNode This, ushort nodeID, int segmentIndex, ushort SegmentID, Vector3 centerPos, ref uint instanceIndex, ref RenderManager.Instance data)
 	{
 		Vector3 cornerPos_right =Vector3.zero, cornerDir_right = Vector3.zero, cornerPos_left = Vector3.zero, cornerDir_left = Vector3.zero,
@@ -326,7 +328,8 @@ public partial struct NetNode2
 		NetInfo info = segment.Info;
 		float vscale = info.m_netAI.GetVScale();
 		ItemClass connectionClass = info.GetConnectionClass();
-		Vector3 dir = (nodeID != segment.m_startNode) ? segment.m_endDirection : segment.m_startDirection;
+		bool bStartNode = nodeID == segment.m_startNode;
+		Vector3 dir = !bStartNode ? segment.m_endDirection : segment.m_startDirection;
 		float dot_A = -4f;
 		float dot_B = -4f;
 		ushort segmentID_A = 0;
@@ -345,15 +348,18 @@ public partial struct NetNode2
 					Vector3 dir2 = !bStartNode2 ? segment2.m_endDirection : segment2.m_startDirection;
 					float dot = dir.x * dir2.x + dir.z * dir2.z;
 					float determinent = dir2.z * dir.x - dir2.x * dir.z;
-					if (determinent < 0)
+					bool bRight = determinent > 0;
+					bool bWide = dot < 0;
+					// 180 -> det=0 dot=-1
+					if (!bRight)
 					{
-						if (dot > dot_A)
+						if (dot > dot_A) // most accute
 						{
 							dot_A = dot;
 							segmentID_A = segmentID2;
 						}
 						dot = -2f - dot;
-						if (dot > dot_B)
+						if (dot > dot_B) // widest
 						{
 							dot_B = dot;
 							segmentID_B = segmentID2;
@@ -361,13 +367,13 @@ public partial struct NetNode2
 					}
 					else
 					{
-						if (dot > dot_B)
+						if (dot > dot_B) // most accute
 						{
 							dot_B = dot;
 							segmentID_B = segmentID2;
 						}
 						dot = -2f - dot;
-						if (dot > dot_A)
+						if (dot > dot_A) // widest
 						{
 							dot_A = dot;
 							segmentID_A = segmentID2;
@@ -376,9 +382,8 @@ public partial struct NetNode2
 				}
 			}
 		}
-		bool start = segment.m_startNode == nodeID;
-		segment.CalculateCorner(SegmentID, true, start, false, out cornerPos_right, out cornerDir_right, out _);
-		segment.CalculateCorner(SegmentID, true, start, true, out cornerPos_left, out  cornerDir_left, out _);
+		segment.CalculateCorner(SegmentID, true, bStartNode, false, out cornerPos_right, out cornerDir_right, out _);
+		segment.CalculateCorner(SegmentID, true, bStartNode, true, out cornerPos_left, out  cornerDir_left, out _);
 		if (segmentID_A != 0 && segmentID_B != 0)
 		{
 			float pavementRatio_avgA = info.m_pavementWidth / info.m_halfWidth * 0.5f;
@@ -387,9 +392,9 @@ public partial struct NetNode2
 			{
 				NetSegment segment_A = instance.m_segments.m_buffer[(int)segmentID_A];
 				NetInfo infoA = segment_A.Info;
-				start = (segment_A.m_startNode == nodeID);
-				segment_A.CalculateCorner(segmentID_A, true, start, true, out cornerPosA_right, out cornerDirA_right, out _);
-				segment_A.CalculateCorner(segmentID_A, true, start, false, out cornerPosA_left, out cornerDirA_left, out _);
+				bStartNode = (segment_A.m_startNode == nodeID);
+				segment_A.CalculateCorner(segmentID_A, true, bStartNode, true, out cornerPosA_right, out cornerDirA_right, out _);
+				segment_A.CalculateCorner(segmentID_A, true, bStartNode, false, out cornerPosA_left, out cornerDirA_left, out _);
 				float pavementRatioA = infoA.m_pavementWidth / infoA.m_halfWidth * 0.5f;
 				pavementRatio_avgA = (pavementRatio_avgA + pavementRatioA) * 0.5f;
 				averageWidthA = 2f * info.m_halfWidth / (info.m_halfWidth + infoA.m_halfWidth);
@@ -400,23 +405,30 @@ public partial struct NetNode2
 			{
 				NetSegment segment_B = instance.m_segments.m_buffer[(int)segmentID_B];
 				NetInfo infoB = segment_B.Info;
-				start = (segment_B.m_startNode == nodeID);
-				segment_B.CalculateCorner(segmentID_B, true, start, true, out cornerPosB_right, out cornerDirB_right, out _);
-				segment_B.CalculateCorner(segmentID_B, true, start, false, out cornerPosB_left, out cornerDirB_left, out _);
+				bStartNode = (segment_B.m_startNode == nodeID);
+				segment_B.CalculateCorner(segmentID_B, true, bStartNode, true, out cornerPosB_right, out cornerDirB_right, out _);
+				segment_B.CalculateCorner(segmentID_B, true, bStartNode, false, out cornerPosB_left, out cornerDirB_left, out _);
 				float pavementRatioB = infoB.m_pavementWidth / infoB.m_halfWidth * 0.5f;
 				pavementRatio_avgB = (pavementRatio_avgB + pavementRatioB) * 0.5f;
 				averageWithB = 2f * info.m_halfWidth / (info.m_halfWidth + infoB.m_halfWidth);
 			}
 
-			NetSegment.CalculateMiddlePoints(cornerPos_right, -cornerDir_right, cornerPosA_right, -cornerDirA_right, true, true, out var cpoint2_Aright, out var cpoint3_Aright);
+			Bezier3 bezierA_right = new Bezier3 {
+				a=cornerPos_right,
+				d=cornerPosA_right,
+			};
+
+			NetSegment.CalculateMiddlePoints(bezierA_right.a, -cornerDir_right, bezierA_right.d, -cornerDirA_right, true, true, out bezierA_right.b, out bezierA_right.c);
 			NetSegment.CalculateMiddlePoints(cornerPos_left, -cornerDir_left, cornerPosA_left, -cornerDirA_left, true, true, out var cpoint2_Aleft, out var cpoint3_Aleft);
 			NetSegment.CalculateMiddlePoints(cornerPos_right, -cornerDir_right, cornerPosB_right, -cornerDirB_right, true, true, out var cpoint2_Bright, out var cpoint3_Bright);
 			NetSegment.CalculateMiddlePoints(cornerPos_left, -cornerDir_left, cornerPosB_left, -cornerDirB_left, true, true, out var cpoint2_Bleft, out var cpoint3_Bleft);
 			
-			data.m_dataMatrix0 = NetSegment.CalculateControlMatrix(cornerPos_right, cpoint2_Aright, cpoint3_Aright, cornerPosA_right, cornerPos_right, cpoint2_Aright, cpoint3_Aright, cornerPosA_right, This.m_position, vscale);
+			data.m_dataMatrix0 = NetSegment.CalculateControlMatrix(bezierA_right.a, bezierA_right.b, bezierA_right.c, bezierA_right.d, bezierA_right.a, bezierA_right.b, bezierA_right.c, bezierA_right.d, This.m_position, vscale);
 			data.m_extraData.m_dataMatrix2 = NetSegment.CalculateControlMatrix(cornerPos_left, cpoint2_Aleft, cpoint3_Aleft, cornerPosA_left, cornerPos_left, cpoint2_Aleft, cpoint3_Aleft, cornerPosA_left, This.m_position, vscale);
 			data.m_extraData.m_dataMatrix3 = NetSegment.CalculateControlMatrix(cornerPos_right, cpoint2_Bright, cpoint3_Bright, cornerPosB_right, cornerPos_right, cpoint2_Bright, cpoint3_Bright, cornerPosB_right, This.m_position, vscale);
 			data.m_dataMatrix1 = NetSegment.CalculateControlMatrix(cornerPos_left, cpoint2_Bleft, cpoint3_Bleft, cornerPosB_left, cornerPos_left, cpoint2_Bleft, cpoint3_Bleft, cornerPosB_left, This.m_position, vscale);
+
+			// Vector4(1/width | 1/length | 0.5 - pavement/width | pavement/width )
 			data.m_dataVector0 = new Vector4(0.5f / info.m_halfWidth, 1f / info.m_segmentLength, 0.5f - info.m_pavementWidth / info.m_halfWidth * 0.5f, info.m_pavementWidth / info.m_halfWidth * 0.5f);
 			data.m_dataVector1 = centerPos - data.m_position;
 			data.m_dataVector1.w = (data.m_dataMatrix0.m31 + data.m_dataMatrix0.m32 + data.m_extraData.m_dataMatrix2.m31 + data.m_extraData.m_dataMatrix2.m32 + data.m_extraData.m_dataMatrix3.m31 + data.m_extraData.m_dataMatrix3.m32 + data.m_dataMatrix1.m31 + data.m_dataMatrix1.m32) * 0.125f;

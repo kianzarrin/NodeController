@@ -26,11 +26,9 @@
     <MangedDLLPath Condition="!  Exists ('$(MangedDLLPath)')">$(CSPath)\Cities_Data\Managed</MangedDLLPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CitiesHarmony.API" Version="1.0.4" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\libs\0Harmony.dll</HintPath>
+      <Private>true</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(MangedDLLPath)\Assembly-CSharp.dll</HintPath>
@@ -59,12 +57,20 @@
     <Reference Include="System.Data.DataSetExtensions" />
   </ItemGroup>
   <Target Name="DeployToModDirectory" AfterTargets="Build">
+    <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
+      <Output TaskParameter="Assemblies" ItemName="Targets" />
+    </GetAssemblyIdentity>
     <PropertyGroup>
-      <DeployDir>$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(ProjectName)</DeployDir>
+      <DeployDir>$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(ProjectName)\</DeployDir>
     </PropertyGroup>
-    <Copy SourceFiles="$(TargetDir)CitiesHarmony.API.dll" DestinationFolder="$(DeployDir)" />
-    <Delete Files="$(DeployDir)$(TargetName)" />
+    <ItemGroup>
+      <AuxilaryFiles Include="$(TargetDir)**/*.*" Exclude="$(TargetPath);$(TargetDir)*.pdb" />
+      <VersionNumber Include="@(Targets->'%(Version)')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(AuxilaryFiles)" DestinationFolder="$(DeployDir)" />
+    <!-- <Message Importance="high" Text="Deleting $(DeployDir)$(TargetFileName)" /> -->
+    <Delete Files="$(DeployDir)$(TargetFileName)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DeployDir)" />
-    <Message Importance="high" Text="AssemblyVersion=$(AssemblyVersion)"/>
+    <Message Importance="high" Text="AssemblyVersion= @(VersionNumber)" />
   </Target>
 </Project>
