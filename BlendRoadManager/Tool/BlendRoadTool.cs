@@ -74,9 +74,10 @@ namespace BlendRoadManager.Tool {
             base.RenderOverlay(cameraInfo);
             if (!HoverValid)
                 return;
-            if (!IsGood())
-                return;
-            DrawNodeCircle(cameraInfo, Color.yellow, HoveredNodeId, false);
+            if (IsGood1() || IsGood2())
+            {
+                DrawNodeCircle(cameraInfo, Color.yellow, HoveredNodeId, false);
+            }
             DrawOverlayCircle(cameraInfo, Color.red, HitPos, 1, true);
         }
 
@@ -84,20 +85,10 @@ namespace BlendRoadManager.Tool {
             if (!HoverValid)
                 return;
             Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
-            if (!IsGood())
-                return;
+            if (IsGood1())
+            {
 
-            NodeBlendData data = NodeBlendManager.Instance.buffer[HoveredNodeId];
-            if (data == null)
-            {
-                data = new NodeBlendData();
-                NodeBlendManager.Instance.buffer[HoveredNodeId] = data;
             }
-            else
-            {
-                bool overflow = data.IncrementType();
-            }
-            NetManager.instance.UpdateNode(HoveredNodeId);
 
         }
 
@@ -105,9 +96,14 @@ namespace BlendRoadManager.Tool {
             //throw new System.NotImplementedException();
         }
 
-        bool IsGood(){
-            return HoveredNodeId.ToNode().CountSegments() == 2 && HoveredNodeId.ToNode().Info.m_netAI is RoadAI;
+        bool IsGood1(){
+            return HoveredNodeId.ToNode().CountSegments() == 2 && HoveredNodeId.ToNode().Info.m_netAI is RoadBaseAI;
         }
+        bool IsGood2()
+        {
+            return HoveredNodeId.ToNode().CountSegments() > 2 && HoveredNodeId.ToNode().Info.m_netAI is RoadBaseAI;
+        }
+
 
     } //end class
 }

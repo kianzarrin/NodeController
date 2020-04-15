@@ -36,26 +36,10 @@ namespace BlendRoadManager.Patches
             if (blendData == null)
                 return;
 
-            switch (blendData.type)
+            if(blendData.textureType == TextureType.Corssing)
             {
-                case BlendType.NoBlending:
-                    throw new Exception("UnreachableCode");
-                    break;
-                case BlendType.Crossing:
-                    data.m_dataVector1.w = 0.01f;
-                    break;
-                case BlendType.Sharp:
-                    data.m_dataVector1.w = 0.04f;
-                    break;
-                case BlendType.LaneBasedWidth:
-                    // TODO implement
-                    break;
-                case BlendType.UTurn:
-                    data.m_dataVector1.w = 8f;
-                    break;
-                case BlendType.CustomWidth:
-                    data.m_dataVector1.w = blendData.customWidth;
-                    break;
+                // puts crossings in the center.
+                data.m_dataVector1.w = 0.01f;
             }
         }
     }

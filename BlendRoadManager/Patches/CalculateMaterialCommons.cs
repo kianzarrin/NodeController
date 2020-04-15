@@ -16,14 +16,15 @@ namespace BlendRoadManager.Patches {
     using static TranspilerUtils;
     using Util;
     public static class CalculateMaterialCommons {
-        public static bool ShouldHideCrossing(ushort nodeID, ushort segmentID) {
-            return true;
+        public static bool ShouldContinueMedian(ushort nodeID, ushort segmentID) {
+            return NodeBlendManager.Instance.buffer[nodeID].textureType == TextureType.Segment;
         }
 
         public static Material CalculateMaterial(Material material, ushort nodeID, ushort segmentID) {
-            if (ShouldHideCrossing(nodeID, segmentID)) {
+            if (ShouldContinueMedian(nodeID, segmentID)) {
                 NetInfo netInfo = segmentID.ToSegment().Info;
                 material = MaterialUtils.ContinuesMedian(material, null, netInfo, false);
+                //todo use datamatrix for direct connect.
             }
             return material;
         }
@@ -41,7 +42,7 @@ namespace BlendRoadManager.Patches {
         static FieldInfo fNodeMaterial => typeof(NetInfo.Node).GetField("m_nodeMaterial");
         static MethodInfo mCalculateMaterial => typeof(CalculateMaterialCommons).GetMethod("CalculateMaterial");
         static MethodInfo mCheckRenderDistance => typeof(RenderManager.CameraInfo).GetMethod("CheckRenderDistance");
-        static MethodInfo mShouldHideCrossing => typeof(CalculateMaterialCommons).GetMethod("ShouldHideCrossing");
+        static MethodInfo mShouldContinueMedian => typeof(CalculateMaterialCommons).GetMethod("ShouldContinueMedian");
         static MethodInfo mGetSegment => typeof(NetNode).GetMethod("GetSegment");
 
         // returns the position of First DrawMesh after index.
@@ -50,7 +51,7 @@ namespace BlendRoadManager.Patches {
             HelpersExtensions.Assert(fNodeMaterial != null, "fNodeMaterial!=null failed"); 
             HelpersExtensions.Assert(mCalculateMaterial != null, "mCalculateMaterial!=null failed"); 
             HelpersExtensions.Assert(mCheckRenderDistance != null, "mCheckRenderDistance!=null failed"); 
-            HelpersExtensions.Assert(mShouldHideCrossing != null, "mShouldHideCrossing!=null failed");
+            HelpersExtensions.Assert(mShouldContinueMedian != null, "mShouldContinueMedian!=null failed");
 
             int index = 0;
             index = SearchInstruction(codes, new CodeInstruction(OpCodes.Call, mDrawMesh), index, counter: occurance);
@@ -84,7 +85,7 @@ namespace BlendRoadManager.Patches {
                 var newInstructions = new[]{
                     LDArg_NodeID, 
                     LDLoc_segmentID, 
-                    new CodeInstruction(OpCodes.Call, mShouldHideCrossing), // call Material mShouldHideCrossing(nodeID, segmentID).
+                    new CodeInstruction(OpCodes.Call, mShouldContinueMedian), // call Material mShouldHideCrossing(nodeID, segmentID).
                     new CodeInstruction(OpCodes.Or) };
 
                 InsertInstructions(codes, newInstructions, insertIndex1);

@@ -100,8 +100,15 @@ namespace BlendRoadManager.Util {
                            Color color,
                            ushort nodeId,
                            bool alphaBlend = false) {
-            float r = 8;
             Vector3 pos = nodeId.ToNode().m_position;
+            float r = 0;
+            int n = 0;
+            foreach(ushort segmentId in NetUtil.GetSegmentsCoroutine(nodeId))
+            {
+                r += segmentId.ToSegment().Info.m_halfWidth;
+                n++;
+            }
+            r = r / n;
             DrawOverlayCircle(cameraInfo, color, pos, r, alphaBlend);
         }
 

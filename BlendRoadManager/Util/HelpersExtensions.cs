@@ -13,6 +13,9 @@ namespace BlendRoadManager.Util {
         public static T GetMaxEnumValue<T>() =>
             System.Enum.GetValues(typeof(T)).Cast<T>().Max();
 
+        public static int GetEnumCount<T>() =>
+            System.Enum.GetValues(typeof(T)).Length;
+
         private static void CheckEnumWithFlags<T>() {
             if (!typeof(T).IsEnum) {
                 throw new ArgumentException(string.Format("Type '{0}' is not an enum", typeof(T).FullName));
