@@ -32,6 +32,7 @@
 			if (__state.Changed = blendData != null && blendData.CornerOffset != blendData.DefaultCornerOffset)
 			{
 				__state.Offset = info.m_minCornerOffset;
+				info.m_minCornerOffset = blendData.CornerOffset;
 			}
 		}
 

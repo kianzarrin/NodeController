@@ -3,8 +3,9 @@ using UnityEngine;
 using BlendRoadManager.Util;
 using ColossalFramework;
 
-namespace BlendRoadManager.Tool
+namespace BlendRoadManager.GUI
 {
+    using Tool;
     public class ToolButton : UIButton
     {
         public override void Start() {
@@ -21,12 +22,12 @@ namespace BlendRoadManager.Tool
             normalBgSprite = "ButtonMenu";
             disabledBgSprite = "ButtonMenuDisabled";
             hoveredBgSprite = "ButtonMenuHovered";
-            focusedBgSprite = normalBgSprite;// "ButtonMenuFocused";
+            focusedBgSprite = "ButtonMenuFocused";
             pressedBgSprite = "ButtonMenuPressed";
             textColor = new Color32(255, 255, 255, 255);
             disabledTextColor = new Color32(7, 7, 7, 255);
             hoveredTextColor = new Color32(7, 132, 255, 255);
-            focusedTextColor = textColor;// new Color32(255, 255, 255, 255);
+            focusedTextColor = new Color32(255, 255, 255, 255);
             pressedTextColor = new Color32(30, 30, 44, 255);
 
             // Enable button sounds.

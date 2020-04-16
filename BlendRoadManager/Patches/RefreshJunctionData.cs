@@ -36,7 +36,7 @@ namespace BlendRoadManager.Patches
             if (blendData == null)
                 return;
 
-            if(blendData.textureType == TextureType.Corssing)
+            if(blendData.NodeType == NodeTypeT.Crossing)
             {
                 // puts crossings in the center.
                 data.m_dataVector1.w = 0.01f;

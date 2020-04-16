@@ -22,7 +22,7 @@ namespace BlendRoadManager
 			NodeBlendData blendData = NodeBlendManager.Instance.buffer[nodeID];
 			if (blendData == null)
 				return;
-			if (!blendData.NeedsTrafficLight())
+			if (!blendData.WantsTrafficLight())
 				return;
 
 			bool wantTrafficLights = __instance.WantTrafficLights();

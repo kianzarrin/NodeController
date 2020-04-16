@@ -15,6 +15,7 @@ namespace BlendRoadManager.Patches
 			if (blendData == null)
 				return;
 
+
 			if (__instance.m_flags.IsFlagSet(NetNode.Flags.Outside))
 			{
 				// Do nothing

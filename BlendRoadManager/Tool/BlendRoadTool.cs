@@ -6,6 +6,7 @@ using BlendRoadManager.Util;
 
 namespace BlendRoadManager.Tool {
     using static Util.RenderUtil;
+    using GUI;
 
     public sealed class BlendRoadTool : KianToolBase {
         UIButton button;
@@ -87,13 +88,16 @@ namespace BlendRoadManager.Tool {
             Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
             if (IsGood1())
             {
-
+                NodeBlendManager.Instance.ChangeNode(HoveredNodeId);
             }
 
         }
 
         protected override void OnSecondaryMouseClicked() {
-            //throw new System.NotImplementedException();
+            if(IsGood1() || IsGood2())
+            {
+                NodeBlendManager.Instance.ChangeOffset(HoveredNodeId);
+            }
         }
 
         bool IsGood1(){
