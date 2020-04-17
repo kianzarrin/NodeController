@@ -83,7 +83,7 @@ namespace BlendRoadManager.Util
         /// <param name="message">Log entry text.</param>
         /// <param name="copyToGameLog">If <c>true</c> will copy to the main game log file.</param>
         [Conditional("DEBUG")]
-        public static void Debug(string message, bool copyToGameLog = false)
+        public static void Debug(string message, bool copyToGameLog = true)
         {
             LogToFile(message, LogLevel.Debug);
             if (copyToGameLog)
@@ -98,7 +98,7 @@ namespace BlendRoadManager.Util
         /// 
         /// <param name="message">Log entry text.</param>
         /// <param name="copyToGameLog">If <c>true</c> will copy to the main game log file.</param>
-        public static void Info(string message, bool copyToGameLog = true)
+        public static void Info(string message, bool copyToGameLog = false)
         {
             LogToFile(message, LogLevel.Info);
             if (copyToGameLog)

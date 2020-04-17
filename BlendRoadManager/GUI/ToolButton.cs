@@ -35,22 +35,12 @@ namespace BlendRoadManager.GUI
 
             // Place the
             transformPosition = new Vector3(-1.65f, 0.97f);
-
-            eventClicked += OnClick;
         }
-
-        public override void OnDestroy() {
-            eventClicked -= OnClick;
-            base.OnDestroy();
-        }
-
 
         public static ToolButton Create() {
             var uiView = UIView.GetAView();
             var button = (ToolButton)uiView.AddUIComponent(typeof(ToolButton));
-            
             return button;
-
         }
 
         public static void Release() {
@@ -59,7 +49,8 @@ namespace BlendRoadManager.GUI
             Destroy(button);
         }
 
-        public static void OnClick(UIComponent component, UIMouseEventParameter eventParam) {
+        protected override void OnClick(UIMouseEventParameter p) {
+            base.OnClick(p);
             Log.Debug("ToolButton:OnClick() called");
             Singleton<BlendRoadTool>.instance.EnableTool();
         }

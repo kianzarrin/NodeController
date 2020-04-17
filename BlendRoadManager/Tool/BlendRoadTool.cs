@@ -1,19 +1,19 @@
-using ColossalFramework;
+using BlendRoadManager.Util;
 using ColossalFramework.UI;
 using System;
 using UnityEngine;
-using BlendRoadManager.Util;
 
 namespace BlendRoadManager.Tool {
-    using static Util.RenderUtil;
     using GUI;
+    using static Util.RenderUtil;
 
     public sealed class BlendRoadTool : KianToolBase {
-        UIButton button;
+        UIButton button_;
+        UINodeControllerPanel panel_;
 
         protected override void Awake() {
-            var uiView = UIView.GetAView();
-            button = uiView.AddUIComponent(typeof(ToolButton)) as UIButton;
+            button_ = ToolButton.Create();
+            panel_ = UINodeControllerPanel.Create();
             base.Awake();
         }
 
@@ -40,8 +40,10 @@ namespace BlendRoadManager.Tool {
 
         protected override void OnDestroy() {
             Log.Debug("PedBridgeTool.OnDestroy()\n" + Environment.StackTrace);
-            button?.Hide();
-            Destroy(button);
+            button_?.Hide();
+            Destroy(button_);
+            panel_?.Hide();
+            Destroy(panel_);
             base.OnDestroy();
         }
 
@@ -49,19 +51,20 @@ namespace BlendRoadManager.Tool {
 
         protected override void OnEnable() {
             Log.Debug("PedBridgeTool.OnEnable");
-            button?.Focus();
+            button_?.Focus();
             base.OnEnable();
-            button?.Focus();
-            button?.Invalidate();
+            button_?.Focus();
+            button_?.Invalidate();
+            panel_?.Close();
         }
 
         protected override void OnDisable() {
             Log.Debug("PedBridgeTool.OnDisable");
-            button?.Unfocus();
+            button_?.Unfocus();
             base.OnDisable();
-            button?.Unfocus();
-            button?.Invalidate();
-
+            button_?.Unfocus();
+            button_?.Invalidate();
+            panel_?.Close();
         }
 
         protected override void OnToolUpdate() {
@@ -75,8 +78,7 @@ namespace BlendRoadManager.Tool {
             base.RenderOverlay(cameraInfo);
             if (!HoverValid)
                 return;
-            if (IsGood1() || IsGood2())
-            {
+            if (IsGood1() || IsGood2()) {
                 DrawNodeCircle(cameraInfo, Color.yellow, HoveredNodeId, false);
             }
             DrawOverlayCircle(cameraInfo, Color.red, HitPos, 1, true);
@@ -86,25 +88,24 @@ namespace BlendRoadManager.Tool {
             if (!HoverValid)
                 return;
             Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
-            if (IsGood1())
-            {
-                NodeBlendManager.Instance.ChangeNode(HoveredNodeId);
+            if (IsGood1() || IsGood2()) {
+                panel_.ShowNode(HoveredNodeId);
             }
 
         }
 
         protected override void OnSecondaryMouseClicked() {
-            if(IsGood1() || IsGood2())
-            {
-                NodeBlendManager.Instance.ChangeOffset(HoveredNodeId);
+            if (IsGood1() || IsGood2()) {
+                panel_.Hide();
             }
         }
 
-        bool IsGood1(){
-            return HoveredNodeId.ToNode().CountSegments() == 2 && HoveredNodeId.ToNode().Info.m_netAI is RoadBaseAI;
+        bool IsGood1() {
+            return HoveredNodeId.ToNode().CountSegments() == 2 &&
+                   HoveredNodeId.ToNode().Info.m_netAI is RoadBaseAI &&
+                   HoveredNodeId.ToNode().m_flags != NetNode.Flags.Bend;
         }
-        bool IsGood2()
-        {
+        bool IsGood2() {
             return HoveredNodeId.ToNode().CountSegments() > 2 && HoveredNodeId.ToNode().Info.m_netAI is RoadBaseAI;
         }
 

@@ -1,0 +1,105 @@
+namespace BlendRoadManager.GUI {
+    using System;
+    using ColossalFramework.UI;
+    using UnityEngine;
+    using static Util.HelpersExtensions;
+
+    public class UINodeTypeDropDown : UIDropDown, IDataControllerUI{
+        public static UINodeTypeDropDown Instance { get; private set; }
+
+        public override void Awake() {
+            base.Awake();
+            Instance = this;
+            atlas = TextureUtil.GetAtlas("Ingame");
+            size = new Vector2(120f, 30);
+            listBackground = "GenericPanelLight";
+            itemHeight = 25;
+            itemHover = "ListItemHover";
+            itemHighlight = "ListItemHighlight";
+            normalBgSprite = "ButtonMenu";
+            disabledBgSprite = "ButtonMenuDisabled";
+            hoveredBgSprite = "ButtonMenuHovered";
+            focusedBgSprite = "ButtonMenu";
+            listWidth = 90;
+            listHeight = 700;
+            listPosition = UIDropDown.PopupListPosition.Below;
+            clampListToScreen = true;
+            builtinKeyNavigation = true;
+            foregroundSpriteMode = UIForegroundSpriteMode.Stretch;
+            popupColor = new Color32(45, 52, 61, 255);
+            popupTextColor = new Color32(170, 170, 170, 255);
+            zOrder = 1;
+            textScale = 0.8f;
+            verticalAlignment = UIVerticalAlignment.Middle;
+            horizontalAlignment = UIHorizontalAlignment.Left;
+            selectedIndex = 0;
+            textFieldPadding = new RectOffset(8, 0, 8, 0);
+            itemPadding = new RectOffset(14, 0, 8, 0);
+            //AlignTo(parent, UIAlignAnchor.TopLeft);
+
+            var button = AddUIComponent<UIButton>();
+            triggerButton = button;
+            button.atlas = TextureUtil.GetAtlas("Ingame");
+            button.text = "";
+            button.size = size;
+            button.relativePosition = new Vector3(0f, 0f);
+            button.textVerticalAlignment = UIVerticalAlignment.Middle;
+            button.textHorizontalAlignment = UIHorizontalAlignment.Left;
+            button.normalFgSprite = "IconDownArrow";
+            button.hoveredFgSprite = "IconDownArrowHovered";
+            button.pressedFgSprite = "IconDownArrowPressed";
+            button.focusedFgSprite = "IconDownArrowFocused";
+            button.disabledFgSprite = "IconDownArrowDisabled";
+            button.foregroundSpriteMode = UIForegroundSpriteMode.Fill;
+            button.horizontalAlignment = UIHorizontalAlignment.Right;
+            button.verticalAlignment = UIVerticalAlignment.Middle;
+            button.zOrder = 0;
+            button.textScale = 0.8f;
+
+            eventSizeChanged += new PropertyChangedEventHandler<Vector2>((c, t) => {
+                button.size = t;
+                listWidth = (int)t.x; // TODO put in override.
+            });
+
+            foreach (var item in Enum.GetNames(typeof(NodeTypeT))) {
+                AddItem(item);
+            }
+        }
+
+        public override void Start() {
+            base.Start();
+        }
+
+        public NodeTypeT SelectedItem {
+            get => (NodeTypeT)selectedIndex;
+            set => selectedIndex = (int)value;
+        }
+
+        protected override void OnSelectedIndexChanged() {
+            base.OnSelectedIndexChanged();
+            Apply();
+        }
+
+        public void Apply() {
+            ushort nodeID = UINodeControllerPanel.Instance.NodeID;
+            if (nodeID == 0)
+                return;
+            var data = NodeBlendManager.Instance.buffer[nodeID];
+            data.NodeType = SelectedItem;
+            data.Refresh();
+            UINodeControllerPanel.Instance.Refresh();
+        }
+
+        public void Refresh() {
+            NodeBlendData data = UINodeControllerPanel.Instance.BlendData;
+            if (data == null) {
+                Disable();
+                return;
+            }
+            SelectedItem = data.NodeType;
+            triggerButton.isEnabled = this.isEnabled = data.CanModifyNodeType();
+            Invalidate();
+            triggerButton.Invalidate();
+        }
+    }
+}
