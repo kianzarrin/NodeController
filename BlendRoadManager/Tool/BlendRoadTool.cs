@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 
 namespace BlendRoadManager.Tool {
+    using ColossalFramework;
     using GUI;
     using static Util.RenderUtil;
 
@@ -95,15 +96,13 @@ namespace BlendRoadManager.Tool {
         }
 
         protected override void OnSecondaryMouseClicked() {
-            if (IsGood1() || IsGood2()) {
-                panel_.Hide();
-            }
+            panel_.Close();
         }
 
         bool IsGood1() {
             return HoveredNodeId.ToNode().CountSegments() == 2 &&
                    HoveredNodeId.ToNode().Info.m_netAI is RoadBaseAI &&
-                   HoveredNodeId.ToNode().m_flags != NetNode.Flags.Bend;
+                   !HoveredNodeId.ToNode().m_flags.IsFlagSet(NetNode.Flags.Bend);
         }
         bool IsGood2() {
             return HoveredNodeId.ToNode().CountSegments() > 2 && HoveredNodeId.ToNode().Info.m_netAI is RoadBaseAI;

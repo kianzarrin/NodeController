@@ -9,6 +9,9 @@ namespace BlendRoadManager.Util {
 
     public static class HelpersExtensions
     {
+        public static int String2Enum<T>(string str) where T: Enum {
+            return Array.IndexOf(Enum.GetNames(typeof(T)), str);
+        }
 
         public static T GetMaxEnumValue<T>() =>
             System.Enum.GetValues(typeof(T)).Cast<T>().Max();

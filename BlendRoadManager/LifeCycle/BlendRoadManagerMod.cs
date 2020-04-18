@@ -14,7 +14,6 @@ namespace BlendRoadManager.LifeCycle
         [UsedImplicitly]
         public void OnEnabled()
         {
-            HarmonyExtension.InstallHarmony();
             if (HelpersExtensions.InGame)
                 LifeCycle.Load();
         }
@@ -22,7 +21,6 @@ namespace BlendRoadManager.LifeCycle
         [UsedImplicitly]
         public void OnDisabled()
         {
-            HarmonyExtension.UninstallHarmony();
             LifeCycle.Release();
         }
     }

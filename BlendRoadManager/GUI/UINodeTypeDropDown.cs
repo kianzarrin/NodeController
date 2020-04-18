@@ -3,6 +3,7 @@ namespace BlendRoadManager.GUI {
     using ColossalFramework.UI;
     using UnityEngine;
     using static Util.HelpersExtensions;
+    using System.Linq;
 
     public class UINodeTypeDropDown : UIDropDown, IDataControllerUI{
         public static UINodeTypeDropDown Instance { get; private set; }
@@ -71,8 +72,8 @@ namespace BlendRoadManager.GUI {
         }
 
         public NodeTypeT SelectedItem {
-            get => (NodeTypeT)selectedIndex;
-            set => selectedIndex = (int)value;
+            get => (NodeTypeT)String2Enum<NodeTypeT>(selectedValue);
+            set => selectedValue = value.ToString();
         }
 
         protected override void OnSelectedIndexChanged() {
@@ -96,8 +97,16 @@ namespace BlendRoadManager.GUI {
                 Disable();
                 return;
             }
+
+            items = null;
+            foreach(NodeTypeT nodeType in Enum.GetValues(typeof(NodeTypeT))) {
+                if (data.CanChangeTo(nodeType)) {
+                    AddItem(nodeType.ToString());
+                }
+            }
+
             SelectedItem = data.NodeType;
-            triggerButton.isEnabled = this.isEnabled = data.CanModifyNodeType();
+            isVisible = triggerButton.isEnabled = this.isEnabled = items.Length > 1;
             Invalidate();
             triggerButton.Invalidate();
         }

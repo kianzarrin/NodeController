@@ -1,9 +1,9 @@
-﻿namespace BlendRoadManager.Patches
+namespace BlendRoadManager.Patches
 {
 	using System.Reflection;
 	using JetBrains.Annotations;
 	using UnityEngine;
-	using HarmonyLib;
+	using Harmony;
 	using Util;
 
 	[UsedImplicitly]

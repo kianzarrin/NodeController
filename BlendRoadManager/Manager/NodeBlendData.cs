@@ -1,11 +1,15 @@
 using ColossalFramework;
 using System;
 
+
 namespace BlendRoadManager {
     using System.IO;
     using System.Runtime.Serialization.Formatters;
     using System.Runtime.Serialization.Formatters.Binary;
+    using UnityEngine;
     using Util;
+    using TernaryBool = CSUtil.Commons.TernaryBool;
+    using TrafficManager.Manager.Impl;
 
     [Serializable]
     public class NodeBlendManager {
@@ -20,7 +24,7 @@ namespace BlendRoadManager {
                 Instance = new NodeBlendManager();
                 Log.Debug($"NodeBlendManager.Deserialize(data=null)");
                 return;
-            } 
+            }
             Log.Debug($"NodeBlendManager.Deserialize(data): data.Length={data?.Length}");
 
             var memoryStream = new MemoryStream();
@@ -55,44 +59,45 @@ namespace BlendRoadManager {
         public void RefreshData(ushort nodeID) {
             if (nodeID == 0 || buffer[nodeID] == null)
                 return;
-            if(buffer[nodeID].IsDefault()) {
+            if (buffer[nodeID].IsDefault()) {
                 Log.Info($"node reset to defualt");
                 buffer[nodeID] = null;
+                NetManager.instance.UpdateNode(nodeID);
             } else {
                 buffer[nodeID].Refresh();
             }
-            NetManager.instance.UpdateNode(nodeID);
         }
 
-        public void ChangeNode(ushort nodeID) {
-            Log.Info($"ChangeNode({nodeID}) called");
-            NodeBlendData data = GetOrCreate(nodeID);
-            data.ChangeNodeType();
-            Instance.buffer[nodeID] = data;
-            RefreshData(nodeID);
-        }
+        //public void ChangeNode(ushort nodeID) {
+        //    Log.Info($"ChangeNode({nodeID}) called");
+        //    NodeBlendData data = GetOrCreate(nodeID);
+        //    data.ChangeNodeType();
+        //    Instance.buffer[nodeID] = data;
+        //    RefreshData(nodeID);
+        //}
 
 
-        public void ChangeOffset(ushort nodeID) {
-            Log.Info($"ChangeOffset({nodeID}) called");
-            if (!nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Junction)) {
-                Log.Info($"Not a junction");
-                return;
-            }
+        //public void ChangeOffset(ushort nodeID) {
+        //    Log.Info($"ChangeOffset({nodeID}) called");
+        //    if (!nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Junction)) {
+        //        Log.Info($"Not a junction");
+        //        return;
+        //    }
 
-            NodeBlendData data = GetOrCreate(nodeID);
-            if (!data.CanModifyOffset())
-                return;
+        //    NodeBlendData data = GetOrCreate(nodeID);
+        //    if (!data.CanModifyOffset())
+        //        return;
 
-            data.IncrementOffset();
-            Instance.buffer[nodeID] = data;
-            RefreshData(nodeID);
-        }
+        //    data.IncrementOffset();
+        //    Instance.buffer[nodeID] = data;
+        //    RefreshData(nodeID);
+        //}
     }
 
     public enum NodeTypeT {
         Middle,
         Crossing, // change dataMatrix.w to render crossings in the middle.
+        UTurn, // set offset to 5.
         Node,
         Segment,
     }
@@ -109,6 +114,9 @@ namespace BlendRoadManager {
         public NodeTypeT DefaultNodeType;
         public float CornerOffset;
 
+        public float HWDiff;
+        public bool HasPedestrianLanes;
+
         public NodeBlendData(ushort nodeID) {
             NodeID = nodeID;
             SegmentCount = nodeID.ToNode().CountSegments();
@@ -123,62 +131,185 @@ namespace BlendRoadManager {
 
             NodeType = DefaultNodeType;
             CornerOffset = DefaultCornerOffset;
+
+            if (SegmentCount == 2) {
+                float hw0 = 0;
+                foreach (ushort segmetnID in NetUtil.GetSegmentsCoroutine(nodeID)) {
+                    if (hw0 == 0)
+                        hw0 = segmetnID.ToSegment().Info.m_halfWidth;
+                    else
+                        HWDiff = Mathf.Abs(segmetnID.ToSegment().Info.m_halfWidth - hw0);
+                }
+            }
+
+            foreach (ushort segmetnID in NetUtil.GetSegmentsCoroutine(nodeID))
+                HasPedestrianLanes |= segmetnID.ToSegment().Info.m_hasPedestrianLanes;
         }
 
         public bool IsDefault() {
-            bool ret = CornerOffset - DefaultCornerOffset < OFFSET_STEP / 2 + 0.001f;
+            bool ret = CornerOffset - DefaultCornerOffset < 0.5f;
             ret &= NodeType == DefaultNodeType;
             return ret;
         }
 
-        public void ChangeNodeType() {
-            if (!CanModifyNodeType()) {
-                throw new Exception("cannot change junction type");
-            } else if (DefaultNodeType == NodeTypeT.Node) {
-                switch (NodeType) {
-                    case NodeTypeT.Node :
-                        NodeType = NodeTypeT.Middle ;
-                        break;
-                    case NodeTypeT.Middle:
-                        NodeType = NodeTypeT.Crossing ;
-                        break;
-                    case NodeTypeT.Crossing:
-                        NodeType = NodeTypeT.Segment ;
-                        break;
-                    case NodeTypeT.Segment:
-                        NodeType = NodeTypeT.Node ;
-                        break;
-                    default:
-                        throw new Exception("Unreachable code");
-                }
-            }
-            if (DefaultNodeType == NodeTypeT.Middle) {
-                NodeType++;
-                if (NodeType > HelpersExtensions.GetMaxEnumValue<NodeTypeT>())
-                    NodeType = 0;
-            }
-        }
-
-        public const float OFFSET_STEP = 5f;
-        /// <summary>
-        /// in case of overflow resets type and return true.
-        /// </summary>
-        public void IncrementOffset() {
-            CornerOffset += OFFSET_STEP;
-            if (CornerOffset > OFFSET_STEP * 10)
-                CornerOffset = 0;
-        }
-
         public void Refresh() {
-            if (!CanModifyOffset())
-                CornerOffset = DefaultCornerOffset;
+            if (!CanModifyOffset()) {
+                if (NodeType == NodeTypeT.UTurn)
+                    CornerOffset = 5f;
+                else
+                    CornerOffset = DefaultCornerOffset;
+            }
+            CornerOffset = DefaultCornerOffset;
             NetManager.instance.UpdateNode(NodeID);
         }
 
         public bool NeedMiddleFlag() => NodeType == NodeTypeT.Middle;
         public bool NeedJunctionFlag() => !NeedMiddleFlag();
-        public bool WantsTrafficLight() => NeedJunctionFlag();
+        public bool WantsTrafficLight() => NodeType == NodeTypeT.Node || NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Segment || NodeType == NodeTypeT.Node;
-        public bool CanModifyNodeType() => SegmentCount == 2;
+        public bool NeedsTransitionFlag() => SegmentCount == 2 && NodeType != NodeTypeT.Segment && NodeType != NodeTypeT.Middle;
+
+        public static bool IsSupported(ushort nodeID) {
+            var flags = nodeID.ToNode().m_flags;
+            if (flags.IsFlagSet(NetNode.Flags.LevelCrossing | NetNode.Flags.Bend))
+                return false;
+            return nodeID.ToNode().CountSegments() > 1;
+        }
+
+        public bool CanChangeTo(NodeTypeT newNodeType) {
+            if (SegmentCount > 2)
+                return newNodeType == NodeTypeT.Node;
+
+            switch (newNodeType) {
+                case NodeTypeT.Crossing:
+                    return HasPedestrianLanes;
+                case NodeTypeT.UTurn:
+                    return NodeID.ToNode().Info.m_forwardVehicleLaneCount > 0 && NodeID.ToNode().Info.m_backwardVehicleLaneCount > 0;
+                case NodeTypeT.Segment:
+                    return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle); // not middle by default.
+                case NodeTypeT.Middle:
+                    return HWDiff < 2f;
+                case NodeTypeT.Node:
+                    return true;
+                default:
+                    throw new Exception("Unreachable code");
+            }
+        }
+
+        #region External Mods
+        public bool CanHideCrossingTexture() => NodeType != NodeTypeT.Segment;
+
+        // undefined -> don't touch prev value
+        // true -> force true
+        // false -> force false.
+        public TernaryBool IsUturnAllowedConfigurable() {
+            switch (NodeType) {
+                case NodeTypeT.Crossing:
+                    return TernaryBool.False; // always off
+                case NodeTypeT.UTurn:
+                    return TernaryBool.Undefined; // default on
+                case NodeTypeT.Segment:
+                    return TernaryBool.False; // always off
+                case NodeTypeT.Middle:
+                    return TernaryBool.Undefined; // don't care
+                case NodeTypeT.Node:
+                    return TernaryBool.Undefined; // default
+                default:
+                    throw new Exception("Unreachable code");
+            }
+        }
+
+        public TernaryBool GetDefaultUturnAllowed() {
+            switch (NodeType) {
+
+                case NodeTypeT.Crossing:
+                    return TernaryBool.False; // always off
+                case NodeTypeT.UTurn:
+                    return TernaryBool.True; // default on
+                case NodeTypeT.Segment:
+                    return TernaryBool.False; // always off
+                case NodeTypeT.Middle:
+                    return TernaryBool.Undefined; // don't care
+                case NodeTypeT.Node:
+                    return TernaryBool.Undefined; // default
+                default:
+                    throw new Exception("Unreachable code");
+            }
+        }
+
+        public TernaryBool IsPedestrianCrossingAllowedConfigurable() {
+            switch (NodeType) {
+                case NodeTypeT.Crossing:
+                    return TernaryBool.False; // always on
+                case NodeTypeT.UTurn:
+                    return TernaryBool.False; // always off
+                case NodeTypeT.Segment:
+                    return TernaryBool.False; // always off
+                case NodeTypeT.Middle:
+                    return TernaryBool.Undefined;
+                case NodeTypeT.Node:
+                    return TernaryBool.Undefined; // default off
+                default:
+                    throw new Exception("Unreachable code");
+            }
+        }
+
+        public TernaryBool GetDefaultPedestrianCrossingAllowed() {
+            switch (NodeType) {
+                case NodeTypeT.Crossing:
+                    return TernaryBool.True; // always on
+                case NodeTypeT.UTurn:
+                    return TernaryBool.False; // default off
+                case NodeTypeT.Segment:
+                    return TernaryBool.False; // always off
+                case NodeTypeT.Middle:
+                    return TernaryBool.Undefined; // don't care
+                case NodeTypeT.Node:
+                    return TernaryBool.False; // default off
+                default:
+                    throw new Exception("Unreachable code");
+            }
+        }
+        #endregion
+
+        #region old code
+        //public void ChangeNodeType() {
+        //    if (!CanModifyNodeType()) {
+        //        throw new Exception("cannot change junction type");
+        //    } else if (DefaultNodeType == NodeTypeT.Node) {
+        //        switch (NodeType) {
+        //            case NodeTypeT.Node :
+        //                NodeType = NodeTypeT.Middle ;
+        //                break;
+        //            case NodeTypeT.Middle:
+        //                NodeType = NodeTypeT.Crossing ;
+        //                break;
+        //            case NodeTypeT.Crossing:
+        //                NodeType = NodeTypeT.Segment ;
+        //                break;
+        //            case NodeTypeT.Segment:
+        //                NodeType = NodeTypeT.Node ;
+        //                break;
+        //            default:
+        //                throw new Exception("Unreachable code");
+        //        }
+        //    }
+        //    if (DefaultNodeType == NodeTypeT.Middle) {
+        //        NodeType++;
+        //        if (NodeType > HelpersExtensions.GetMaxEnumValue<NodeTypeT>())
+        //            NodeType = 0;
+        //    }
+        //}
+
+        //public const float OFFSET_STEP = 5f;
+        ///// <summary>
+        ///// in case of overflow resets type and return true.
+        ///// </summary>
+        //public void IncrementOffset() {
+        //    CornerOffset += OFFSET_STEP;
+        //    if (CornerOffset > OFFSET_STEP * 10)
+        //        CornerOffset = 0;
+        //}
+        #endregion old code
     }
 }

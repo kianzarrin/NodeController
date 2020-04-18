@@ -1,4 +1,4 @@
-using HarmonyLib;
+using Harmony;
 using ColossalFramework;
 
 
@@ -22,7 +22,8 @@ namespace BlendRoadManager.Patches
 			}
 			else if (
 				__instance.m_flags.IsFlagSet(NetNode.Flags.Junction) && 
-				NetNode.BlendJunction(nodeID) )
+                                blendData.SegmentCount == 2)
+                                //NetNode.BlendJunction(nodeID) )
 			{
 				if (blendData.NeedMiddleFlag())
 				{
