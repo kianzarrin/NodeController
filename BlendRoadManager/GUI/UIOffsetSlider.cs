@@ -2,6 +2,7 @@ namespace BlendRoadManager.GUI {
     using BlendRoadManager.Util;
     using ColossalFramework;
     using ColossalFramework.UI;
+    using System;
     using UnityEngine;
     using static Util.HelpersExtensions;
 
@@ -77,7 +78,7 @@ namespace BlendRoadManager.GUI {
             Invalidate();
             thumbObject.Invalidate();
             slicedSprite_.Invalidate();
-            Log.Debug($"slider.Refresh: node:{data.NodeID} isEnabled={isEnabled}");
+            //Log.Debug($"slider.Refresh: node:{data.NodeID} isEnabled={isEnabled}\n" + Environment.StackTrace);
         }
     }
 }

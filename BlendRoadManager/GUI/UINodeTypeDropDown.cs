@@ -78,6 +78,8 @@ namespace BlendRoadManager.GUI {
 
         protected override void OnSelectedIndexChanged() {
             base.OnSelectedIndexChanged();
+            if (refreshing_)
+                return;
             Apply();
         }
 
@@ -87,28 +89,39 @@ namespace BlendRoadManager.GUI {
                 return;
             var data = NodeBlendManager.Instance.buffer[nodeID];
             data.NodeType = SelectedItem;
+            Assert(!refreshing_, "!refreshing_");
             data.Refresh();
             UINodeControllerPanel.Instance.Refresh();
         }
 
+        // protection against unncessary apply/refresh/infinite recursion.
+        bool refreshing_ = false;
+
+        public void Repopulate() {
+            NodeBlendData data = UINodeControllerPanel.Instance.BlendData;
+            items = null;
+            foreach (NodeTypeT nodeType in Enum.GetValues(typeof(NodeTypeT))) {
+                if (data.CanChangeTo(nodeType)) {
+                    AddItem(nodeType.ToString());
+                }
+            }
+        }
+
         public void Refresh() {
+            refreshing_ = true;
             NodeBlendData data = UINodeControllerPanel.Instance.BlendData;
             if (data == null) {
                 Disable();
                 return;
             }
 
-            items = null;
-            foreach(NodeTypeT nodeType in Enum.GetValues(typeof(NodeTypeT))) {
-                if (data.CanChangeTo(nodeType)) {
-                    AddItem(nodeType.ToString());
-                }
-            }
-
+            Repopulate();
             SelectedItem = data.NodeType;
+
             isVisible = triggerButton.isEnabled = this.isEnabled = items.Length > 1;
             Invalidate();
             triggerButton.Invalidate();
+            refreshing_ = false;
         }
     }
 }

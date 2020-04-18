@@ -93,22 +93,22 @@ namespace BlendRoadManager.GUI {
 
 
             //autoLayout = false;
-            UIDragHandle dragHandle = AddUIComponent<UIDragHandle>();
-            dragHandle.width = width;
-            dragHandle.height = 10;
-            //dragHandle.relativePosition = Vector3.zero;
-            dragHandle.target = parent;
+            dragHandle_ = AddUIComponent<UIDragHandle>();
+            dragHandle_.width = width;
+            dragHandle_.height = 10;
+            //dragHandle_.relativePosition = Vector3.zero;
+            dragHandle_.target = parent;
 
-            {
-                var slider = AddUIComponent<UIOffsetSlider>();
-                Controls.Add(slider);
-            }
-            {
-                var dropdown = AddUIComponent<UINodeTypeDropDown>();
-                Controls.Add(dropdown);
-            }
+            slider_ = AddUIComponent<UIOffsetSlider>();
+            Controls.Add(slider_);
+            dropdown_ = AddUIComponent<UINodeTypeDropDown>();
+            Controls.Add(dropdown_);
 
         }
+
+        UIOffsetSlider slider_;
+        UINodeTypeDropDown dropdown_;
+        UIDragHandle dragHandle_;
 
         protected override void OnPositionChanged() {
             base.OnPositionChanged();
@@ -136,6 +136,7 @@ namespace BlendRoadManager.GUI {
             NodeID = nodeID;
             Show();
             Refresh();
+            dropdown_.Repopulate();
         }
 
         public void Close() {

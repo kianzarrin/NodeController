@@ -57,6 +57,7 @@ namespace BlendRoadManager.Tool {
             button_?.Focus();
             button_?.Invalidate();
             panel_?.Close();
+            SelectedNodeID = 0;
         }
 
         protected override void OnDisable() {
@@ -66,6 +67,7 @@ namespace BlendRoadManager.Tool {
             button_?.Unfocus();
             button_?.Invalidate();
             panel_?.Close();
+            SelectedNodeID = 0;
         }
 
         protected override void OnToolUpdate() {
@@ -74,12 +76,15 @@ namespace BlendRoadManager.Tool {
         }
 
         Vector3 _cachedHitPos;
-
+        public ushort SelectedNodeID;
         public override void RenderOverlay(RenderManager.CameraInfo cameraInfo) {
             base.RenderOverlay(cameraInfo);
+            if (SelectedNodeID != 0) {
+                DrawNodeCircle(cameraInfo, Color.white, SelectedNodeID, false);
+            }
             if (!HoverValid)
                 return;
-            if (IsGood1() || IsGood2()) {
+            if (SelectedNodeID != HoveredNodeId && NodeBlendData.IsSupported(HoveredNodeId)) {
                 DrawNodeCircle(cameraInfo, Color.yellow, HoveredNodeId, false);
             }
             DrawOverlayCircle(cameraInfo, Color.red, HitPos, 1, true);
@@ -89,15 +94,18 @@ namespace BlendRoadManager.Tool {
             if (!HoverValid)
                 return;
             Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
-            if (IsGood1() || IsGood2()) {
+            if (NodeBlendData.IsSupported(HoveredNodeId)) {
                 panel_.ShowNode(HoveredNodeId);
+                SelectedNodeID = HoveredNodeId;
             }
 
         }
 
         protected override void OnSecondaryMouseClicked() {
             panel_.Close();
+            SelectedNodeID = 0;
         }
+
 
         bool IsGood1() {
             return HoveredNodeId.ToNode().CountSegments() == 2 &&

@@ -4,6 +4,7 @@ using System.Reflection.Emit;
 using Harmony;
 
 namespace BlendRoadManager.Patches {
+    using CSUtil.Commons;
     using System.Reflection;
     public static class TranspilerUtils {
         static void Log(object message) {
@@ -214,6 +215,22 @@ namespace BlendRoadManager.Patches {
 
             Log("\n" + insertion.IL2STR());
             Log("PEEK:\n" + codes.GetRange(index - 4, insertion.Length+12).IL2STR());
+        }
+    }
+
+    public static class PrefixUtils {
+        public static bool HandleTernaryBool(TernaryBool? res, ref bool __result) {
+            if (res != null) {
+                if (res == TernaryBool.True) {
+                    __result = true;
+                    return false;
+                }
+                if (res == TernaryBool.False) {
+                    __result = false;
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

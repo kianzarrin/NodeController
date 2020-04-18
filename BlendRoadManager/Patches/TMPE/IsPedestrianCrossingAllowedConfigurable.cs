@@ -16,18 +16,9 @@ namespace BlendRoadManager.Patches.TMPE {
         public static bool Prefix(ushort segmentId, bool startNode, ref bool __result) {
             ushort nodeID = startNode ? segmentId.ToSegment().m_startNode : segmentId.ToSegment().m_endNode;
             var data = NodeBlendManager.Instance.buffer[nodeID];
-            if (data != null) {
-                var res = data.IsPedestrianCrossingAllowedConfigurable();
-                if (res == TernaryBool.True) {
-                    __result = true;
-                    return false;
-                }
-                if (res == TernaryBool.False) {
-                    __result = false;
-                    return false;
-                }
-            }
-            return true;
+            return PrefixUtils.HandleTernaryBool(
+                data?.IsPedestrianCrossingAllowedConfigurable(),
+                ref __result);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ColossalFramework;
 using ColossalFramework.Math;
 using UnityEngine;
@@ -487,5 +487,52 @@ public partial struct NetNode2
 		}
 		instanceIndex = (uint)data.m_nextInstance;
 	}
+
+    Vector3 m_position;
+
+    // NetNode
+    // Token: 0x060034C5 RID: 13509 RVA: 0x0023CECC File Offset: 0x0023B2CC
+    private void RefreshJunctionData(ushort nodeID, int segmentIndex, int segmentIndex2, NetInfo info, NetInfo info2, ushort segmentID, ushort segmentID2, ref uint instanceIndex, ref RenderManager.Instance data) {
+        data.m_position = this.m_position;
+        data.m_rotation = Quaternion.identity;
+        data.m_initialized = true;
+        float vscale = info.m_netAI.GetVScale();
+        Vector3 CornerPos2L = Vector3.zero;
+        Vector3 CornerPos2R = Vector3.zero;
+        Vector3 CornerDir2L = Vector3.zero;
+        Vector3 CornerDir2R = Vector3.zero;
+        bool startNode = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segmentID].m_startNode == nodeID;
+        Singleton<NetManager>.instance.m_segments.m_buffer[(int)segmentID].CalculateCorner(segmentID, true, startNode, false, out var CornerPosL, out var CornerDirL, out _);
+        Singleton<NetManager>.instance.m_segments.m_buffer[(int)segmentID].CalculateCorner(segmentID, true, startNode, true, out var CornerPosR, out var CornerDirR, out _);
+        bool startNode2 = (Singleton<NetManager>.instance.m_segments.m_buffer[(int)segmentID2].m_startNode == nodeID);
+        Singleton<NetManager>.instance.m_segments.m_buffer[(int)segmentID2].CalculateCorner(segmentID2, true, startNode2, true, out CornerPos2L, out CornerDir2L, out _);
+        Singleton<NetManager>.instance.m_segments.m_buffer[(int)segmentID2].CalculateCorner(segmentID2, true, startNode2, false, out CornerPos2R, out CornerDir2R, out _);
+        Vector3 b = (CornerPos2R - CornerPos2L) * (info.m_halfWidth / info2.m_halfWidth * 0.5f - 0.5f);
+        CornerPos2L -= b;
+        CornerPos2R += b;
+        NetSegment.CalculateMiddlePoints(CornerPosL, -CornerDirL, CornerPos2L, -CornerDir2L, true, true, out var bpointL, out var cpointL);
+        NetSegment.CalculateMiddlePoints(CornerPosR, -CornerDirR, CornerPos2R, -CornerDir2R, true, true, out var bpointR, out var cpointR);
+        data.m_dataMatrix0 = NetSegment.CalculateControlMatrix(CornerPosL, bpointL, cpointL, CornerPos2L, CornerPosR, bpointR, cpointR, CornerPos2R, this.m_position, vscale);
+        data.m_extraData.m_dataMatrix2 = NetSegment.CalculateControlMatrix(CornerPosR, bpointR, cpointR, CornerPos2R, CornerPosL, bpointL, cpointL, CornerPos2L, this.m_position, vscale);
+        data.m_dataVector0 = new Vector4(0.5f / info.m_halfWidth, 1f / info.m_segmentLength, 1f, 1f);
+        Vector4 colorLocation;
+        Vector4 vector7;
+        if (NetNode.BlendJunction(nodeID)) {
+            colorLocation = RenderManager.GetColorLocation(86016u + (uint)nodeID);
+            vector7 = colorLocation;
+        } else {
+            colorLocation = RenderManager.GetColorLocation((uint)(49152 + segmentID));
+            vector7 = RenderManager.GetColorLocation((uint)(49152 + segmentID2));
+        }
+        data.m_dataVector3 = new Vector4(colorLocation.x, colorLocation.y, vector7.x, vector7.y);
+        data.m_dataInt0 = (8 | segmentIndex | segmentIndex2 << 4);
+        data.m_dataColor0 = info.m_color;
+        data.m_dataColor0.a = 0f;
+        data.m_dataFloat0 = Singleton<WeatherManager>.instance.GetWindSpeed(data.m_position);
+        if (info.m_requireSurfaceMaps) {
+            Singleton<TerrainManager>.instance.GetSurfaceMapping(data.m_position, out data.m_dataTexture0, out data.m_dataTexture1, out data.m_dataVector1);
+        }
+        instanceIndex = (uint)data.m_nextInstance;
+    }
 
 }

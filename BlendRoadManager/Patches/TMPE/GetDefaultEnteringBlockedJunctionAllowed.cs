@@ -7,17 +7,17 @@ namespace BlendRoadManager.Patches.TMPE {
     using Harmony;
 
     [HarmonyPatch]
-    public static class IsUturnAllowedConfigurable {
+    public static class GetDefaultEnteringBlockedJunctionAllowed {
         public static MethodBase TargetMethod() {
             return typeof(JunctionRestrictionsManager).
-                GetMethod(nameof(JunctionRestrictionsManager.IsUturnAllowedConfigurable));
+                GetMethod(nameof(JunctionRestrictionsManager.GetDefaultEnteringBlockedJunctionAllowed));
         }
 
         public static bool Prefix(ushort segmentId, bool startNode, ref bool __result) {
             ushort nodeID = startNode ? segmentId.ToSegment().m_startNode : segmentId.ToSegment().m_endNode;
             var data = NodeBlendManager.Instance.buffer[nodeID];
             return PrefixUtils.HandleTernaryBool(
-                data?.IsUturnAllowedConfigurable(),
+                data?.GetDefaultEnteringBlockedJunctionAllowed(),
                 ref __result);
         }
     }

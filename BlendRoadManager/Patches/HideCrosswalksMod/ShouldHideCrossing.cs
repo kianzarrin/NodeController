@@ -1,6 +1,7 @@
 namespace BlendRoadManager.Patches.HideCrosswalksMod {
     using System.Reflection;
     using BlendRoadManager;
+    using CSUtil.Commons;
     using Harmony;
 
     [HarmonyPatch]
@@ -12,13 +13,9 @@ namespace BlendRoadManager.Patches.HideCrosswalksMod {
 
         public static bool Prefix(ushort nodeID, ref bool __result) {
             var data = NodeBlendManager.Instance.buffer[nodeID];
-            if (data != null){
-                if (!data.CanHideCrossingTexture()) {
-                    __result = false;
-                    return false;
-                }
-            }
-            return true;
+            return PrefixUtils.HandleTernaryBool(
+                data?.ShouldHideCrossingTexture(),
+                ref __result);
         }
     }
 }

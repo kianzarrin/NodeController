@@ -155,11 +155,10 @@ namespace BlendRoadManager {
         public void Refresh() {
             if (!CanModifyOffset()) {
                 if (NodeType == NodeTypeT.UTurn)
-                    CornerOffset = 5f;
+                    CornerOffset = 8f;
                 else
                     CornerOffset = DefaultCornerOffset;
             }
-            CornerOffset = DefaultCornerOffset;
             NetManager.instance.UpdateNode(NodeID);
         }
 
@@ -197,7 +196,22 @@ namespace BlendRoadManager {
         }
 
         #region External Mods
-        public bool CanHideCrossingTexture() => NodeType != NodeTypeT.Segment;
+        public TernaryBool ShouldHideCrossingTexture() {
+            switch (NodeType) {
+                case NodeTypeT.Crossing:
+                    return TernaryBool.False; // always show
+                case NodeTypeT.UTurn:
+                    return TernaryBool.True; // allways hide
+                case NodeTypeT.Segment:
+                    return TernaryBool.False; // always don't modify
+                case NodeTypeT.Middle:
+                    return TernaryBool.Undefined; // don't care
+                case NodeTypeT.Node:
+                    return TernaryBool.Undefined; // default
+                default:
+                    throw new Exception("Unreachable code");
+            }
+        }
 
         // undefined -> don't touch prev value
         // true -> force true
@@ -248,6 +262,9 @@ namespace BlendRoadManager {
                 case NodeTypeT.Middle:
                     return TernaryBool.Undefined;
                 case NodeTypeT.Node:
+                    if (!HasPedestrianLanes) {
+                        return TernaryBool.False; // TODO move to TMPE.
+                    }
                     return TernaryBool.Undefined; // default off
                 default:
                     throw new Exception("Unreachable code");
@@ -266,6 +283,52 @@ namespace BlendRoadManager {
                     return TernaryBool.Undefined; // don't care
                 case NodeTypeT.Node:
                     return TernaryBool.False; // default off
+                default:
+                    throw new Exception("Unreachable code");
+            }
+        }
+
+        public TernaryBool IsEnteringBlockedJunctionAllowedConfigurable() {
+            switch (NodeType) {
+                case NodeTypeT.Crossing:
+                    return TernaryBool.Undefined; // default off
+                case NodeTypeT.UTurn:
+                    return TernaryBool.Undefined; // default
+                case NodeTypeT.Segment:
+                    return TernaryBool.False; // always on
+                case NodeTypeT.Middle:
+                    return TernaryBool.Undefined; // don't care
+                case NodeTypeT.Node:
+                    if (SegmentCount > 2)
+                        return TernaryBool.Undefined;
+                    bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
+                    if(oneway & !HasPedestrianLanes) {
+                        return TernaryBool.False; // always on.
+                    }
+                    return TernaryBool.Undefined;
+                default:
+                    throw new Exception("Unreachable code");
+            }
+        }
+
+        public TernaryBool GetDefaultEnteringBlockedJunctionAllowed() {
+            switch (NodeType) {
+                case NodeTypeT.Crossing:
+                    return TernaryBool.False; // default off
+                case NodeTypeT.UTurn:
+                    return TernaryBool.Undefined; // default
+                case NodeTypeT.Segment:
+                    return TernaryBool.True; // always on
+                case NodeTypeT.Middle:
+                    return TernaryBool.Undefined; // don't care
+                case NodeTypeT.Node:
+                    if (SegmentCount > 2)
+                        return TernaryBool.Undefined;
+                    bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
+                    if (oneway & !HasPedestrianLanes) {
+                        return TernaryBool.True; // always on.
+                    }
+                    return TernaryBool.Undefined;
                 default:
                     throw new Exception("Unreachable code");
             }
