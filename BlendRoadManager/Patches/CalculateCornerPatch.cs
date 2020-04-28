@@ -13,7 +13,7 @@ namespace BlendRoadManager.Patches {
     [HarmonyPatch]
     static class CalculateCornerPatch {
         static float GetMinCornerOffset(NetInfo info, ushort nodeID) {
-            var data = NodeBlendManager.Instance.buffer[nodeID];
+            var data = NodeManager.Instance.buffer[nodeID];
             return data?.CornerOffset ?? info.m_minCornerOffset;
         }
 

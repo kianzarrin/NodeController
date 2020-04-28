@@ -17,8 +17,8 @@ namespace BlendRoadManager.Patches {
     using Util;
     public static class CalculateMaterialCommons {
         public static bool ShouldContinueMedian(ushort nodeID, ushort segmentID) {
-            var data = NodeBlendManager.Instance.buffer[nodeID];
-            return data != null && data.NodeType == NodeTypeT.Segment;
+            var data = NodeManager.Instance.buffer[nodeID];
+            return data != null && data.NodeType == NodeTypeT.ContinuesSegment;
         }
 
         public static Material CalculateMaterial(Material material, ushort nodeID, ushort segmentID) {

@@ -58,10 +58,10 @@ namespace BlendRoadManager.GUI {
 
         public ushort NodeID { get; private set; }
 
-        public NodeBlendData BlendData {
+        public NodeData BlendData {
             get {
                 if (NodeID == 0) return null;
-                return NodeBlendManager.Instance.GetOrCreate(NodeID);
+                return NodeManager.Instance.GetOrCreate(NodeID);
             }
         }
 
@@ -132,7 +132,7 @@ namespace BlendRoadManager.GUI {
         //}
 
         public void ShowNode(ushort nodeID) {
-            NodeBlendManager.Instance.RefreshData(NodeID);
+            NodeManager.Instance.RefreshData(NodeID);
             NodeID = nodeID;
             Show();
             Refresh();
@@ -140,7 +140,7 @@ namespace BlendRoadManager.GUI {
         }
 
         public void Close() {
-            NodeBlendManager.Instance.RefreshData(NodeID);
+            NodeManager.Instance.RefreshData(NodeID);
             NodeID = 0;
             Hide();
         }

@@ -84,7 +84,7 @@ namespace BlendRoadManager.Tool {
             }
             if (!HoverValid)
                 return;
-            if (SelectedNodeID != HoveredNodeId && NodeBlendData.IsSupported(HoveredNodeId)) {
+            if (SelectedNodeID != HoveredNodeId && NodeData.IsSupported(HoveredNodeId)) {
                 DrawNodeCircle(cameraInfo, Color.yellow, HoveredNodeId, false);
             }
             DrawOverlayCircle(cameraInfo, Color.red, HitPos, 1, true);
@@ -94,7 +94,7 @@ namespace BlendRoadManager.Tool {
             if (!HoverValid)
                 return;
             Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
-            if (NodeBlendData.IsSupported(HoveredNodeId)) {
+            if (NodeData.IsSupported(HoveredNodeId)) {
                 panel_.ShowNode(HoveredNodeId);
                 SelectedNodeID = HoveredNodeId;
             }

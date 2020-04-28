@@ -21,7 +21,7 @@ namespace BlendRoadManager.Patches
 
         public static void Prefix(ushort node)
         {
-            NodeBlendManager.Instance.buffer[node] = null;
+            NodeManager.Instance.buffer[node] = null;
         }
     }
 }

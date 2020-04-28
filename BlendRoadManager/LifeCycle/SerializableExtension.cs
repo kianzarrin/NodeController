@@ -13,12 +13,12 @@ namespace BlendRoadManager.LifeCycle
         public override void OnLoadData()
         {
             byte[] data = serializableDataManager.LoadData(DATA_ID);
-            NodeBlendManager.Deserialize(data);
+            NodeManager.Deserialize(data);
         }
 
         public override void OnSaveData()
         {
-            byte[] data = NodeBlendManager.Serialize();
+            byte[] data = NodeManager.Serialize();
             serializableDataManager.SaveData(DATA_ID, data);
         }
     }

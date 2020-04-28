@@ -12,7 +12,7 @@ namespace BlendRoadManager.Patches.HideCrosswalksMod {
         }
 
         public static bool Prefix(ushort nodeID, ref bool __result) {
-            var data = NodeBlendManager.Instance.buffer[nodeID];
+            var data = NodeManager.Instance.buffer[nodeID];
             return PrefixUtils.HandleTernaryBool(
                 data?.ShouldHideCrossingTexture(),
                 ref __result);

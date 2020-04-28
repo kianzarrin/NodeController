@@ -87,7 +87,7 @@ namespace BlendRoadManager.GUI {
             ushort nodeID = UINodeControllerPanel.Instance.NodeID;
             if (nodeID == 0)
                 return;
-            var data = NodeBlendManager.Instance.buffer[nodeID];
+            var data = NodeManager.Instance.buffer[nodeID];
             data.NodeType = SelectedItem;
             Assert(!refreshing_, "!refreshing_");
             data.Refresh();
@@ -98,7 +98,7 @@ namespace BlendRoadManager.GUI {
         bool refreshing_ = false;
 
         public void Repopulate() {
-            NodeBlendData data = UINodeControllerPanel.Instance.BlendData;
+            NodeData data = UINodeControllerPanel.Instance.BlendData;
             items = null;
             foreach (NodeTypeT nodeType in Enum.GetValues(typeof(NodeTypeT))) {
                 if (data.CanChangeTo(nodeType)) {
@@ -109,7 +109,7 @@ namespace BlendRoadManager.GUI {
 
         public void Refresh() {
             refreshing_ = true;
-            NodeBlendData data = UINodeControllerPanel.Instance.BlendData;
+            NodeData data = UINodeControllerPanel.Instance.BlendData;
             if (data == null) {
                 Disable();
                 return;

@@ -1,5 +1,4 @@
 using ColossalFramework;
-using ColossalFramework.Math;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,19 +36,15 @@ namespace BlendRoadManager.Util {
                    (segment1.m_endNode == segment2.m_endNode);
         }
 
-        internal static ushort GetID(this NetNode node)
-        {
+        internal static ushort GetID(this NetNode node) {
             ref NetSegment seg = ref node.GetFirstSegment().ToSegment();
             bool startNode = Equals(ref node, seg.m_startNode);
             return startNode ? seg.m_startNode : seg.m_endNode;
         }
-        
-        internal static ushort GetID(this NetSegment segment)
-        {
-            foreach(var segmentID in GetSegmentsCoroutine(segment.m_startNode))
-            {
-                if(Equals(ref segment, segmentID))
-                {
+
+        internal static ushort GetID(this NetSegment segment) {
+            foreach (var segmentID in GetSegmentsCoroutine(segment.m_startNode)) {
+                if (Equals(ref segment, segmentID)) {
                     return segmentID;
                 }
             }
@@ -57,12 +52,10 @@ namespace BlendRoadManager.Util {
         }
 
         public static ushort GetFirstSegment(ushort nodeID) => nodeID.ToNode().GetFirstSegment();
-        public static ushort GetFirstSegment(this ref NetNode node)
-        {
+        public static ushort GetFirstSegment(this ref NetNode node) {
             ushort segmentID = 0;
             int i;
-            for (i = 0; i < 8; ++i)
-            {
+            for (i = 0; i < 8; ++i) {
                 segmentID = node.GetSegment(i);
                 if (segmentID != 0)
                     break;
@@ -70,8 +63,7 @@ namespace BlendRoadManager.Util {
             return segmentID;
         }
 
-        public static Vector3 GetSegmentDir(ushort segmentID, ushort nodeID)
-        {
+        public static Vector3 GetSegmentDir(ushort segmentID, ushort nodeID) {
             bool startNode = IsStartNode(segmentID, nodeID);
             ref NetSegment segment = ref segmentID.ToSegment();
             return startNode ? segment.m_startDirection : segment.m_endDirection;
@@ -80,7 +72,7 @@ namespace BlendRoadManager.Util {
 
         internal static float MaxNodeHW(ushort nodeId) {
             float ret = 0;
-            foreach(var segmentId in GetSegmentsCoroutine(nodeId)) {
+            foreach (var segmentId in GetSegmentsCoroutine(nodeId)) {
                 float hw = segmentId.ToSegment().Info.m_halfWidth;
                 if (hw > ret)
                     ret = hw;
@@ -159,21 +151,21 @@ namespace BlendRoadManager.Util {
                 VehicleInfo.VehicleType.Car | VehicleInfo.VehicleType.Train |
                 VehicleInfo.VehicleType.Tram | VehicleInfo.VehicleType.Metro |
                 VehicleInfo.VehicleType.Monorail,
-                ref  forward,
+                ref forward,
                 ref backward);
             return (forward == 0) ^ (backward == 0);
         }
 
         #endregion
 
-        public struct NodeSegments{
+        public struct NodeSegments {
             public ushort[] segments;
             public int count;
             void Add(ushort segmentID) {
                 segments[count++] = segmentID;
-        }
+            }
 
-        public NodeSegments(ushort nodeID) {
+            public NodeSegments(ushort nodeID) {
                 segments = new ushort[8];
                 count = 0;
 
@@ -213,7 +205,7 @@ namespace BlendRoadManager.Util {
         /// </summary>
         public static IEnumerable<ushort> GetCWSegList(ushort nodeID) {
             ushort segmentID0 = GetFirstSegment(nodeID);
-            HelpersExtensions.Assert(segmentID0!=0, "GetFirstSegment!=0");
+            HelpersExtensions.Assert(segmentID0 != 0, "GetFirstSegment!=0");
             yield return segmentID0;
             ushort segmentID = segmentID0;
 
@@ -234,6 +226,45 @@ namespace BlendRoadManager.Util {
                     yield return segmentID;
                 }
             }
+        }
+
+        public static IEnumerable<uint> GetLanesCoroutine(ushort segmentId) {
+            for (uint laneID = segmentId.ToSegment().m_lanes;
+                laneID != 0;
+                laneID = laneID.ToLane().m_nextLane) {
+                yield return laneID;
+            }
+        }
+
+        public static IEnumerable<LaneData> GetLanesCoroutine2(
+            ushort segmentId,
+            NetInfo.Direction? direction,
+            NetInfo.LaneType laneType = NetInfo.LaneType.All,
+            VehicleInfo.VehicleType vehicleType = VehicleInfo.VehicleType.All) {
+            int idx = 0;
+            for (uint laneID = segmentId.ToSegment().m_lanes;
+                laneID != 0;
+                laneID = laneID.ToLane().m_nextLane, idx++) {
+                var ret = new LaneData {
+                    LaneID = laneID,
+                    LaneIndex = idx,
+                    LaneInfo = segmentId.ToSegment().Info.m_lanes[idx]
+                };
+                if (direction != null && direction != ret.LaneInfo.m_direction)
+                    continue;
+                if (!ret.LaneInfo.m_laneType.IsFlagSet(laneType))
+                    continue;
+                if (!ret.LaneInfo.m_vehicleType.IsFlagSet(vehicleType))
+                    continue;
+                yield return ret;
+            }
+        }
+
+        public struct LaneData {
+            public uint LaneID;
+            public int LaneIndex;
+            public NetInfo.Lane LaneInfo;
+            public ushort SegmentID => LaneID.ToLane().m_segment;
         }
     }
 }

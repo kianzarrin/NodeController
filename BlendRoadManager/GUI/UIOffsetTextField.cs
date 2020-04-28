@@ -63,7 +63,7 @@ namespace BlendRoadManager.GUI {
 
         public void Apply() {
             ushort nodeID = UINodeControllerPanel.Instance.NodeID;
-            NodeBlendData data = UINodeControllerPanel.Instance.BlendData;
+            NodeData data = UINodeControllerPanel.Instance.BlendData;
             if (data == null)
                 return;
             if (TryGetValue(out float value)) {
@@ -75,7 +75,7 @@ namespace BlendRoadManager.GUI {
         }
 
         public void Refresh() {
-            NodeBlendData data = UINodeControllerPanel.Instance.BlendData;
+            NodeData data = UINodeControllerPanel.Instance.BlendData;
             if (data == null) {
                 Disable();
                 return;

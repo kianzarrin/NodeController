@@ -15,8 +15,9 @@ namespace BlendRoadManager {
         static void Postfix(ref RoadBaseAI __instance, ref NetNode data) {
             if (data.CountSegments() != 2)
                 return;
+            
             ushort nodeID = NetUtil.GetID(data);
-            NodeBlendData blendData = NodeBlendManager.Instance.buffer[nodeID];
+            NodeData blendData = NodeManager.Instance.buffer[nodeID];
             if (blendData == null)
                 return;
 
@@ -24,7 +25,6 @@ namespace BlendRoadManager {
                 data.m_flags &= ~NetNode.Flags.TrafficLights;
                 return;
             }
-
 
             bool wantTrafficLights = __instance.WantTrafficLights();
             if (!wantTrafficLights) {

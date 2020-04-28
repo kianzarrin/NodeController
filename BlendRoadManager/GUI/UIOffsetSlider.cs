@@ -57,7 +57,7 @@ namespace BlendRoadManager.GUI {
         }
 
         public void Apply() {
-            NodeBlendData data = UINodeControllerPanel.Instance.BlendData;
+            NodeData data = UINodeControllerPanel.Instance.BlendData;
             if (data == null)
                 return;
             data.CornerOffset = value;
@@ -67,7 +67,7 @@ namespace BlendRoadManager.GUI {
         }
 
         public void Refresh() {
-            NodeBlendData data = UINodeControllerPanel.Instance.BlendData;
+            NodeData data = UINodeControllerPanel.Instance.BlendData;
             if (data == null) {
                 Disable();
                 return;

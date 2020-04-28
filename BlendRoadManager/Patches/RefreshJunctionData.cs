@@ -32,7 +32,7 @@ namespace BlendRoadManager.Patches
         static void Postfix(ref NetNode __instance, ref RenderManager.Instance data)
         {
             ushort nodeID = NetUtil.GetID(__instance);
-            NodeBlendData blendData = NodeBlendManager.Instance.buffer[nodeID];
+            NodeData blendData = NodeManager.Instance.buffer[nodeID];
             if (blendData == null)
                 return;
 
