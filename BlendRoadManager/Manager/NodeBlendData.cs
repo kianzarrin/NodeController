@@ -31,6 +31,7 @@ namespace BlendRoadManager {
             memoryStream.Write(data, 0, data.Length);
             memoryStream.Position = 0;
             Instance = GetBinaryFormatter.Deserialize(memoryStream) as NodeBlendManager;
+            //Instance.UpdateAllNodes();
         }
 
         public static byte[] Serialize() {
@@ -67,6 +68,12 @@ namespace BlendRoadManager {
                 buffer[nodeID].Refresh();
             }
         }
+
+        public void UpdateAllNodes() {
+            foreach(var blendData in buffer)
+                blendData?.Refresh();
+        }
+
 
         //public void ChangeNode(ushort nodeID) {
         //    Log.Info($"ChangeNode({nodeID}) called");
@@ -172,7 +179,10 @@ namespace BlendRoadManager {
             var flags = nodeID.ToNode().m_flags;
             if (flags.IsFlagSet(NetNode.Flags.LevelCrossing | NetNode.Flags.Bend))
                 return false;
-            return nodeID.ToNode().CountSegments() > 1;
+            int n = nodeID.ToNode().CountSegments();
+            if (n > 2) return true;
+            if (n == 2) return nodeID.ToNode().Info.m_netAI is RoadBaseAI;
+            return false;
         }
 
         public bool CanChangeTo(NodeTypeT newNodeType) {
@@ -187,7 +197,7 @@ namespace BlendRoadManager {
                 case NodeTypeT.Segment:
                     return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle); // not middle by default.
                 case NodeTypeT.Middle:
-                    return HWDiff < 2f;
+                    return true;// HWDiff < 2f; // TODO options
                 case NodeTypeT.Node:
                     return true;
                 default:

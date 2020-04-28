@@ -1,7 +1,7 @@
 
 namespace BlendRoadManager
 {
-    using Harmony;
+    using HarmonyLib;
     using BlendRoadManager.Util;
     using System.Reflection;
 
@@ -13,7 +13,7 @@ namespace BlendRoadManager
         public static void InstallHarmony()
         {
             Log.Info("Patching...");
-            var harmony = HarmonyInstance.Create(HARMONY_ID);
+            var harmony = new Harmony(HARMONY_ID);
             harmony.PatchAll();
             Log.Info("Patched.");
         }
@@ -21,7 +21,7 @@ namespace BlendRoadManager
         public static void UninstallHarmony()
         {
             Log.Info("UnPatching...");
-            var harmony = HarmonyInstance.Create(HARMONY_ID);
+            var harmony = new Harmony(HARMONY_ID);
             harmony.UnpatchAll();
             Log.Info("UnPatched.");
         }

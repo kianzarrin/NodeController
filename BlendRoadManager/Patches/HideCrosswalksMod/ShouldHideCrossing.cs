@@ -2,7 +2,7 @@ namespace BlendRoadManager.Patches.HideCrosswalksMod {
     using System.Reflection;
     using BlendRoadManager;
     using CSUtil.Commons;
-    using Harmony;
+    using HarmonyLib;
 
     [HarmonyPatch]
     public static class ShouldHideCrossing {

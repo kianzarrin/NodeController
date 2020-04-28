@@ -3,6 +3,7 @@ namespace BlendRoadManager.LifeCycle
     using System;
     using JetBrains.Annotations;
     using ICities;
+    using CitiesHarmony.API;
     using BlendRoadManager.Util;
     public class BlendRoadManagerMod : IUserMod
     {
@@ -14,6 +15,7 @@ namespace BlendRoadManager.LifeCycle
         [UsedImplicitly]
         public void OnEnabled()
         {
+            HarmonyHelper.EnsureHarmonyInstalled();   
             if (HelpersExtensions.InGame)
                 LifeCycle.Load();
         }

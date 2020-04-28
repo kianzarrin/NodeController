@@ -4,7 +4,7 @@ namespace BlendRoadManager.Patches.TMPE {
     using CSUtil.Commons;
     using BlendRoadManager;
     using BlendRoadManager.Util;
-    using Harmony;
+    using HarmonyLib;
 
     [HarmonyPatch]
     public static class IsPedestrianCrossingAllowedConfigurable {

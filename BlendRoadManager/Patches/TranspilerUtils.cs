@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using Harmony;
+using HarmonyLib;
 
 namespace BlendRoadManager.Patches {
     using CSUtil.Commons;
@@ -19,7 +19,9 @@ namespace BlendRoadManager.Patches {
 
 
         public static CodeInstruction GetLDArg(MethodInfo method, string argName) {
-            byte idx = (byte)(GetParameterLoc(method, argName) + 1);
+            byte idx = (byte)GetParameterLoc(method, argName);
+            if (!method.IsStatic)
+                idx++; // first argument is object instance.
             if (idx == 0) {
                 return new CodeInstruction(OpCodes.Ldarg_0);
             } else if (idx == 1) {
@@ -34,7 +36,7 @@ namespace BlendRoadManager.Patches {
         }
 
         /// <summary>
-        /// Post condtion: add one to get argument location
+        /// Post condtion: for instnace method add one to get argument location
         /// </summary>
         public static byte GetParameterLoc(MethodInfo method, string name) {
             var parameters = method.GetParameters();
