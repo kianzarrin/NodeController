@@ -211,7 +211,7 @@ namespace RoadTransitionManager {
                 case NodeTypeT.Bend:
                     return TernaryBool.Undefined;
                 case NodeTypeT.Custom:
-                    if (!HasPedestrianLanes) {
+                    if (SegmentCount ==  2 && !HasPedestrianLanes) {
                         return TernaryBool.False; // TODO move to TMPE.
                     }
                     return TernaryBool.Undefined; // default off

@@ -52,7 +52,7 @@ namespace RoadTransitionManager.GUI
         protected override void OnClick(UIMouseEventParameter p) {
             base.OnClick(p);
             Log.Debug("ToolButton:OnClick() called");
-            Singleton<BlendRoadTool>.instance.EnableTool();
+            Singleton<NodeControllerTool>.instance.EnableTool();
         }
     }
 

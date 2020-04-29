@@ -16,7 +16,7 @@ namespace RoadTransitionManager.LifeCycle {
         public override void OnUpdate(float realTimeDelta, float simulationTimeDelta) {
             if (ControlIsPressed && Input.GetKeyDown(KeyCode.T)) {
                 SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(
-                    ()=> BlendRoadTool.Instance.ToggleTool());
+                    ()=> NodeControllerTool.Instance.ToggleTool());
             }   
 
         }

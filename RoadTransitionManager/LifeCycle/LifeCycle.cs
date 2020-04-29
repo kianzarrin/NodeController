@@ -11,7 +11,7 @@ namespace RoadTransitionManager.LifeCycle
             Log.Info("LifeCycle.Load() called");
             bFirstFrame = true;
             HarmonyExtension.InstallHarmony();
-            BlendRoadTool.Create();
+            NodeControllerTool.Create();
             NodeManager.Instance.OnLoad();
         }
 
@@ -29,7 +29,7 @@ namespace RoadTransitionManager.LifeCycle
         {
             Log.Info("LifeCycle.Release() called");
             HarmonyExtension.UninstallHarmony();
-            BlendRoadTool.Remove();
+            NodeControllerTool.Remove();
         }
     }
 }

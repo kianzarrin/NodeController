@@ -1,4 +1,4 @@
-﻿
+
 namespace RoadTransitionManager.LifeCycle
 {
     using JetBrains.Annotations;
@@ -8,7 +8,7 @@ namespace RoadTransitionManager.LifeCycle
     public class SerializableDataExtension
         : SerializableDataExtensionBase
     {
-        private const string DATA_ID = "BlendRoadManager_V1.0";
+        private const string DATA_ID = "RoadTransitionManager_V1.0";
 
         public override void OnLoadData()
         {

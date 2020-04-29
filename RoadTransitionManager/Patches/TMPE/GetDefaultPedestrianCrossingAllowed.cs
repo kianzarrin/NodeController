@@ -5,6 +5,7 @@ namespace RoadTransitionManager.Patches.TMPE {
     using RoadTransitionManager;
     using RoadTransitionManager.Util;
     using HarmonyLib;
+    using ColossalFramework;
 
     [HarmonyPatch]
     public static class GetDefaultPedestrianCrossingAllowed {
@@ -16,9 +17,14 @@ namespace RoadTransitionManager.Patches.TMPE {
         public static bool Prefix(ushort segmentId, bool startNode, ref bool __result) {
             ushort nodeID = startNode ? segmentId.ToSegment().m_startNode : segmentId.ToSegment().m_endNode;
             var data = NodeManager.Instance.buffer[nodeID];
+            if(data==null && nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Transition)) {
+                __result = false;
+                return false;
+            }
             return PrefixUtils.HandleTernaryBool(
                 data?.GetDefaultPedestrianCrossingAllowed(),
                 ref __result);
+
         }
     }
 }

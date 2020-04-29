@@ -8,7 +8,7 @@ namespace RoadTransitionManager.Tool {
     using GUI;
     using static Util.RenderUtil;
 
-    public sealed class BlendRoadTool : KianToolBase {
+    public sealed class NodeControllerTool : KianToolBase {
         UIButton button_;
         UINodeControllerPanel panel_;
 
@@ -18,17 +18,17 @@ namespace RoadTransitionManager.Tool {
             base.Awake();
         }
 
-        public static BlendRoadTool Create() {
+        public static NodeControllerTool Create() {
             Log.Debug("PedBridgeTool.Create()");
             GameObject toolModControl = ToolsModifierControl.toolController.gameObject;
-            var tool = toolModControl.GetComponent<BlendRoadTool>() ?? toolModControl.AddComponent<BlendRoadTool>();
+            var tool = toolModControl.GetComponent<NodeControllerTool>() ?? toolModControl.AddComponent<NodeControllerTool>();
             return tool;
         }
 
-        public static BlendRoadTool Instance {
+        public static NodeControllerTool Instance {
             get {
                 GameObject toolModControl = ToolsModifierControl.toolController?.gameObject;
-                return toolModControl?.GetComponent<BlendRoadTool>();
+                return toolModControl?.GetComponent<NodeControllerTool>();
             }
         }
 
