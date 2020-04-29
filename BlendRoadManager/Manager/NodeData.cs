@@ -9,11 +9,12 @@ namespace BlendRoadManager {
     using TernaryBool = CSUtil.Commons.TernaryBool;
   
     public enum NodeTypeT {
-        NoNode=0,
-        Crossing=1, // change dataMatrix.w to render crossings in the middle.
-        UTurn=2, // set offset to 5.
-        CustomNode=3,
-        ContinuesSegment=4,
+        Middle,
+        Bend,
+        Blend,
+        Crossing, // change dataMatrix.w to render crossings in the middle.
+        UTurn, // set offset to 5.
+        Custom,
     }
 
     [Serializable]
@@ -38,9 +39,11 @@ namespace BlendRoadManager {
             DefaultFlags = nodeID.ToNode().m_flags;
 
             if (DefaultFlags.IsFlagSet(NetNode.Flags.Middle))
-                DefaultNodeType = NodeTypeT.NoNode;
+                DefaultNodeType = NodeTypeT.Middle;
+            else if(DefaultFlags.IsFlagSet(NetNode.Flags.Bend))
+                DefaultNodeType = NodeTypeT.Bend;
             else if (DefaultFlags.IsFlagSet(NetNode.Flags.Junction))
-                DefaultNodeType = NodeTypeT.CustomNode;
+                DefaultNodeType = NodeTypeT.Custom;
             else
                 throw new NotImplementedException("unsupported node flags: " + DefaultFlags);
 
@@ -54,9 +57,11 @@ namespace BlendRoadManager {
                     if (hw0 == 0) {
                         hw0 = segmetnID.ToSegment().Info.m_halfWidth;
                         dir0 = VectorUtils.XZ(segmetnID.ToSegment().GetDirection(nodeID));
+                        dir0.Normalize();
                     } else {
                         HWDiff = Mathf.Abs(segmetnID.ToSegment().Info.m_halfWidth - hw0);
                         Vector2 dir1 = VectorUtils.XZ(segmetnID.ToSegment().GetDirection(nodeID));
+                        dir1.Normalize();
                         IsStraight = Mathf.Abs(Vector2.Dot(dir0, dir1)+1) < 0.0001f;
                     }
                 }
@@ -79,24 +84,26 @@ namespace BlendRoadManager {
                 else
                     CornerOffset = DefaultCornerOffset;
             }
+            Log.Debug("Updating node:"+ NodeID);
             NetManager.instance.UpdateNode(NodeID);
         }
 
-        public bool NeedMiddleFlag() => NodeType == NodeTypeT.NoNode && !IsStraight;
-        public bool NeedBendFlag() => NodeType == NodeTypeT.NoNode && IsStraight;
+        public bool NeedMiddleFlag() => NodeType == NodeTypeT.Middle;
+        public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag();
-        public bool WantsTrafficLight() => NodeType == NodeTypeT.CustomNode || NodeType == NodeTypeT.Crossing;
-        public bool CanModifyOffset() => NodeType == NodeTypeT.ContinuesSegment || NodeType == NodeTypeT.CustomNode;
+        public bool WantsTrafficLight() => NodeType == NodeTypeT.Custom || NodeType == NodeTypeT.Crossing;
+        public bool CanModifyOffset() => NodeType == NodeTypeT.Blend || NodeType == NodeTypeT.Custom;
         public bool NeedsTransitionFlag() =>
             SegmentCount == 2 &&
-            (NodeType == NodeTypeT.CustomNode ||
+            (NodeType == NodeTypeT.Custom ||
             NodeType == NodeTypeT.Crossing ||
             NodeType == NodeTypeT.UTurn);
 
+        public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
 
         public static bool IsSupported(ushort nodeID) {
             var flags = nodeID.ToNode().m_flags;
-            if (flags.IsFlagSet(NetNode.Flags.LevelCrossing | NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward))
+            if (flags.IsFlagSet(NetNode.Flags.LevelCrossing))
                 return false;
             int n = nodeID.ToNode().CountSegments();
             if (n > 2) return true;
@@ -106,18 +113,20 @@ namespace BlendRoadManager {
 
         public bool CanChangeTo(NodeTypeT newNodeType) {
             if (SegmentCount > 2)
-                return newNodeType == NodeTypeT.CustomNode;
+                return newNodeType == NodeTypeT.Custom;
 
             switch (newNodeType) {
                 case NodeTypeT.Crossing:
-                    return HasPedestrianLanes && HWDiff < 0.001f;
+                    return HasPedestrianLanes && HWDiff < 0.001f && IsStraight;
                 case NodeTypeT.UTurn:
                     return NodeID.ToNode().Info.m_forwardVehicleLaneCount > 0 && NodeID.ToNode().Info.m_backwardVehicleLaneCount > 0;
-                case NodeTypeT.ContinuesSegment:
-                    return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle); // not middle by default.
-                case NodeTypeT.NoNode:
-                    return true;// HWDiff < 2f; // TODO options
-                case NodeTypeT.CustomNode:
+                case NodeTypeT.Blend:
+                    return true;   // !DefaultFlags.IsFlagSet(NetNode.Flags.Middle) || HWDiff > 0.001f; 
+                case NodeTypeT.Middle:
+                    return IsStraight;
+                case NodeTypeT.Bend:
+                    return !IsStraight || IsAsymRevert();
+                case NodeTypeT.Custom:
                     return true;
                 default:
                     throw new Exception("Unreachable code");
@@ -131,11 +140,12 @@ namespace BlendRoadManager {
                     return TernaryBool.False; // always show
                 case NodeTypeT.UTurn:
                     return TernaryBool.True; // allways hide
-                case NodeTypeT.ContinuesSegment:
+                case NodeTypeT.Blend:
                     return TernaryBool.False; // always don't modify
-                case NodeTypeT.NoNode:
+                case NodeTypeT.Middle:
+                case NodeTypeT.Bend:
                     return TernaryBool.Undefined; // don't care
-                case NodeTypeT.CustomNode:
+                case NodeTypeT.Custom:
                     return TernaryBool.Undefined; // default
                 default:
                     throw new Exception("Unreachable code");
@@ -151,11 +161,12 @@ namespace BlendRoadManager {
                     return TernaryBool.False; // always off
                 case NodeTypeT.UTurn:
                     return TernaryBool.Undefined; // default on
-                case NodeTypeT.ContinuesSegment:
+                case NodeTypeT.Blend:
                     return TernaryBool.False; // always off
-                case NodeTypeT.NoNode:
+                case NodeTypeT.Middle:
+                case NodeTypeT.Bend:
                     return TernaryBool.Undefined; // don't care
-                case NodeTypeT.CustomNode:
+                case NodeTypeT.Custom:
                     return TernaryBool.Undefined; // default
                 default:
                     throw new Exception("Unreachable code");
@@ -169,11 +180,12 @@ namespace BlendRoadManager {
                     return TernaryBool.False; // always off
                 case NodeTypeT.UTurn:
                     return TernaryBool.True; // default on
-                case NodeTypeT.ContinuesSegment:
+                case NodeTypeT.Blend:
                     return TernaryBool.False; // always off
-                case NodeTypeT.NoNode:
+                case NodeTypeT.Middle:
+                case NodeTypeT.Bend:
                     return TernaryBool.Undefined; // don't care
-                case NodeTypeT.CustomNode:
+                case NodeTypeT.Custom:
                     return TernaryBool.Undefined; // default
                 default:
                     throw new Exception("Unreachable code");
@@ -186,11 +198,12 @@ namespace BlendRoadManager {
                     return TernaryBool.False; // always on
                 case NodeTypeT.UTurn:
                     return TernaryBool.False; // always off
-                case NodeTypeT.ContinuesSegment:
+                case NodeTypeT.Blend:
                     return TernaryBool.False; // always off
-                case NodeTypeT.NoNode:
+                case NodeTypeT.Middle:
+                case NodeTypeT.Bend:
                     return TernaryBool.Undefined;
-                case NodeTypeT.CustomNode:
+                case NodeTypeT.Custom:
                     if (!HasPedestrianLanes) {
                         return TernaryBool.False; // TODO move to TMPE.
                     }
@@ -206,11 +219,12 @@ namespace BlendRoadManager {
                     return TernaryBool.True; // always on
                 case NodeTypeT.UTurn:
                     return TernaryBool.False; // default off
-                case NodeTypeT.ContinuesSegment:
+                case NodeTypeT.Blend:
                     return TernaryBool.False; // always off
-                case NodeTypeT.NoNode:
+                case NodeTypeT.Middle:
+                case NodeTypeT.Bend:
                     return TernaryBool.Undefined; // don't care
-                case NodeTypeT.CustomNode:
+                case NodeTypeT.Custom:
                     return TernaryBool.False; // default off
                 default:
                     throw new Exception("Unreachable code");
@@ -223,11 +237,12 @@ namespace BlendRoadManager {
                     return TernaryBool.Undefined; // default off
                 case NodeTypeT.UTurn:
                     return TernaryBool.Undefined; // default
-                case NodeTypeT.ContinuesSegment:
+                case NodeTypeT.Blend:
                     return TernaryBool.False; // always on
-                case NodeTypeT.NoNode:
+                case NodeTypeT.Middle:
+                case NodeTypeT.Bend:
                     return TernaryBool.Undefined; // don't care
-                case NodeTypeT.CustomNode:
+                case NodeTypeT.Custom:
                     if (SegmentCount > 2)
                         return TernaryBool.Undefined;
                     bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
@@ -246,11 +261,12 @@ namespace BlendRoadManager {
                     return TernaryBool.False; // default off
                 case NodeTypeT.UTurn:
                     return TernaryBool.Undefined; // default
-                case NodeTypeT.ContinuesSegment:
+                case NodeTypeT.Blend:
                     return TernaryBool.True; // always on
-                case NodeTypeT.NoNode:
+                case NodeTypeT.Middle:
+                case NodeTypeT.Bend:
                     return TernaryBool.Undefined; // don't care
-                case NodeTypeT.CustomNode:
+                case NodeTypeT.Custom:
                     if (SegmentCount > 2)
                         return TernaryBool.Undefined;
                     bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);

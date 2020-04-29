@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace BlendRoadManager.Patches.NetLanePatches {
     using Util;
 
-    [HarmonyPatch()]
+    //[HarmonyPatch()]
     public static class RenderInstance {
         static void Log(string m) => Util.Log.Info("NetLane_RenderInstance Transpiler: " + m);
 

@@ -25,7 +25,6 @@ namespace BlendRoadManager {
             memoryStream.Write(data, 0, data.Length);
             memoryStream.Position = 0;
             Instance = GetBinaryFormatter.Deserialize(memoryStream) as NodeManager;
-            //Instance.UpdateAllNodes();
         }
 
         public static byte[] Serialize() {
@@ -34,6 +33,13 @@ namespace BlendRoadManager {
             memoryStream.Position = 0; // redundant
             return memoryStream.ToArray();
         }
+
+        public void OnFirstFame() { }
+
+        public void OnLoad() {
+            RefreshAllNodes();
+        }
+
         #endregion LifeCycle
 
         public NodeData[] buffer = new NodeData[NetManager.MAX_NODE_COUNT];
@@ -63,7 +69,7 @@ namespace BlendRoadManager {
             }
         }
 
-        public void UpdateAllNodes() {
+        public void RefreshAllNodes() {
             foreach (var blendData in buffer)
                 blendData?.Refresh();
         }

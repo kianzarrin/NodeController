@@ -21,7 +21,7 @@ namespace BlendRoadManager.GUI {
             disabledBgSprite = "ButtonMenuDisabled";
             hoveredBgSprite = "ButtonMenuHovered";
             focusedBgSprite = "ButtonMenu";
-            listWidth = 90;
+            listWidth = 120;
             listHeight = 700;
             listPosition = UIDropDown.PopupListPosition.Below;
             clampListToScreen = true;
