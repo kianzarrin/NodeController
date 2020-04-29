@@ -1,8 +1,8 @@
 
-namespace BlendRoadManager
+namespace RoadTransitionManager
 {
     using HarmonyLib;
-    using BlendRoadManager.Util;
+    using RoadTransitionManager.Util;
     using System.Reflection;
 
     public static class HarmonyExtension

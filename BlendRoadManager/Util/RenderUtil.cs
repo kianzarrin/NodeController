@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace BlendRoadManager.Util {
+namespace RoadTransitionManager.Util {
     public static class RenderUtil {
         /// <summary>
         /// Draws a half sausage at segment end.

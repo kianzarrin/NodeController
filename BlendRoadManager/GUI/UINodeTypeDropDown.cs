@@ -1,4 +1,4 @@
-namespace BlendRoadManager.GUI {
+namespace RoadTransitionManager.GUI {
     using System;
     using ColossalFramework.UI;
     using UnityEngine;

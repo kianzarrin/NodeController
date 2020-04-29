@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace BlendRoadManager.Util {
+namespace RoadTransitionManager.Util {
     public class NetServiceException : Exception {
         public NetServiceException(string m) : base(m) { }
         public NetServiceException() : base() { }

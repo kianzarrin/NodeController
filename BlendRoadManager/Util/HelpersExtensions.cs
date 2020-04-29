@@ -1,4 +1,4 @@
-namespace BlendRoadManager.Util {
+namespace RoadTransitionManager.Util {
     using System;
     using System.Collections.Generic;
     using System.Linq;

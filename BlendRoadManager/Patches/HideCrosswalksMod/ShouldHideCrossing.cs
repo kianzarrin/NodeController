@@ -1,6 +1,6 @@
-namespace BlendRoadManager.Patches.HideCrosswalksMod {
+namespace RoadTransitionManager.Patches.HideCrosswalksMod {
     using System.Reflection;
-    using BlendRoadManager;
+    using RoadTransitionManager;
     using CSUtil.Commons;
     using HarmonyLib;
 

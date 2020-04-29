@@ -1,9 +1,9 @@
 using ColossalFramework.UI;
 using UnityEngine;
-using BlendRoadManager.Util;
+using RoadTransitionManager.Util;
 using ColossalFramework;
 
-namespace BlendRoadManager.GUI
+namespace RoadTransitionManager.GUI
 {
     using Tool;
     public class ToolButton : UIButton

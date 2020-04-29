@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
 
-namespace BlendRoadManager.Patches {
+namespace RoadTransitionManager.Patches {
     using CSUtil.Commons;
     using System.Reflection;
     public static class TranspilerUtils {

@@ -1,4 +1,4 @@
-namespace BlendRoadManager {
+namespace RoadTransitionManager {
     using System;
     using System.IO;
     using System.Runtime.Serialization.Formatters;
@@ -74,6 +74,21 @@ namespace BlendRoadManager {
                 blendData?.Refresh();
         }
 
+        public void OnBeforeCalculateNode(ushort nodeID) {
+            // nodeID.ToNode still has default flags.
+            if (buffer[nodeID] == null)
+                return;
+            if (!NodeData.IsSupported(nodeID)) {
+                buffer[nodeID] = null;
+                return;
+            }
+
+            buffer[nodeID].Calculate();
+
+            if (!buffer[nodeID].CanChangeTo(buffer[nodeID].NodeType)) {
+                buffer[nodeID] = null;
+            }
+        }
 
         //public void ChangeNode(ushort nodeID) {
         //    Log.Info($"ChangeNode({nodeID}) called");

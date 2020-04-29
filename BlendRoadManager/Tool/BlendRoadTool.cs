@@ -1,9 +1,9 @@
-using BlendRoadManager.Util;
+using RoadTransitionManager.Util;
 using ColossalFramework.UI;
 using System;
 using UnityEngine;
 
-namespace BlendRoadManager.Tool {
+namespace RoadTransitionManager.Tool {
     using ColossalFramework;
     using GUI;
     using static Util.RenderUtil;

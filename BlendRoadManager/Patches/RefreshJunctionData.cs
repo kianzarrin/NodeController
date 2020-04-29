@@ -1,12 +1,12 @@
-using BlendRoadManager;
-using BlendRoadManager.Util;
+using RoadTransitionManager;
+using RoadTransitionManager.Util;
 using HarmonyLib;
 using System;
 using System.Reflection;
 using UnityEngine;
 using JetBrains.Annotations;
 
-namespace BlendRoadManager.Patches
+namespace RoadTransitionManager.Patches
 {
     [UsedImplicitly]
     [HarmonyPatch]

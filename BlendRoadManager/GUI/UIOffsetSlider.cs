@@ -1,5 +1,5 @@
-namespace BlendRoadManager.GUI {
-    using BlendRoadManager.Util;
+namespace RoadTransitionManager.GUI {
+    using RoadTransitionManager.Util;
     using ColossalFramework;
     using ColossalFramework.UI;
     using System;

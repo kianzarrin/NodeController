@@ -1,5 +1,5 @@
 ﻿
-namespace BlendRoadManager.LifeCycle
+namespace RoadTransitionManager.LifeCycle
 {
     using JetBrains.Annotations;
     using ICities;

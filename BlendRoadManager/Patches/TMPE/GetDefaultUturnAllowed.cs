@@ -1,9 +1,9 @@
-namespace BlendRoadManager.Patches.TMPE {
+namespace RoadTransitionManager.Patches.TMPE {
     using System.Reflection;
     using TrafficManager.Manager.Impl;
     using CSUtil.Commons;
-    using BlendRoadManager;
-    using BlendRoadManager.Util;
+    using RoadTransitionManager;
+    using RoadTransitionManager.Util;
     using HarmonyLib;
 
     [HarmonyPatch]

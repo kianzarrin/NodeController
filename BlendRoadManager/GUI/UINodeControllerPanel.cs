@@ -1,9 +1,9 @@
-namespace BlendRoadManager.GUI {
+namespace RoadTransitionManager.GUI {
     using UnityEngine;
     using ColossalFramework.UI;
     using System.Collections.Generic;
     using System.Runtime.Serialization.Formatters.Binary;
-    using BlendRoadManager.Util;
+    using RoadTransitionManager.Util;
     using System.Runtime.Serialization.Formatters;
     using System.IO;
     using System.Linq;

@@ -1,7 +1,7 @@
-namespace BlendRoadManager.LifeCycle
+namespace RoadTransitionManager.LifeCycle
 {
-    using BlendRoadManager.Tool;
-    using BlendRoadManager.Util;
+    using RoadTransitionManager.Tool;
+    using RoadTransitionManager.Util;
 
     public static class LifeCycle
     {

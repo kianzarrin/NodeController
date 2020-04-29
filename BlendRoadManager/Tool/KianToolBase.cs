@@ -3,11 +3,11 @@ using ColossalFramework.UI;
 using UnityEngine;
 using System;
 
-using static BlendRoadManager.Util.HelpersExtensions;
-using BlendRoadManager.Util;
+using static RoadTransitionManager.Util.HelpersExtensions;
+using RoadTransitionManager.Util;
 using ColossalFramework.Math;
 
-namespace BlendRoadManager.Tool {
+namespace RoadTransitionManager.Tool {
     public abstract class KianToolBase : DefaultTool
     {
         public bool ToolEnabled => ToolsModifierControl.toolController?.CurrentTool == this;

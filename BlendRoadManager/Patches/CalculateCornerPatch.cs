@@ -1,5 +1,5 @@
-namespace BlendRoadManager.Patches {
-    using BlendRoadManager.Util;
+namespace RoadTransitionManager.Patches {
+    using RoadTransitionManager.Util;
     using HarmonyLib;
     using JetBrains.Annotations;
     using System;

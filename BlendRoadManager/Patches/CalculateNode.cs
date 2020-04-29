@@ -2,14 +2,17 @@ using ColossalFramework;
 using HarmonyLib;
 
 
-namespace BlendRoadManager.Patches {
+namespace RoadTransitionManager.Patches {
     using Util;
     [HarmonyPatch(typeof(NetNode), nameof(NetNode.CalculateNode))]
     class CalculateNode {
         static void Postfix(ref NetNode __instance) {
             Log.Debug("CalculateNode.PostFix() was called");
             ushort nodeID = NetUtil.GetID(__instance);
+            NodeManager.Instance.OnBeforeCalculateNode(nodeID);
+
             NodeData nodeData = NodeManager.Instance.buffer[nodeID];
+
             if (nodeData == null || nodeData.SegmentCount != 2)
                 return;
             if (__instance.m_flags.IsFlagSet(NetNode.Flags.Outside))

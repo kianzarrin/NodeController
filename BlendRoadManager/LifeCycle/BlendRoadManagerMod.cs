@@ -1,10 +1,10 @@
-namespace BlendRoadManager.LifeCycle
+namespace RoadTransitionManager.LifeCycle
 {
     using System;
     using JetBrains.Annotations;
     using ICities;
     using CitiesHarmony.API;
-    using BlendRoadManager.Util;
+    using RoadTransitionManager.Util;
     public class BlendRoadManagerMod : IUserMod
     {
         public static Version ModVersion => typeof(BlendRoadManagerMod).Assembly.GetName().Version;

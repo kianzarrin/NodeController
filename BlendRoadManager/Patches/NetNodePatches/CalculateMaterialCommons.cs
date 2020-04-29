@@ -10,7 +10,7 @@ using ColossalFramework;
 
  */
  
-namespace BlendRoadManager.Patches {
+namespace RoadTransitionManager.Patches {
     using System;
     using UnityEngine;
     using static TranspilerUtils;

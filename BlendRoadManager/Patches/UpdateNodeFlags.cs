@@ -1,7 +1,7 @@
 using ColossalFramework;
 using HarmonyLib;
 
-namespace BlendRoadManager {
+namespace RoadTransitionManager {
     using Util;
     [HarmonyPatch(typeof(RoadBaseAI))]
     [HarmonyPatch(nameof(RoadBaseAI.UpdateNodeFlags))]

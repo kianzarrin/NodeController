@@ -1,11 +1,11 @@
 
-namespace BlendRoadManager.LifeCycle {
+namespace RoadTransitionManager.LifeCycle {
     using System;
     using ICities;
     using UnityEngine;
-    using static BlendRoadManager.Util.HelpersExtensions;
-    using BlendRoadManager.Tool;
-    using BlendRoadManager.Util;
+    using static RoadTransitionManager.Util.HelpersExtensions;
+    using RoadTransitionManager.Tool;
+    using RoadTransitionManager.Util;
 
     public class ThreadingExtension : ThreadingExtensionBase{
         public override void OnBeforeSimulationTick() {

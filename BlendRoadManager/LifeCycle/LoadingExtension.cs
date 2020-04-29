@@ -1,7 +1,7 @@
-﻿namespace BlendRoadManager.LifeCycle
+﻿namespace RoadTransitionManager.LifeCycle
 {
     using ICities;
-    using BlendRoadManager.Util;
+    using RoadTransitionManager.Util;
 
     public class LoadingExtention : LoadingExtensionBase
     {

@@ -1,6 +1,6 @@
 
 
-namespace BlendRoadManager {
+namespace RoadTransitionManager {
     using ColossalFramework;
     using ColossalFramework.Math;
     using System;
@@ -24,51 +24,58 @@ namespace BlendRoadManager {
 
         public float DefaultCornerOffset => NodeID.ToNode().Info.m_minCornerOffset;
         public NetNode.Flags DefaultFlags;
-
-        public NodeTypeT NodeType;
         public NodeTypeT DefaultNodeType;
-        public float CornerOffset;
 
         public float HWDiff;
         public bool HasPedestrianLanes;
         public bool IsStraight;
 
+        // Variable
+        public NodeTypeT NodeType;
+        public float CornerOffset;
+
         public NodeData(ushort nodeID) {
             NodeID = nodeID;
-            SegmentCount = nodeID.ToNode().CountSegments();
-            DefaultFlags = nodeID.ToNode().m_flags;
+            Calculate();
+            NodeType = DefaultNodeType;
+            CornerOffset = DefaultCornerOffset;
+        }
+
+        public void Calculate() {
+            SegmentCount = NodeID.ToNode().CountSegments();
+            DefaultFlags = NodeID.ToNode().m_flags;
 
             if (DefaultFlags.IsFlagSet(NetNode.Flags.Middle))
                 DefaultNodeType = NodeTypeT.Middle;
-            else if(DefaultFlags.IsFlagSet(NetNode.Flags.Bend))
+            else if (DefaultFlags.IsFlagSet(NetNode.Flags.Bend))
                 DefaultNodeType = NodeTypeT.Bend;
             else if (DefaultFlags.IsFlagSet(NetNode.Flags.Junction))
                 DefaultNodeType = NodeTypeT.Custom;
             else
                 throw new NotImplementedException("unsupported node flags: " + DefaultFlags);
 
-            NodeType = DefaultNodeType;
-            CornerOffset = DefaultCornerOffset;
 
             if (SegmentCount == 2) {
                 float hw0 = 0;
                 Vector2 dir0 = default;
-                foreach (ushort segmetnID in NetUtil.GetSegmentsCoroutine(nodeID)) {
+                foreach (ushort segmetnID in NetUtil.GetSegmentsCoroutine(NodeID)) {
                     if (hw0 == 0) {
                         hw0 = segmetnID.ToSegment().Info.m_halfWidth;
-                        dir0 = VectorUtils.XZ(segmetnID.ToSegment().GetDirection(nodeID));
+                        dir0 = VectorUtils.XZ(segmetnID.ToSegment().GetDirection(NodeID));
                         dir0.Normalize();
                     } else {
                         HWDiff = Mathf.Abs(segmetnID.ToSegment().Info.m_halfWidth - hw0);
-                        Vector2 dir1 = VectorUtils.XZ(segmetnID.ToSegment().GetDirection(nodeID));
+                        Vector2 dir1 = VectorUtils.XZ(segmetnID.ToSegment().GetDirection(NodeID));
                         dir1.Normalize();
-                        IsStraight = Mathf.Abs(Vector2.Dot(dir0, dir1)+1) < 0.0001f;
+                        IsStraight = Mathf.Abs(Vector2.Dot(dir0, dir1) + 1) < 0.001f;
                     }
                 }
             }
 
-            foreach (ushort segmetnID in NetUtil.GetSegmentsCoroutine(nodeID))
+            foreach (ushort segmetnID in NetUtil.GetSegmentsCoroutine(NodeID))
                 HasPedestrianLanes |= segmetnID.ToSegment().Info.m_hasPedestrianLanes;
+
+            Refresh();
         }
 
         public bool IsDefault() {
@@ -121,11 +128,11 @@ namespace BlendRoadManager {
                 case NodeTypeT.UTurn:
                     return NodeID.ToNode().Info.m_forwardVehicleLaneCount > 0 && NodeID.ToNode().Info.m_backwardVehicleLaneCount > 0;
                 case NodeTypeT.Blend:
-                    return true;   // !DefaultFlags.IsFlagSet(NetNode.Flags.Middle) || HWDiff > 0.001f; 
+                    return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle) || HWDiff > 0.001f; 
                 case NodeTypeT.Middle:
                     return IsStraight;
                 case NodeTypeT.Bend:
-                    return !IsStraight || IsAsymRevert();
+                    return !IsStraight;// || IsAsymRevert();
                 case NodeTypeT.Custom:
                     return true;
                 default:
