@@ -8,7 +8,7 @@ using RoadTransitionManager.Util;
 using ColossalFramework.Math;
 
 namespace RoadTransitionManager.Tool {
-    public abstract class KianToolBase : DefaultTool
+    public abstract class KianToolBase : ToolBase
     {
         public bool ToolEnabled => ToolsModifierControl.toolController?.CurrentTool == this;
 
@@ -44,34 +44,44 @@ namespace RoadTransitionManager.Tool {
                 ToolsModifierControl.SetTool<DefaultTool>();
         }
 
-        protected override void OnToolUpdate()
+        protected override void OnToolGUI(Event e) {
+            base.OnToolGUI(e);
+            if (e.type == EventType.mouseDown && IsHoverValid) {
+                if (e.button == 0) OnPrimaryMouseClicked();
+                else if (e.button == 1) OnSecondaryMouseClicked();
+            }
+        }
+
+        #region hover
+        internal Ray m_mouseRay;
+        internal float m_mouseRayLength;
+        internal bool m_mouseRayValid;
+        internal Vector3 m_mousePosition;
+        internal RaycastOutput raycastOutput;
+
+        protected override void OnToolUpdate() {
+            base.OnToolUpdate();
+            IsHoverValid = DetermineHoveredElements();
+        }
+
+        protected override void OnToolLateUpdate()
         {
             base.OnToolUpdate();
-            DetermineHoveredElements();
-
-            if (Input.GetMouseButtonDown(0))
-            {
-                OnPrimaryMouseClicked();
-            }
-            else if (Input.GetMouseButtonDown(1))
-            {
-                OnSecondaryMouseClicked();
-            }
+            m_mousePosition = Input.mousePosition;
+            m_mouseRay = Camera.main.ScreenPointToRay(m_mousePosition);
+            m_mouseRayLength = Camera.main.farClipPlane;
+            m_mouseRayValid = !UIView.IsInsideUI() && Cursor.visible;
         }
 
         public ushort HoveredNodeId { get; private set; } = 0;
         public ushort HoveredSegmentId { get; private set; } = 0;
-        public Vector3 HitPos { get; private set; }
-
-        protected bool IsMouseRayValid => !UIView.IsInsideUI() && Cursor.visible && m_mouseRayValid;
-        protected bool HoverValid => IsMouseRayValid && (HoveredSegmentId != 0 || HoveredNodeId != 0);
+        protected bool IsHoverValid { get;private set; }
 
         private bool DetermineHoveredElements()
         {
             HoveredSegmentId = 0;
             HoveredNodeId = 0;
-            HitPos = Vector3.zero;
-            if (!IsMouseRayValid)
+            if (!m_mouseRayValid)
             {
                 return false;
             }
@@ -88,10 +98,9 @@ namespace RoadTransitionManager.Tool {
                 m_ignoreNodeFlags = NetNode.Flags.None
             };
 
-            if (RayCast(nodeInput, out RaycastOutput nodeOutput))
+            if (RayCast(nodeInput, out raycastOutput))
             {
-                HoveredNodeId = nodeOutput.m_netNode;
-                HitPos = nodeOutput.m_hitPos;
+                HoveredNodeId = raycastOutput.m_netNode;
             }
 
             HoveredSegmentId = GetSegmentFromNode();
@@ -113,10 +122,9 @@ namespace RoadTransitionManager.Tool {
                 m_ignoreSegmentFlags = NetSegment.Flags.None
             };
 
-            if (RayCast(segmentInput, out RaycastOutput segmentOutput))
+            if (RayCast(segmentInput, out raycastOutput))
             {
-                HoveredSegmentId = segmentOutput.m_netSegment;
-                HitPos = segmentOutput.m_hitPos;
+                HoveredSegmentId = raycastOutput.m_netSegment;
             }
 
 
@@ -127,8 +135,8 @@ namespace RoadTransitionManager.Tool {
                 ushort startNodeId = HoveredSegmentId.ToSegment().m_startNode;
                 ushort endNodeId = HoveredSegmentId.ToSegment().m_endNode;
 
-                var vStart = segmentOutput.m_hitPos - startNodeId.ToNode().m_position;
-                var vEnd = segmentOutput.m_hitPos - endNodeId.ToNode().m_position;
+                var vStart = raycastOutput.m_hitPos - startNodeId.ToNode().m_position;
+                var vEnd = raycastOutput.m_hitPos - endNodeId.ToNode().m_position;
 
                 float startDist = vStart.magnitude;
                 float endDist = vEnd.magnitude;
@@ -183,6 +191,6 @@ namespace RoadTransitionManager.Tool {
             return minSegId;
         }
 
- 
+        #endregion
     }
 }

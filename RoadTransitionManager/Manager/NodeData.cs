@@ -38,6 +38,9 @@ namespace RoadTransitionManager {
             NodeID = nodeID;
             Calculate();
             NodeType = DefaultNodeType;
+            if (DefaultNodeType == NodeTypeT.Middle) {
+                NodeType = NodeTypeT.Crossing;
+            }
             CornerOffset = DefaultCornerOffset;
         }
 
@@ -53,7 +56,6 @@ namespace RoadTransitionManager {
                 DefaultNodeType = NodeTypeT.Custom;
             else
                 throw new NotImplementedException("unsupported node flags: " + DefaultFlags);
-
 
             if (SegmentCount == 2) {
                 float hw0 = 0;
@@ -128,11 +130,11 @@ namespace RoadTransitionManager {
                 case NodeTypeT.UTurn:
                     return NodeID.ToNode().Info.m_forwardVehicleLaneCount > 0 && NodeID.ToNode().Info.m_backwardVehicleLaneCount > 0;
                 case NodeTypeT.Blend:
-                    return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle) || HWDiff > 0.001f; 
+                    return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle);
                 case NodeTypeT.Middle:
                     return IsStraight;
                 case NodeTypeT.Bend:
-                    return !IsStraight;// || IsAsymRevert();
+                    return !IsStraight || HWDiff > 0.05f;
                 case NodeTypeT.Custom:
                     return true;
                 default:
@@ -232,7 +234,9 @@ namespace RoadTransitionManager {
                 case NodeTypeT.Bend:
                     return TernaryBool.Undefined; // don't care
                 case NodeTypeT.Custom:
-                    return TernaryBool.False; // default off
+                    if (SegmentCount == 2)
+                        return TernaryBool.False; // default off
+                    return TernaryBool.Undefined; // don't care
                 default:
                     throw new Exception("Unreachable code");
             }
