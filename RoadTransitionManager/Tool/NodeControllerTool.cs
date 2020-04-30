@@ -1,5 +1,5 @@
-using RoadTransitionManager.Util;
 using ColossalFramework.UI;
+using RoadTransitionManager.Util;
 using System;
 using UnityEngine;
 
@@ -16,79 +16,81 @@ namespace RoadTransitionManager.Tool {
         #region
         NetTool.ControlPoint m_controlPoint;
         NetTool.ControlPoint m_cachedControlPoint;
-        ToolErrors m_buildErrors;
+        ToolErrors m_errors;
         ToolErrors m_cachedErrors;
-        NetInfo segmentPrefab_;
-        bool fail_;
+        NetInfo m_prefab;
 
         private object m_cacheLock = new object();
 
-
-        bool MakeControlPoint() {
-            NetTool.ControlPoint c = default;
-            if (!IsHoverValid) {
-                m_controlPoint = c;
-                //Log.Debug("MakeControlPoint: HoverValid is not valid");
-                return false;
+        override public void SimulationStep() {
+            ServiceTypeGuide optionsNotUsed = Singleton<NetManager>.instance.m_optionsNotUsed;
+            if (optionsNotUsed != null && !optionsNotUsed.m_disabled) {
+                optionsNotUsed.Disable();
             }
-            if (!HoveredNodeId.ToNode().m_flags.IsFlagSet(NetNode.Flags.Moveable) ||
-                HoveredNodeId.ToNode().m_flags.IsFlagSet(NetNode.Flags.End)) {
-                Vector3 diff = raycastOutput.m_hitPos - HoveredNodeId.ToNode().m_position;
-                const float distance = 2 * NetUtil.MPU;
-                if (diff.sqrMagnitude < distance*distance) {
-                    c.m_node = HoveredNodeId;
-                    //c.m_position = c.m_node.ToNode().m_position;
-                    Log.Debug("MakeControlPoint: On node");
-                    return true;
+
+            Vector3 position = this.m_controlPoint.m_position;
+            bool failed = false;
+
+            NetTool.ControlPoint controlPoint = default(NetTool.ControlPoint);
+            NetNode.Flags ignoreNodeFlags;
+            NetSegment.Flags ignoreSegmentFlags;
+
+            ignoreNodeFlags = NetNode.Flags.None;
+            ignoreSegmentFlags = NetSegment.Flags.None;
+
+            Building.Flags ignoreBuildingFlags = Building.Flags.All;
+            ToolBase.ToolErrors errors = ToolBase.ToolErrors.None;
+            if (m_prefab != null) {
+                if (this.m_mouseRayValid && NetTool.MakeControlPoint(this.m_mouseRay, this.m_mouseRayLength, m_prefab, false, ignoreNodeFlags, ignoreSegmentFlags, ignoreBuildingFlags, 0, false, out controlPoint)) {
+                    errors = NetTool.CreateNode(
+                            m_prefab, controlPoint, controlPoint, controlPoint,
+                            NetTool.m_nodePositionsSimulation,
+                            maxSegments: 0,
+                            test: true, visualize: false, autoFix: true, needMoney: false,
+                            invert: false, switchDir: false,
+                            relocateBuildingID: 0,
+                            out ushort newNode, out var newSegment, out var cost, out var productionRate);
+                    Log.Debug($"[KIAN] CreateNode test result:  errors:{errors} newNode:{newNode} newSegment:{newSegment} cost:{cost} productionRate{productionRate}");
+                    if (newNode != 0) {
+                        controlPoint.m_node = newNode; // node mode
+                    }
+                } else {
+                    errors |= ToolBase.ToolErrors.RaycastFailed;
                 }
             }
-            c.m_segment = HoveredSegmentId;
-            ref NetSegment segment = ref c.m_segment.ToSegment();
-            c.m_position = segment.GetClosestPosition(raycastOutput.m_hitPos);
-            c.m_elevation = 0.5f * (segment.m_startNode.ToNode().m_elevation + segment.m_endNode.ToNode().m_elevation);
-            m_controlPoint = c;
-            Log.Debug("MakeControlPoint: on segment.");
-            return true;
-        }
 
-        override public void SimulationStep() {
-            if(!MakeControlPoint()) {
-                fail_ = true;
-                //Log.Debug("SimulationStep: MakeControlPoint failed");
-                return;
+            m_controlPoint = controlPoint;
+            m_toolController.ClearColliding();
+
+            while (!Monitor.TryEnter(this.m_cacheLock, SimulationManager.SYNCHRONIZE_TIMEOUT)) {
             }
-            //Log.Debug($"SimulationStep: Control point= node:{m_controlPoint.m_node} segment:{m_controlPoint.m_segment} position:{m_controlPoint.m_position}" +
-            //    $"elevation:{m_controlPoint.m_elevation} ");
-            if (m_controlPoint.m_node != 0) {
-                fail_ = NodeData.IsSupported(m_controlPoint.m_node);
-                Log.Debug("SimulationStep: node type. fail_=" + fail_);
-                return;
+            try {
+                this.m_errors = errors;
             }
-            segmentPrefab_ = HoveredSegmentId.ToSegment().Info;
-            ToolBase.ToolErrors errors = NetTool.CreateNode(
-                    segmentPrefab_, m_controlPoint, m_controlPoint, m_controlPoint,
-                    NetTool.m_nodePositionsSimulation,
-                    maxSegments: 0,
-                    test: true, visualize: false, autoFix: true, needMoney: false,
-                    invert: false, switchDir: false,
-                    relocateBuildingID: 0,
-                    out ushort newNode, out var newSegment, out var cost, out var productionRate);
-            Log.Debug($"[KIAN] CreateNode test result:  errors:{errors} newNode:{newNode} newSegment:{newSegment} cost:{cost} productionRate{productionRate}");
-            fail_ = errors != ToolBase.ToolErrors.None;
+            finally {
+                Monitor.Exit(this.m_cacheLock);
+            }
         }
 
         protected override void OnToolUpdate() {
             base.OnToolUpdate();
+
             while (!Monitor.TryEnter(this.m_cacheLock, SimulationManager.SYNCHRONIZE_TIMEOUT)) {
             }
             try {
-                Log.Debug("m_cachedControlPoint = m_controlPoint");
+                //Log.Debug("m_cachedControlPoint = m_controlPoint");
                 m_cachedControlPoint = m_controlPoint;
-                Log.Debug($"m_cachedControlPoint: node:{m_cachedControlPoint.m_node} segment:{m_cachedControlPoint.m_segment} " +
-                    $"position:{m_cachedControlPoint.m_position}" + $"elevation:{m_cachedControlPoint.m_elevation} ");
+                //Log.Debug($"m_cachedControlPoint: node:{m_cachedControlPoint.m_node} segment:{m_cachedControlPoint.m_segment} " +
+                //    $"position:{m_cachedControlPoint.m_position}" + $"elevation:{m_cachedControlPoint.m_elevation} ");
             }
             finally {
                 Monitor.Exit(this.m_cacheLock);
+            }
+
+            if (HoveredSegmentId != 0) {
+                m_prefab = HoveredSegmentId.ToSegment().Info;
+            } else {
+                m_prefab = null;
             }
         }
 
@@ -167,48 +169,72 @@ namespace RoadTransitionManager.Tool {
                 DrawNodeCircle(cameraInfo, Color.white, SelectedNodeID, false);
                 foreach (var segmentID in NetUtil.GetSegmentsCoroutine(SelectedNodeID)) {
                     ushort nodeID = segmentID.ToSegment().GetOtherNode(SelectedNodeID);
-                    if(nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle))
+                    if (nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle))
                         DrawNodeCircle(cameraInfo, Color.gray, nodeID, true);
                 }
             }
-            var c = m_cachedControlPoint;
-            Log.Debug($"RenderOverlay: Control point= node:{c.m_node} segment:{c.m_segment} position:{c.m_position}" +
-                $"elevation:{c.m_elevation} ");
-            Color color = fail_ ? Color.red : Color.yellow;
-            if (c.m_node != 0) {
-                Log.Debug("control point is node type");
-                DrawNodeCircle(cameraInfo, color, HoveredNodeId, false);
-            }else if (c.m_segment != 0) {
-                Log.Debug("control point is segment type");
-                DrawOverlayCircle(cameraInfo, color, c.m_position, segmentPrefab_.m_halfWidth, false);
-            } else {
-                // nothing is hovered.
+            //var c = m_cachedControlPoint;
+            //Log.Debug($"RenderOverlay: Control point= node:{c.m_node} segment:{c.m_segment} position:{c.m_position}" +
+            //    $"elevation:{c.m_elevation} ");
+            //Debug.Log ("[Crossings] Render Overlay");
+            base.RenderOverlay(cameraInfo);
+
+            if (IsHoverValid && m_prefab != null) {
+                NetTool.ControlPoint controlPoint = m_cachedControlPoint;
+                m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
+
+                bool error = CanCreateOrSelect(HoveredSegmentId, HoveredSegmentId);
+                error = m_cachedErrors != ToolErrors.None;
+                Color color = base.GetToolColor(false, error);
+                DrawOverlayCircle(cameraInfo, color, controlPoint.m_position, m_prefab.m_halfWidth, false);
+                DrawOverlayCircle(cameraInfo, Color.red, raycastOutput.m_hitPos, 1, true);
             }
-            DrawOverlayCircle(cameraInfo, Color.red, raycastOutput.m_hitPos, 1, true);
+        }
+
+        private static bool CanCreateOrSelect(ushort segmentID, ushort nodeID) {
+            if (segmentID == 0)
+                return false;
+
+            ref NetSegment segment = ref segmentID.ToSegment();
+            NetInfo info = segment.Info;
+            ItemClass.Level level = info.m_class.m_level;
+            if (!(info.m_netAI is RoadBaseAI))
+                return false; // No crossings on non-roads
+
+            if (nodeID == 0)
+                return true; // No node means we can create one
+
+            NetNode.Flags flags = NetManager.instance.m_nodes.m_buffer[nodeID].m_flags;
+            return !flags.IsFlagSet(NetNode.Flags.End);
         }
 
         protected override void OnPrimaryMouseClicked() {
             if (!IsHoverValid)
                 return;
             Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
-            if (fail_)
+            if (m_errors !=ToolErrors.None || m_prefab == null)
                 return;
             var c = m_cachedControlPoint;
-            if (c.m_node!=0) {
-                HelpersExtensions.Assert(NodeData.IsSupported(c.m_node), "NodeData.IsSupported(c.m_node)");
+            if (c.m_node != 0) {
+                bool supported = NodeData.IsSupported(c.m_node);
+                HelpersExtensions.Assert(supported, "supported");
                 panel_.ShowNode(HoveredNodeId);
                 SelectedNodeID = HoveredNodeId;
-            } else if(c.m_segment != 0) {
-                ToolBase.ToolErrors errors = NetTool.CreateNode(
-                    segmentPrefab_, c, c, c,
-                    NetTool.m_nodePositionsSimulation,
-                    maxSegments: 0,
-                    test: false, visualize: false, autoFix: true, needMoney: false,
-                    invert: false, switchDir: false,
-                    relocateBuildingID: 0,
-                    out ushort newNode, out var newSegment, out var cost, out var productionRate);
-                panel_.ShowNode(newNode);
-                SelectedNodeID = newNode;
+            } else if (c.m_segment != 0) {
+                SimulationManager.instance.AddAction(delegate () {
+                    ToolErrors errors = NetTool.CreateNode(
+                        m_prefab, c, c, c,
+                        NetTool.m_nodePositionsSimulation,
+                        maxSegments: 0,
+                        test: false, visualize: false, autoFix: true, needMoney: false,
+                        invert: false, switchDir: false,
+                        relocateBuildingID: 0,
+                        out ushort newNode, out var newSegment, out var cost, out var productionRate);
+                    if (errors == ToolErrors.None) {
+                        panel_.ShowNode(newNode);
+                        SelectedNodeID = newNode;
+                    }
+                });
             } else {
                 // nothing is hovered.
             }
