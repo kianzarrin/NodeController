@@ -22,6 +22,11 @@ namespace RoadTransitionManager.Tool {
 
         private object m_cacheLock = new object();
 
+        static string LogControlPoint(NetTool.ControlPoint c) {
+            return $"<node:{c.m_node} segment:{c.m_segment} " +
+                $"position:{c.m_position}" + $"elevation:{c.m_elevation}>";
+        }
+
         override public void SimulationStep() {
             ServiceTypeGuide optionsNotUsed = Singleton<NetManager>.instance.m_optionsNotUsed;
             if (optionsNotUsed != null && !optionsNotUsed.m_disabled) {
@@ -42,18 +47,8 @@ namespace RoadTransitionManager.Tool {
             ToolBase.ToolErrors errors = ToolBase.ToolErrors.None;
             if (m_prefab != null) {
                 if (this.m_mouseRayValid && NetTool.MakeControlPoint(this.m_mouseRay, this.m_mouseRayLength, m_prefab, false, ignoreNodeFlags, ignoreSegmentFlags, ignoreBuildingFlags, 0, false, out controlPoint)) {
-                    errors = NetTool.CreateNode(
-                            m_prefab, controlPoint, controlPoint, controlPoint,
-                            NetTool.m_nodePositionsSimulation,
-                            maxSegments: 0,
-                            test: true, visualize: false, autoFix: true, needMoney: false,
-                            invert: false, switchDir: false,
-                            relocateBuildingID: 0,
-                            out ushort newNode, out var newSegment, out var cost, out var productionRate);
-                    Log.Debug($"[KIAN] CreateNode test result:  errors:{errors} newNode:{newNode} newSegment:{newSegment} cost:{cost} productionRate{productionRate}");
-                    if (newNode != 0) {
-                        controlPoint.m_node = newNode; // node mode
-                    }
+                    Log.Debug("simulation step control point = " + LogControlPoint(controlPoint));
+                    errors = NetUtil.InsertNode(m_cachedControlPoint, out ushort newNodeID, test:true);
                 } else {
                     errors |= ToolBase.ToolErrors.RaycastFailed;
                 }
@@ -138,8 +133,6 @@ namespace RoadTransitionManager.Tool {
             base.OnDestroy();
         }
 
-        //public override void EnableTool() => ToolsModifierControl.SetTool<PedBridgeTool>();
-
         protected override void OnEnable() {
             Log.Debug("NodeControllerTool.OnEnable");
             button_?.Focus();
@@ -183,7 +176,7 @@ namespace RoadTransitionManager.Tool {
                 NetTool.ControlPoint controlPoint = m_cachedControlPoint;
                 m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
 
-                bool error = CanCreateOrSelect(HoveredSegmentId, HoveredSegmentId);
+                bool error = CanCreateOrSelect(HoveredSegmentId, HoveredNodeId);
                 error = m_cachedErrors != ToolErrors.None;
                 Color color = base.GetToolColor(false, error);
                 DrawOverlayCircle(cameraInfo, color, controlPoint.m_position, m_prefab.m_halfWidth, false);
@@ -204,7 +197,7 @@ namespace RoadTransitionManager.Tool {
             if (nodeID == 0)
                 return true; // No node means we can create one
 
-            NetNode.Flags flags = NetManager.instance.m_nodes.m_buffer[nodeID].m_flags;
+            NetNode.Flags flags = nodeID.ToNode().m_flags;
             return !flags.IsFlagSet(NetNode.Flags.End);
         }
 
@@ -222,17 +215,10 @@ namespace RoadTransitionManager.Tool {
                 SelectedNodeID = HoveredNodeId;
             } else if (c.m_segment != 0) {
                 SimulationManager.instance.AddAction(delegate () {
-                    ToolErrors errors = NetTool.CreateNode(
-                        m_prefab, c, c, c,
-                        NetTool.m_nodePositionsSimulation,
-                        maxSegments: 0,
-                        test: false, visualize: false, autoFix: true, needMoney: false,
-                        invert: false, switchDir: false,
-                        relocateBuildingID: 0,
-                        out ushort newNode, out var newSegment, out var cost, out var productionRate);
+                    ToolErrors errors  = NetUtil.InsertNode(m_cachedControlPoint, out ushort newNodeID);
                     if (errors == ToolErrors.None) {
-                        panel_.ShowNode(newNode);
-                        SelectedNodeID = newNode;
+                        SelectedNodeID = newNodeID;
+                        panel_.ShowNode(SelectedNodeID);
                     }
                 });
             } else {

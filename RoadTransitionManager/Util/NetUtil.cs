@@ -24,6 +24,23 @@ namespace RoadTransitionManager.Util {
         internal static ref NetLane ToLane(this uint id) => ref netMan.m_lanes.m_buffer[id];
 
 
+        public static ToolBase.ToolErrors InsertNode(NetTool.ControlPoint controlPoint, out ushort nodeId, bool test=false) {
+            var ret = NetTool.CreateNode(
+                controlPoint.m_segment.ToSegment().Info,
+                controlPoint, controlPoint, controlPoint,
+                NetTool.m_nodePositionsSimulation,
+                maxSegments: 0,
+                test: test, visualize: false, autoFix: true, needMoney: false,
+                invert: false, switchDir: false,
+                relocateBuildingID: 0,
+                out nodeId, out var newSegment, out var cost, out var productionRate);
+            if (!test) {
+                nodeId.ToNode().m_flags |= NetNode.Flags.Middle | NetNode.Flags.Moveable;
+            }
+            Log.Debug($"[InsertNode] test={test} errors:{ret} nodeId:{nodeId} newSegment:{newSegment} cost:{cost} productionRate{productionRate}");
+            return ret;
+        }
+
         static bool Equals(this ref NetNode node1, ushort nodeId2) {
             ref NetNode node2 = ref nodeId2.ToNode();
             return node1.m_buildIndex == node2.m_buildIndex &&
