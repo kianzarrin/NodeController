@@ -71,7 +71,6 @@ namespace RoadTransitionManager.GUI {
             base.Awake();
             Instance = this;
             Controls = new List<IDataControllerUI>();
-
         }
 
         public override void Start() {
@@ -136,7 +135,6 @@ namespace RoadTransitionManager.GUI {
             NodeID = nodeID;
             Show();
             Refresh();
-            dropdown_.Repopulate();
         }
 
         public void Close() {

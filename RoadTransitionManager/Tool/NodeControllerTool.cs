@@ -27,34 +27,65 @@ namespace RoadTransitionManager.Tool {
                 $"position:{c.m_position}" + $"elevation:{c.m_elevation}>";
         }
 
+
+        bool MakeControlPoint() {
+            if (!IsHoverValid) {
+                //Log.Debug("MakeControlPoint: HoverValid is not valid");
+                m_controlPoint = default;
+                return false;
+            }
+            ushort segmentID0=0, segmentID1=0;
+            int count = 0;
+            foreach(ushort segmentID in NetUtil.GetSegmentsCoroutine(HoveredNodeId)) {
+                if (segmentID == 0)
+                    continue;
+                if (count == 0) segmentID0 = segmentID;
+                if (count == 1) segmentID1 = segmentID;
+                count++;
+            }
+
+            bool snapNode =
+                count != 2 ||
+                segmentID0.ToSegment().Info != segmentID1.ToSegment().Info ||
+                !HoveredNodeId.ToNode().m_flags.IsFlagSet(NetNode.Flags.Moveable);
+            if (snapNode) {
+                Vector3 diff = raycastOutput.m_hitPos - HoveredNodeId.ToNode().m_position;
+                const float distance = 2 * NetUtil.MPU;
+                if (diff.sqrMagnitude < distance * distance) {
+                    m_controlPoint = new NetTool.ControlPoint {m_node = HoveredNodeId};
+                    //Log.Debug("MakeControlPoint: On node");
+                    return true;
+                }
+            }
+            ref NetSegment segment = ref HoveredSegmentId.ToSegment();
+            float elevation = 0.5f * (segment.m_startNode.ToNode().m_elevation + segment.m_endNode.ToNode().m_elevation);
+            m_controlPoint = new NetTool.ControlPoint {
+                m_segment = HoveredSegmentId,
+                m_position = segment.GetClosestPosition(raycastOutput.m_hitPos),
+                m_elevation = elevation,
+            };
+            //Log.Debug("MakeControlPoint: on segment.");
+            return true;
+        }
+
         override public void SimulationStep() {
             ServiceTypeGuide optionsNotUsed = Singleton<NetManager>.instance.m_optionsNotUsed;
             if (optionsNotUsed != null && !optionsNotUsed.m_disabled) {
                 optionsNotUsed.Disable();
             }
 
-            Vector3 position = this.m_controlPoint.m_position;
-            bool failed = false;
-
-            NetTool.ControlPoint controlPoint = default(NetTool.ControlPoint);
-            NetNode.Flags ignoreNodeFlags;
-            NetSegment.Flags ignoreSegmentFlags;
-
-            ignoreNodeFlags = NetNode.Flags.None;
-            ignoreSegmentFlags = NetSegment.Flags.None;
-
-            Building.Flags ignoreBuildingFlags = Building.Flags.All;
             ToolBase.ToolErrors errors = ToolBase.ToolErrors.None;
             if (m_prefab != null) {
-                if (this.m_mouseRayValid && NetTool.MakeControlPoint(this.m_mouseRay, this.m_mouseRayLength, m_prefab, false, ignoreNodeFlags, ignoreSegmentFlags, ignoreBuildingFlags, 0, false, out controlPoint)) {
-                    Log.Debug("simulation step control point = " + LogControlPoint(controlPoint));
-                    errors = NetUtil.InsertNode(m_cachedControlPoint, out ushort newNodeID, test:true);
+                if (this.m_mouseRayValid && MakeControlPoint()) {
+                    //Log.Debug("SimulationStep control point is " + LogControlPoint(m_controlPoint));
+                    if (m_controlPoint.m_node == 0) {
+                        errors = NetUtil.InsertNode(m_controlPoint, out _, test: true);
+                    }
                 } else {
                     errors |= ToolBase.ToolErrors.RaycastFailed;
                 }
             }
 
-            m_controlPoint = controlPoint;
             m_toolController.ClearColliding();
 
             while (!Monitor.TryEnter(this.m_cacheLock, SimulationManager.SYNCHRONIZE_TIMEOUT)) {
@@ -73,10 +104,8 @@ namespace RoadTransitionManager.Tool {
             while (!Monitor.TryEnter(this.m_cacheLock, SimulationManager.SYNCHRONIZE_TIMEOUT)) {
             }
             try {
-                //Log.Debug("m_cachedControlPoint = m_controlPoint");
                 m_cachedControlPoint = m_controlPoint;
-                //Log.Debug($"m_cachedControlPoint: node:{m_cachedControlPoint.m_node} segment:{m_cachedControlPoint.m_segment} " +
-                //    $"position:{m_cachedControlPoint.m_position}" + $"elevation:{m_cachedControlPoint.m_elevation} ");
+                m_cachedErrors = m_errors;
             }
             finally {
                 Monitor.Exit(this.m_cacheLock);
@@ -174,31 +203,19 @@ namespace RoadTransitionManager.Tool {
 
             if (IsHoverValid && m_prefab != null) {
                 NetTool.ControlPoint controlPoint = m_cachedControlPoint;
-                m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
-
-                bool error = CanCreateOrSelect(HoveredSegmentId, HoveredNodeId);
-                error = m_cachedErrors != ToolErrors.None;
-                Color color = base.GetToolColor(false, error);
-                DrawOverlayCircle(cameraInfo, color, controlPoint.m_position, m_prefab.m_halfWidth, false);
+                ushort nodeID = controlPoint.m_node;
+                if (nodeID != 0) {
+                    bool fail = !NodeData.IsSupported(nodeID);
+                    DrawNodeCircle(cameraInfo, GetToolColor(false, fail), nodeID, false);
+                } else if (controlPoint.m_segment != 0) {
+                    ToolErrors error = m_cachedErrors;
+                    error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
+                    bool fail = error != ToolErrors.None;
+                    Color color = base.GetToolColor(false, fail);
+                    DrawOverlayCircle(cameraInfo, color, controlPoint.m_position, m_prefab.m_halfWidth, false);
+                }
                 DrawOverlayCircle(cameraInfo, Color.red, raycastOutput.m_hitPos, 1, true);
             }
-        }
-
-        private static bool CanCreateOrSelect(ushort segmentID, ushort nodeID) {
-            if (segmentID == 0)
-                return false;
-
-            ref NetSegment segment = ref segmentID.ToSegment();
-            NetInfo info = segment.Info;
-            ItemClass.Level level = info.m_class.m_level;
-            if (!(info.m_netAI is RoadBaseAI))
-                return false; // No crossings on non-roads
-
-            if (nodeID == 0)
-                return true; // No node means we can create one
-
-            NetNode.Flags flags = nodeID.ToNode().m_flags;
-            return !flags.IsFlagSet(NetNode.Flags.End);
         }
 
         protected override void OnPrimaryMouseClicked() {
@@ -210,9 +227,11 @@ namespace RoadTransitionManager.Tool {
             var c = m_cachedControlPoint;
             if (c.m_node != 0) {
                 bool supported = NodeData.IsSupported(c.m_node);
-                HelpersExtensions.Assert(supported, "supported");
-                panel_.ShowNode(HoveredNodeId);
-                SelectedNodeID = HoveredNodeId;
+                if (!supported) {
+                    return;
+                }
+                SelectedNodeID = c.m_node;
+                panel_.ShowNode(SelectedNodeID);
             } else if (c.m_segment != 0) {
                 SimulationManager.instance.AddAction(delegate () {
                     ToolErrors errors  = NetUtil.InsertNode(m_cachedControlPoint, out ushort newNodeID);
@@ -230,17 +249,6 @@ namespace RoadTransitionManager.Tool {
             panel_.Close();
             SelectedNodeID = 0;
         }
-
-
-        bool IsGood1() {
-            return HoveredNodeId.ToNode().CountSegments() == 2 &&
-                   HoveredNodeId.ToNode().Info.m_netAI is RoadBaseAI &&
-                   !HoveredNodeId.ToNode().m_flags.IsFlagSet(NetNode.Flags.Bend);
-        }
-        bool IsGood2() {
-            return HoveredNodeId.ToNode().CountSegments() > 2 && HoveredNodeId.ToNode().Info.m_netAI is RoadBaseAI;
-        }
-
 
     } //end class
 }

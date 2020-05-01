@@ -4,9 +4,11 @@ namespace RoadTransitionManager.GUI {
     using UnityEngine;
     using static Util.HelpersExtensions;
     using System.Linq;
+    using Util;
 
     public class UINodeTypeDropDown : UIDropDown, IDataControllerUI{
         public static UINodeTypeDropDown Instance { get; private set; }
+        const bool VERBOSE = true;
 
         public override void Awake() {
             base.Awake();
@@ -84,6 +86,7 @@ namespace RoadTransitionManager.GUI {
         }
 
         public void Apply() {
+            if(VERBOSE)Log.Debug("UINodeTypeDropDown.Apply called()\n" + Environment.StackTrace);
             ushort nodeID = UINodeControllerPanel.Instance.NodeID;
             if (nodeID == 0)
                 return;
@@ -98,6 +101,7 @@ namespace RoadTransitionManager.GUI {
         bool refreshing_ = false;
 
         public void Repopulate() {
+            if (VERBOSE) Log.Debug("UINodeTypeDropDown.Repopulate called()" + Environment.StackTrace);
             NodeData data = UINodeControllerPanel.Instance.BlendData;
             items = null;
             foreach (NodeTypeT nodeType in Enum.GetValues(typeof(NodeTypeT))) {
@@ -108,6 +112,7 @@ namespace RoadTransitionManager.GUI {
         }
 
         public void Refresh() {
+            if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
             NodeData data = UINodeControllerPanel.Instance.BlendData;
             if (data == null) {

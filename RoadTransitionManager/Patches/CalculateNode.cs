@@ -24,17 +24,18 @@ namespace RoadTransitionManager.Patches {
                 __instance.m_flags &= ~NetNode.Flags.Transition;
             }
             if (nodeData.NeedMiddleFlag()) {
-                __instance.m_flags &= ~(NetNode.Flags.Junction| NetNode.Flags.AsymForward | NetNode.Flags.AsymBackward);
+                __instance.m_flags &= ~(NetNode.Flags.Junction | NetNode.Flags.AsymForward | NetNode.Flags.AsymBackward);
                 __instance.m_flags |= NetNode.Flags.Middle;
             }
             if (nodeData.NeedBendFlag()) {
-                __instance.m_flags &= ~(NetNode.Flags.Junction| NetNode.Flags.Middle);
+                __instance.m_flags &= ~(NetNode.Flags.Junction | NetNode.Flags.Middle);
                 __instance.m_flags |= NetNode.Flags.Bend; // TODO set asymForward and asymBackward
             }
             if (nodeData.NeedJunctionFlag() ) {
                 __instance.m_flags |= NetNode.Flags.Junction;
-                __instance.m_flags &= ~(NetNode.Flags.Moveable | NetNode.Flags.Middle | NetNode.Flags.AsymForward | NetNode.Flags.AsymBackward | NetNode.Flags.Bend | NetNode.Flags.End);
+                __instance.m_flags &= ~(NetNode.Flags.Middle | NetNode.Flags.AsymForward | NetNode.Flags.AsymBackward | NetNode.Flags.Bend | NetNode.Flags.End);
             }
+            __instance.m_flags &= ~NetNode.Flags.Moveable;
         } // end postfix
     }
 }

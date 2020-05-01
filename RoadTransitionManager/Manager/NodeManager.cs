@@ -70,8 +70,8 @@ namespace RoadTransitionManager {
         }
 
         public void RefreshAllNodes() {
-            foreach (var blendData in buffer)
-                blendData?.Refresh();
+            foreach (var nodeData in buffer)
+                nodeData?.Refresh();
         }
 
         public void OnBeforeCalculateNode(ushort nodeID) {
@@ -94,23 +94,6 @@ namespace RoadTransitionManager {
         //    Log.Info($"ChangeNode({nodeID}) called");
         //    NodeBlendData data = GetOrCreate(nodeID);
         //    data.ChangeNodeType();
-        //    Instance.buffer[nodeID] = data;
-        //    RefreshData(nodeID);
-        //}
-
-
-        //public void ChangeOffset(ushort nodeID) {
-        //    Log.Info($"ChangeOffset({nodeID}) called");
-        //    if (!nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Junction)) {
-        //        Log.Info($"Not a junction");
-        //        return;
-        //    }
-
-        //    NodeBlendData data = GetOrCreate(nodeID);
-        //    if (!data.CanModifyOffset())
-        //        return;
-
-        //    data.IncrementOffset();
         //    Instance.buffer[nodeID] = data;
         //    RefreshData(nodeID);
         //}

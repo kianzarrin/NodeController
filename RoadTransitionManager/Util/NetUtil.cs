@@ -37,7 +37,7 @@ namespace RoadTransitionManager.Util {
             if (!test) {
                 nodeId.ToNode().m_flags |= NetNode.Flags.Middle | NetNode.Flags.Moveable;
             }
-            Log.Debug($"[InsertNode] test={test} errors:{ret} nodeId:{nodeId} newSegment:{newSegment} cost:{cost} productionRate{productionRate}");
+            //Log.Debug($"[InsertNode] test={test} errors:{ret} nodeId:{nodeId} newSegment:{newSegment} cost:{cost} productionRate{productionRate}");
             return ret;
         }
 

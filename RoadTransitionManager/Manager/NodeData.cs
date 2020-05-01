@@ -93,7 +93,7 @@ namespace RoadTransitionManager {
                 else
                     CornerOffset = DefaultCornerOffset;
             }
-            Log.Debug("Updating node:"+ NodeID);
+            Log.Debug($"NodeData.Refresh() Updating node:{NodeID}\n" + Environment.StackTrace);
             NetManager.instance.UpdateNode(NodeID);
         }
 
@@ -108,11 +108,11 @@ namespace RoadTransitionManager {
             NodeType == NodeTypeT.Crossing ||
             NodeType == NodeTypeT.UTurn);
 
-        public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
+        //public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
 
         public static bool IsSupported(ushort nodeID) {
             var flags = nodeID.ToNode().m_flags;
-            if (flags.IsFlagSet(NetNode.Flags.LevelCrossing))
+            if (flags.IsFlagSet(NetNode.Flags.LevelCrossing|NetNode.Flags.End|NetNode.Flags.Outside))
                 return false;
             int n = nodeID.ToNode().CountSegments();
             if (n > 2) return true;
@@ -134,7 +134,7 @@ namespace RoadTransitionManager {
                 case NodeTypeT.Middle:
                     return IsStraight;
                 case NodeTypeT.Bend:
-                    return !IsStraight || HWDiff > 0.05f;
+                    return DefaultFlags.IsFlagSet(NetNode.Flags.Bend) || HWDiff > 0.05f;// || !IsStraight;
                 case NodeTypeT.Custom:
                     return true;
                 default:
@@ -290,45 +290,5 @@ namespace RoadTransitionManager {
             }
         }
         #endregion
-
-        #region old code
-        //public void ChangeNodeType() {
-        //    if (!CanModifyNodeType()) {
-        //        throw new Exception("cannot change junction type");
-        //    } else if (DefaultNodeType == NodeTypeT.Node) {
-        //        switch (NodeType) {
-        //            case NodeTypeT.Node :
-        //                NodeType = NodeTypeT.Middle ;
-        //                break;
-        //            case NodeTypeT.Middle:
-        //                NodeType = NodeTypeT.Crossing ;
-        //                break;
-        //            case NodeTypeT.Crossing:
-        //                NodeType = NodeTypeT.Segment ;
-        //                break;
-        //            case NodeTypeT.Segment:
-        //                NodeType = NodeTypeT.Node ;
-        //                break;
-        //            default:
-        //                throw new Exception("Unreachable code");
-        //        }
-        //    }
-        //    if (DefaultNodeType == NodeTypeT.Middle) {
-        //        NodeType++;
-        //        if (NodeType > HelpersExtensions.GetMaxEnumValue<NodeTypeT>())
-        //            NodeType = 0;
-        //    }
-        //}
-
-        //public const float OFFSET_STEP = 5f;
-        ///// <summary>
-        ///// in case of overflow resets type and return true.
-        ///// </summary>
-        //public void IncrementOffset() {
-        //    CornerOffset += OFFSET_STEP;
-        //    if (CornerOffset > OFFSET_STEP * 10)
-        //        CornerOffset = 0;
-        //}
-        #endregion old code
     }
 }
