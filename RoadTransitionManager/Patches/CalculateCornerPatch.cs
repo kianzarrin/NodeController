@@ -11,6 +11,7 @@ namespace RoadTransitionManager.Patches {
 
     [UsedImplicitly]
     [HarmonyPatch]
+    [HarmonyAfter("csur.toolbox")]
     static class CalculateCornerPatch {
         static float GetMinCornerOffset(float cornerOffset0, ushort nodeID) {
             var data = NodeManager.Instance.buffer[nodeID];
