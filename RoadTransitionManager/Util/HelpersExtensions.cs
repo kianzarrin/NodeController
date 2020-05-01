@@ -9,6 +9,8 @@ namespace RoadTransitionManager.Util {
 
     public static class HelpersExtensions
     {
+        public const bool VERBOSE = false;
+
         public static int String2Enum<T>(string str) where T: Enum {
             return Array.IndexOf(Enum.GetNames(typeof(T)), str);
         }

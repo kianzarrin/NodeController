@@ -1,6 +1,7 @@
 using ColossalFramework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RoadTransitionManager.Util {
@@ -40,6 +41,9 @@ namespace RoadTransitionManager.Util {
             //Log.Debug($"[InsertNode] test={test} errors:{ret} nodeId:{nodeId} newSegment:{newSegment} cost:{cost} productionRate{productionRate}");
             return ret;
         }
+
+        internal static int CountPedestrianLanes(this NetInfo info) =>
+            info.m_lanes.Count(lane => lane.m_laneType == NetInfo.LaneType.Pedestrian);
 
         static bool Equals(this ref NetNode node1, ushort nodeId2) {
             ref NetNode node2 = ref nodeId2.ToNode();

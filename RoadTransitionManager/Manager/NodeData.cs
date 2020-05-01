@@ -19,18 +19,23 @@ namespace RoadTransitionManager {
 
     [Serializable]
     public class NodeData {
+        // intrinsic
         public ushort NodeID;
-        public int SegmentCount;
 
+        // defaults
         public float DefaultCornerOffset => NodeID.ToNode().Info.m_minCornerOffset;
         public NetNode.Flags DefaultFlags;
         public NodeTypeT DefaultNodeType;
 
-        public float HWDiff;
         public bool HasPedestrianLanes;
+        public int SegmentCount;
+
+        // only for segment count == 2
+        public float HWDiff;
+        public int PedestrianLaneCount;
         public bool IsStraight;
 
-        // Variable
+        // Configurable
         public NodeTypeT NodeType;
         public float CornerOffset;
 
@@ -61,15 +66,18 @@ namespace RoadTransitionManager {
                 float hw0 = 0;
                 Vector2 dir0 = default;
                 foreach (ushort segmetnID in NetUtil.GetSegmentsCoroutine(NodeID)) {
+                    int nPedLanes = segmetnID.ToSegment().Info.CountPedestrianLanes();
                     if (hw0 == 0) {
                         hw0 = segmetnID.ToSegment().Info.m_halfWidth;
                         dir0 = VectorUtils.XZ(segmetnID.ToSegment().GetDirection(NodeID));
                         dir0.Normalize();
+                        PedestrianLaneCount = nPedLanes;
                     } else {
                         HWDiff = Mathf.Abs(segmetnID.ToSegment().Info.m_halfWidth - hw0);
                         Vector2 dir1 = VectorUtils.XZ(segmetnID.ToSegment().GetDirection(NodeID));
                         dir1.Normalize();
                         IsStraight = Mathf.Abs(Vector2.Dot(dir0, dir1) + 1) < 0.001f;
+                        PedestrianLaneCount = Math.Max(PedestrianLaneCount, nPedLanes);
                     }
                 }
             }
@@ -93,7 +101,10 @@ namespace RoadTransitionManager {
                 else
                     CornerOffset = DefaultCornerOffset;
             }
-            Log.Debug($"NodeData.Refresh() Updating node:{NodeID}\n" + Environment.StackTrace);
+            Log.Debug($"NodeData.Refresh() Updating node:{NodeID}");
+            if (HelpersExtensions.VERBOSE)
+                Log.Debug(Environment.StackTrace);
+
             NetManager.instance.UpdateNode(NodeID);
         }
 
@@ -126,7 +137,8 @@ namespace RoadTransitionManager {
 
             switch (newNodeType) {
                 case NodeTypeT.Crossing:
-                    return HasPedestrianLanes && HWDiff < 0.001f && IsStraight;
+                    Log.Debug("CanChangeTo()  PedestrianLaneCount=" + PedestrianLaneCount);
+                    return PedestrianLaneCount >= 2 && HWDiff < 0.001f && IsStraight;
                 case NodeTypeT.UTurn:
                     return NodeID.ToNode().Info.m_forwardVehicleLaneCount > 0 && NodeID.ToNode().Info.m_backwardVehicleLaneCount > 0;
                 case NodeTypeT.Blend:

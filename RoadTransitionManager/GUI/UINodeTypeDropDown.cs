@@ -8,8 +8,6 @@ namespace RoadTransitionManager.GUI {
 
     public class UINodeTypeDropDown : UIDropDown, IDataControllerUI{
         public static UINodeTypeDropDown Instance { get; private set; }
-        const bool VERBOSE = true;
-
         public override void Awake() {
             base.Awake();
             Instance = this;
