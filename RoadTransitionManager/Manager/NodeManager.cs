@@ -44,11 +44,18 @@ namespace RoadTransitionManager {
 
         public NodeData[] buffer = new NodeData[NetManager.MAX_NODE_COUNT];
 
+        public NodeData InsertNode(NetTool.ControlPoint controlPoint, NodeTypeT nodeType =NodeTypeT.Crossing) {
+            if(ToolBase.ToolErrors.None != NetUtil.InsertNode(controlPoint, out ushort nodeID))
+                return null;
+            HelpersExtensions.Assert(nodeID!=0,"nodeID");
+            return buffer[nodeID] = new NodeData(nodeID, nodeType);
+        }
+
         public NodeData GetOrCreate(ushort nodeID) {
-            NodeData data = NodeManager.Instance.buffer[nodeID];
+            NodeData data = Instance.buffer[nodeID];
             if (data == null) {
                 data = new NodeData(nodeID);
-                NodeManager.Instance.buffer[nodeID] = data;
+                buffer[nodeID] = data;
             }
             return data;
         }

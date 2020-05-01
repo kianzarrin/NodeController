@@ -7,6 +7,8 @@ namespace RoadTransitionManager.Patches {
     using CSUtil.Commons;
     using System.Reflection;
     public static class TranspilerUtils {
+        static bool VERBOSE => Util.HelpersExtensions.VERBOSE;
+
         static void Log(object message) {
             Util.Log.Info("TRANSPILER " + message);
         }
@@ -196,27 +198,33 @@ namespace RoadTransitionManager.Patches {
             foreach (var code in insertion)
                 if (code == null)
                     throw new Exception("Bad Instructions:\n" + insertion.IL2STR());
-            Log($"replacing <{codes[index]}>\nInsert between: <{codes[index - 1]}>  and  <{codes[index + 1]}>");
+            if(VERBOSE)
+                Log($"replacing <{codes[index]}>\nInsert between: <{codes[index - 1]}>  and  <{codes[index + 1]}>");
 
             MoveLabels(codes[index], insertion[0]);
             codes.RemoveAt(index);
             codes.InsertRange(index, insertion);
 
-            Log("Replacing with\n" + insertion.IL2STR());
-            Log("PEEK (RESULTING CODE):\n" + codes.GetRange(index - 4, insertion.Length + 8).IL2STR());
+            if (VERBOSE)
+                Log("Replacing with\n" + insertion.IL2STR());
+            if (VERBOSE)
+                Log("PEEK (RESULTING CODE):\n" + codes.GetRange(index - 4, insertion.Length + 8).IL2STR());
         }
 
         public static void InsertInstructions(List<CodeInstruction> codes, CodeInstruction[] insertion, int index, bool moveLabels=true) {
             foreach (var code in insertion)
                 if (code == null)
                     throw new Exception("Bad Instructions:\n" + insertion.IL2STR());
-            Log($"Insert point:\n between: <{codes[index - 1]}>  and  <{codes[index]}>");
+            if (VERBOSE)
+                Log($"Insert point:\n between: <{codes[index - 1]}>  and  <{codes[index]}>");
 
             MoveLabels(codes[index], insertion[0]);
             codes.InsertRange(index, insertion);
 
-            Log("\n" + insertion.IL2STR());
-            Log("PEEK:\n" + codes.GetRange(index - 4, insertion.Length+12).IL2STR());
+            if (VERBOSE)
+                Log("\n" + insertion.IL2STR());
+            if (VERBOSE)
+                Log("PEEK:\n" + codes.GetRange(index - 4, insertion.Length+12).IL2STR());
         }
     }
 

@@ -43,10 +43,11 @@ namespace RoadTransitionManager {
             NodeID = nodeID;
             Calculate();
             NodeType = DefaultNodeType;
-            //if (DefaultNodeType == NodeTypeT.Middle) {
-            //    NodeType = NodeTypeT.Crossing;
-            //}
             CornerOffset = DefaultCornerOffset;
+        }
+
+        public NodeData(ushort nodeID, NodeTypeT nodeType) : this(nodeID) {
+            NodeType = nodeType;
         }
 
         public void Calculate() {

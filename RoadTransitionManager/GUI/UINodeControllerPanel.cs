@@ -3,11 +3,10 @@ namespace RoadTransitionManager.GUI {
     using ColossalFramework.UI;
     using System.Collections.Generic;
     using System.Runtime.Serialization.Formatters.Binary;
-    using RoadTransitionManager.Util;
     using System.Runtime.Serialization.Formatters;
     using System.IO;
     using System.Linq;
-
+    using Util;
     public class UINodeControllerPanel : UIPanel, IDataControllerUI {
         #region Instanciation
         public static UINodeControllerPanel Instance { get; private set; }

@@ -12,9 +12,9 @@ namespace RoadTransitionManager.Patches {
     [UsedImplicitly]
     [HarmonyPatch]
     static class CalculateCornerPatch {
-        static float GetMinCornerOffset(NetInfo info, ushort nodeID) {
+        static float GetMinCornerOffset(float cornerOffset0, ushort nodeID) {
             var data = NodeManager.Instance.buffer[nodeID];
-            return data?.CornerOffset ?? info.m_minCornerOffset;
+            return data?.CornerOffset ?? cornerOffset0;
         }
 
         [UsedImplicitly]
@@ -41,14 +41,13 @@ namespace RoadTransitionManager.Patches {
 
             int n = 0;
             foreach (var innstruction in instructions) {
+                yield return innstruction;
                 bool is_ldfld_minCornerOffset =
                     innstruction.opcode == OpCodes.Ldfld && innstruction.operand == f_minCornerOffset;
                 if (is_ldfld_minCornerOffset) {
                     n++;
                     yield return ldarg_startNodeID;
                     yield return call_GetMinCornerOffset;
-                } else {
-                    yield return innstruction;
                 }
             }
 
@@ -57,24 +56,4 @@ namespace RoadTransitionManager.Patches {
             yield break;
         }
     }
-
-    //public static int SearchNext_Ldfld_minCornerOffset(List<CodeInstruction> codes, int index) {
-    //    try {
-    //        index = SearchInstruction(codes, new CodeInstruction(OpCodes.Ldfld, f_minCornerOffset), index, counter: 1);
-    //        Assert(index != 0, "index!=0");
-    //        return index;
-    //    }
-    //    catch (InstructionNotFoundException) {
-    //        return 0;
-    //    }
-    //}
-
-
-    //public static void Replace_Call_GetMinCornerOffset(List<CodeInstruction> codes, int index) {
-    //    var newInstructions = new[] {
-    //            GetLDArg(targetMethod_, "startNodeID"), // push startNodeID into stack,
-    //            new CodeInstruction(OpCodes.Call, mGetMinCornerOffset), // call float GetMinCornerOffset(info, startNodeID)
-    //        };
-    //    ReplaceInstructions(codes, newInstructions, index);
-    //}
 }

@@ -127,7 +127,7 @@ namespace RoadTransitionManager.Tool {
         #endregion
 
         protected override void Awake() {
-            button_ = ToolButton.Create();
+            button_ = RoadTransitionButton.CreateButton(); // ToolButton.Create();
             panel_ = UINodeControllerPanel.Create();
             base.Awake();
         }
@@ -234,9 +234,9 @@ namespace RoadTransitionManager.Tool {
                 panel_.ShowNode(SelectedNodeID);
             } else if (c.m_segment != 0) {
                 SimulationManager.instance.AddAction(delegate () {
-                    ToolErrors errors  = NetUtil.InsertNode(m_cachedControlPoint, out ushort newNodeID);
-                    if (errors == ToolErrors.None) {
-                        SelectedNodeID = newNodeID;
+                    NodeData nodeData = NodeManager.Instance.InsertNode(c);
+                    if (nodeData != null) {
+                        SelectedNodeID = nodeData.NodeID;
                         panel_.ShowNode(SelectedNodeID);
                     }
                 });
