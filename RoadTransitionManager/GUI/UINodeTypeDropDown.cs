@@ -8,6 +8,7 @@ namespace RoadTransitionManager.GUI {
 
     public class UINodeTypeDropDown : UIDropDown, IDataControllerUI{
         public static UINodeTypeDropDown Instance { get; private set; }
+
         public override void Awake() {
             base.Awake();
             Instance = this;
@@ -100,7 +101,7 @@ namespace RoadTransitionManager.GUI {
 
         public void Repopulate() {
             if (VERBOSE) Log.Debug("UINodeTypeDropDown.Repopulate called()" + Environment.StackTrace);
-            NodeData data = UINodeControllerPanel.Instance.BlendData;
+            NodeData data = UINodeControllerPanel.Instance.NodeData;
             items = null;
             foreach (NodeTypeT nodeType in Enum.GetValues(typeof(NodeTypeT))) {
                 if (data.CanChangeTo(nodeType)) {
@@ -112,7 +113,7 @@ namespace RoadTransitionManager.GUI {
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
-            NodeData data = UINodeControllerPanel.Instance.BlendData;
+            NodeData data = UINodeControllerPanel.Instance.NodeData;
             if (data == null) {
                 Disable();
                 return;
@@ -120,8 +121,10 @@ namespace RoadTransitionManager.GUI {
 
             Repopulate();
             SelectedItem = data.NodeType;
+            tooltip = data.ToolTip(data.NodeType);
 
-            isVisible = triggerButton.isEnabled = this.isEnabled = items.Length > 1;
+            parent.isVisible = isVisible = triggerButton.isEnabled = this.isEnabled = items.Length > 1;
+            parent.Invalidate();
             Invalidate();
             triggerButton.Invalidate();
             refreshing_ = false;

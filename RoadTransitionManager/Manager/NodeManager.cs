@@ -1,4 +1,5 @@
 namespace RoadTransitionManager {
+    using ColossalFramework;
     using System;
     using System.IO;
     using System.Runtime.Serialization.Formatters;
@@ -34,8 +35,6 @@ namespace RoadTransitionManager {
             return memoryStream.ToArray();
         }
 
-        public void OnFirstFame() { }
-
         public void OnLoad() {
             RefreshAllNodes();
         }
@@ -44,11 +43,17 @@ namespace RoadTransitionManager {
 
         public NodeData[] buffer = new NodeData[NetManager.MAX_NODE_COUNT];
 
-        public NodeData InsertNode(NetTool.ControlPoint controlPoint, NodeTypeT nodeType =NodeTypeT.Crossing) {
+        public NodeData InsertNode(NetTool.ControlPoint controlPoint, NodeTypeT nodeType = NodeTypeT.Crossing) {
             if(ToolBase.ToolErrors.None != NetUtil.InsertNode(controlPoint, out ushort nodeID))
                 return null;
             HelpersExtensions.Assert(nodeID!=0,"nodeID");
-            return buffer[nodeID] = new NodeData(nodeID, nodeType);
+
+            int nPedLanes = controlPoint.m_segment.ToSegment().Info.CountPedestrianLanes();
+            if (nodeType == NodeTypeT.Crossing && nPedLanes<2)
+                buffer[nodeID] = new NodeData(nodeID);
+            else
+                buffer[nodeID] = new NodeData(nodeID, nodeType);
+            return buffer[nodeID];
         }
 
         public NodeData GetOrCreate(ushort nodeID) {

@@ -4,18 +4,26 @@ using System.IO;
 using System.Reflection;
 
 namespace RoadTransitionManager.GUI {
+    using static Util.HelpersExtensions;
+
     public static class TextureUtil {
+        const string PATH = "RoadTransitionManager.Resources.";
         public static UITextureAtlas CreateTextureAtlas(string textureFile, string atlasName, Material baseMaterial, int spriteWidth, int spriteHeight, string[] spriteNames) {
             Texture2D texture2D = new Texture2D(spriteWidth * spriteNames.Length, spriteHeight, TextureFormat.ARGB32, false);
+            Assert(texture2D != null, "texture2D");
             texture2D.filterMode = FilterMode.Bilinear;
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            Stream manifestResourceStream = executingAssembly.GetManifestResourceStream("PedestrianBridge.Resources." + textureFile);
+            string path = PATH + textureFile;
+            Stream manifestResourceStream = executingAssembly.GetManifestResourceStream(path);
+            Assert(manifestResourceStream != null, "could not find " + path);
             byte[] array = new byte[manifestResourceStream.Length];
             manifestResourceStream.Read(array, 0, array.Length);
             texture2D.LoadImage(array);
             texture2D.Apply(true, true);
             UITextureAtlas uitextureAtlas = ScriptableObject.CreateInstance<UITextureAtlas>();
+            Assert(uitextureAtlas != null, "uitextureAtlas");
             Material material = UnityEngine.Object.Instantiate<Material>(baseMaterial);
+            Assert(material != null, "material");
             material.mainTexture = texture2D;
             uitextureAtlas.material = material;
             uitextureAtlas.name = atlasName;
@@ -84,7 +92,6 @@ namespace RoadTransitionManager.GUI {
                 if (atlases[i].name == name)
                     return atlases[i];
             }
-
             return UIView.GetAView().defaultAtlas;
         }
 

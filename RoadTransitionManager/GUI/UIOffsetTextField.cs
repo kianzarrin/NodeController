@@ -63,7 +63,7 @@ namespace RoadTransitionManager.GUI {
 
         public void Apply() {
             ushort nodeID = UINodeControllerPanel.Instance.NodeID;
-            NodeData data = UINodeControllerPanel.Instance.BlendData;
+            NodeData data = UINodeControllerPanel.Instance.NodeData;
             if (data == null)
                 return;
             if (TryGetValue(out float value)) {
@@ -75,7 +75,7 @@ namespace RoadTransitionManager.GUI {
         }
 
         public void Refresh() {
-            NodeData data = UINodeControllerPanel.Instance.BlendData;
+            NodeData data = UINodeControllerPanel.Instance.NodeData;
             if (data == null) {
                 Disable();
                 return;

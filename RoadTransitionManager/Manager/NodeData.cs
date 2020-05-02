@@ -1,5 +1,3 @@
-
-
 namespace RoadTransitionManager {
     using ColossalFramework;
     using ColossalFramework.Math;
@@ -99,7 +97,9 @@ namespace RoadTransitionManager {
             if (!CanModifyOffset()) {
                 if (NodeType == NodeTypeT.UTurn)
                     CornerOffset = 8f;
-                else
+                else if (NodeType == NodeTypeT.Crossing)
+                    CornerOffset = 0f;
+                else if (NodeType != NodeTypeT.Custom)
                     CornerOffset = DefaultCornerOffset;
             }
             Log.Debug($"NodeData.Refresh() Updating node:{NodeID}");
@@ -120,7 +120,7 @@ namespace RoadTransitionManager {
             NodeType == NodeTypeT.Crossing ||
             NodeType == NodeTypeT.UTurn);
 
-        //public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
+        public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
 
         public static bool IsSupported(ushort nodeID) {
             var flags = nodeID.ToNode().m_flags;
@@ -153,6 +153,28 @@ namespace RoadTransitionManager {
                 default:
                     throw new Exception("Unreachable code");
             }
+        }
+
+        public string ToolTip(NodeTypeT nodeType) {
+            switch (nodeType) {
+                case NodeTypeT.Crossing:
+                    return "Crossing node. No U-turns";
+                case NodeTypeT.Middle:
+                    return "Middle: No node.";
+                case NodeTypeT.Bend:
+                    if (IsAsymRevert())
+                        return "Bend: Asymmetrical road changes direction. No crossings/U-turns";
+                    if(HWDiff > 0.05f)
+                        return "Bend: Linearly match segment widths. No crossings/U-turns";
+                    return "Bend: Simple road corner. No crossings/U-turns";
+                case NodeTypeT.Blend:
+                    return "No crossings or UTurns. Stretches texture to match both pavement and road.";
+                case NodeTypeT.UTurn:
+                    return "U-Turn: make space for U-turn. U-turn/Crossings configurable in TM:PE.";
+                case NodeTypeT.Custom:
+                    return "transition size and traffic rules are configrable.";
+            }
+            return null;
         }
 
         #region External Mods

@@ -41,10 +41,10 @@ namespace RoadTransitionManager.Patches {
             CodeInstruction call_GetMinCornerOffset = new CodeInstruction(OpCodes.Call, mGetMinCornerOffset);
 
             int n = 0;
-            foreach (var innstruction in instructions) {
-                yield return innstruction;
+            foreach (var instruction in instructions) {
+                yield return instruction;
                 bool is_ldfld_minCornerOffset =
-                    innstruction.opcode == OpCodes.Ldfld && innstruction.operand == f_minCornerOffset;
+                    instruction.opcode == OpCodes.Ldfld && instruction.operand == f_minCornerOffset;
                 if (is_ldfld_minCornerOffset) {
                     n++;
                     yield return ldarg_startNodeID;

@@ -7,7 +7,7 @@ namespace RoadTransitionManager.GUI {
     using System.IO;
     using System.Linq;
     using Util;
-    public class UINodeControllerPanel : UIPanel, IDataControllerUI {
+    public class UINodeControllerPanel : UIAutoSizePanel, IDataControllerUI {
         #region Instanciation
         public static UINodeControllerPanel Instance { get; private set; }
         static float savedX_ = 87;
@@ -54,10 +54,9 @@ namespace RoadTransitionManager.GUI {
         }
         #endregion Instanciation
 
-
         public ushort NodeID { get; private set; }
 
-        public NodeData BlendData {
+        public NodeData NodeData {
             get {
                 if (NodeID == 0) return null;
                 return NodeManager.Instance.GetOrCreate(NodeID);
@@ -76,37 +75,57 @@ namespace RoadTransitionManager.GUI {
             base.Start();
             Log.Debug("UINodeControllerPanel started");
 
-            autoLayout = true;
-            autoLayoutDirection = LayoutDirection.Vertical;
-            autoLayoutPadding = new RectOffset(5, 5, 5, 5);
-            //autoSize = true;
-
+            width = 250;
             name = "UINodeControllerPanel";
-            atlas = TextureUtil.GetAtlas("Ingame");
-            backgroundSprite = "SubcategoriesPanel";
-            size = new Vector2(250, 100);
+            backgroundSprite = "MenuPanel2";
             absolutePosition = new Vector3(savedX_, savedY_);
 
             isVisible = false;
 
+            {
+                var dragHandle_ = AddUIComponent<UIDragHandle>();
+                dragHandle_.width = width;
+                dragHandle_.height = 42;
+                dragHandle_.relativePosition = Vector3.zero;
+                dragHandle_.target = parent;
 
-            //autoLayout = false;
-            dragHandle_ = AddUIComponent<UIDragHandle>();
-            dragHandle_.width = width;
-            dragHandle_.height = 10;
-            //dragHandle_.relativePosition = Vector3.zero;
-            dragHandle_.target = parent;
+                var lblCaption = dragHandle_.AddUIComponent<UILabel>();
+                lblCaption.text = "Node controler";
+                lblCaption.Show();
+                lblCaption.relativePosition = new Vector3(60, 14, 0);
+            }
 
-            slider_ = AddUIComponent<UIOffsetSlider>();
-            Controls.Add(slider_);
-            dropdown_ = AddUIComponent<UINodeTypeDropDown>();
-            Controls.Add(dropdown_);
+            {
+                UIPanel panel1 = AddUIComponent<UIAutoSizePanel>();
+                panel1.width = width;
 
+                var lblOffset = panel1.AddUIComponent<UILabel>();
+                lblOffset.padding = new RectOffset(left: 10, right: 0, top: 10, bottom: 5);
+                lblOffset.text = "Corner smoothness";
+                lblOffset.tooltip = "Adjusts Corner offset for smooth junction transition.";
+
+                var slider_ = panel1.AddUIComponent<UIOffsetSlider>();
+                Controls.Add(slider_);
+            }
+            {
+                UIPanel panel2 = AddUIComponent<UIAutoSizePanel>();
+                panel2.width = width;
+
+                var lblNodeType = panel2.AddUIComponent<UILabel>();
+                lblNodeType.padding = new RectOffset(left: 10, right: 0, top: 10, bottom: 5);
+                lblNodeType.text = "Choose transition type";
+
+                var dropdown_ = panel2.AddUIComponent<UINodeTypeDropDown>();
+                Controls.Add(dropdown_);
+            }
         }
 
-        UIOffsetSlider slider_;
-        UINodeTypeDropDown dropdown_;
-        UIDragHandle dragHandle_;
+
+        //UILabel lblOffset;
+        //UILabel lblNodeType;
+        //UIOffsetSlider slider_;
+        //UINodeTypeDropDown dropdown_;
+        //UIDragHandle dragHandle_;
 
         protected override void OnPositionChanged() {
             base.OnPositionChanged();
@@ -150,6 +169,7 @@ namespace RoadTransitionManager.GUI {
         public void Refresh() {
             foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>())
                 control.Refresh();
+            Update();
         }
     }
 }

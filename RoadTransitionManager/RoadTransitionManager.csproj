@@ -71,7 +71,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\sprites.png" />
+    <EmbeddedResource Include="Resources\sprites.png" />
   </ItemGroup>
   <Target Name="DeployToModDirectory" AfterTargets="Build">
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">

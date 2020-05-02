@@ -15,16 +15,6 @@ namespace RoadTransitionManager.LifeCycle
             NodeManager.Instance.OnLoad();
         }
 
-
-        /// <summary>
-        /// First frame after load
-        /// </summary>
-        public static void FirstFrame() {
-            Log.Debug("First Frame ...");
-            NodeManager.Instance.OnFirstFame();
-            bFirstFrame = false;
-        }
-
         public static void Release()
         {
             Log.Info("LifeCycle.Release() called");
