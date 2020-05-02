@@ -91,41 +91,53 @@ namespace RoadTransitionManager.GUI {
 
                 var lblCaption = dragHandle_.AddUIComponent<UILabel>();
                 lblCaption.text = "Node controler";
-                lblCaption.Show();
                 lblCaption.relativePosition = new Vector3(60, 14, 0);
             }
 
             {
-                UIPanel panel1 = AddUIComponent<UIAutoSizePanel>();
-                panel1.width = width;
+                var panel = AddPanel();
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Choose transition type";
 
-                var lblOffset = panel1.AddUIComponent<UILabel>();
-                lblOffset.padding = new RectOffset(left: 10, right: 0, top: 10, bottom: 5);
-                lblOffset.text = "Corner smoothness";
-                lblOffset.tooltip = "Adjusts Corner offset for smooth junction transition.";
+                var dropdown_ = panel.AddUIComponent<UINodeTypeDropDown>();
+                Controls.Add(dropdown_);
+            }
 
-                var slider_ = panel1.AddUIComponent<UIOffsetSlider>();
+            {
+                var panel = AddPanel();
+
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Corner smoothness";
+                label.tooltip = "Adjusts Corner offset for smooth junction transition.";
+
+                var slider_ = panel.AddUIComponent<UIOffsetSlider>();
                 Controls.Add(slider_);
             }
+
+            AddPanel().name = "Space";
+
             {
-                UIPanel panel2 = AddUIComponent<UIAutoSizePanel>();
-                panel2.width = width;
+                var panel = AddPanel();
+                var checkBox = panel.AddUIComponent<UIHideMarkingsCheckbox>();
+                Controls.Add(checkBox);
+            }
 
-                var lblNodeType = panel2.AddUIComponent<UILabel>();
-                lblNodeType.padding = new RectOffset(left: 10, right: 0, top: 10, bottom: 5);
-                lblNodeType.text = "Choose transition type";
-
-                var dropdown_ = panel2.AddUIComponent<UINodeTypeDropDown>();
-                Controls.Add(dropdown_);
+            {
+                var panel = AddPanel();
+                var button = panel.AddUIComponent<UIResetButton>();
+                Controls.Add(button);
             }
         }
 
-
-        //UILabel lblOffset;
-        //UILabel lblNodeType;
-        //UIOffsetSlider slider_;
-        //UINodeTypeDropDown dropdown_;
-        //UIDragHandle dragHandle_;
+        UIAutoSizePanel AddPanel() {
+            int pad_horizontal = 10;
+            int pad_vertical = 5;
+            UIAutoSizePanel panel = AddUIComponent<UIAutoSizePanel>();
+            panel.width = width - pad_horizontal * 2;
+            panel.autoLayoutPadding =
+                new RectOffset(pad_horizontal, pad_horizontal, pad_vertical, pad_vertical);
+            return panel;
+        }
 
         protected override void OnPositionChanged() {
             base.OnPositionChanged();
@@ -141,12 +153,6 @@ namespace RoadTransitionManager.GUI {
             savedY_ = absolutePosition.y;
             Log.Debug("absolutePosition: " + absolutePosition);
         }
-
-        //protected override void OnVisibilityChanged() {
-        //    base.OnVisibilityChanged();
-        //    if (isVisible)
-        //        Refresh();
-        //}
 
         public void ShowNode(ushort nodeID) {
             NodeManager.Instance.RefreshData(NodeID);
@@ -169,7 +175,8 @@ namespace RoadTransitionManager.GUI {
         public void Refresh() {
             foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>())
                 control.Refresh();
-            Update();
+            //Update();
+            RefreshSizeRecursive();
         }
     }
 }

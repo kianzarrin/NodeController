@@ -36,6 +36,7 @@ namespace RoadTransitionManager {
         // Configurable
         public NodeTypeT NodeType;
         public float CornerOffset;
+        public bool ClearMarkings;
 
         public NodeData(ushort nodeID) {
             NodeID = nodeID;
@@ -88,12 +89,23 @@ namespace RoadTransitionManager {
         }
 
         public bool IsDefault() {
-            bool ret = CornerOffset - DefaultCornerOffset < 0.5f;
+            bool ret = Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.5f;
             ret &= NodeType == DefaultNodeType;
+            ret &= ClearMarkings == false;
             return ret;
         }
 
+        public void ResetToDefault() {
+            NodeType = DefaultNodeType;
+            CornerOffset = DefaultCornerOffset;
+            ClearMarkings = false;
+            NetManager.instance.UpdateNode(NodeID);
+        }
+
         public void Refresh() {
+            if (NodeType != NodeTypeT.Custom)
+                ClearMarkings = false;
+
             if (!CanModifyOffset()) {
                 if (NodeType == NodeTypeT.UTurn)
                     CornerOffset = 8f;
@@ -114,6 +126,7 @@ namespace RoadTransitionManager {
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Custom || NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Blend || NodeType == NodeTypeT.Custom;
+        public bool ShowClearMarkingsToggle() => NodeType == NodeTypeT.Custom;
         public bool NeedsTransitionFlag() =>
             SegmentCount == 2 &&
             (NodeType == NodeTypeT.Custom ||
@@ -138,12 +151,11 @@ namespace RoadTransitionManager {
 
             switch (newNodeType) {
                 case NodeTypeT.Crossing:
-                    Log.Debug("CanChangeTo()  PedestrianLaneCount=" + PedestrianLaneCount);
                     return PedestrianLaneCount >= 2 && HWDiff < 0.001f && IsStraight;
                 case NodeTypeT.UTurn:
                     return NodeID.ToNode().Info.m_forwardVehicleLaneCount > 0 && NodeID.ToNode().Info.m_backwardVehicleLaneCount > 0;
                 case NodeTypeT.Blend:
-                    return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle);
+                    return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle) && IsStraight;
                 case NodeTypeT.Middle:
                     return IsStraight;
                 case NodeTypeT.Bend:
@@ -179,6 +191,9 @@ namespace RoadTransitionManager {
 
         #region External Mods
         public TernaryBool ShouldHideCrossingTexture() {
+            if (ClearMarkings)
+                return TernaryBool.True;
+
             switch (NodeType) {
                 case NodeTypeT.Crossing:
                     return TernaryBool.False; // always show

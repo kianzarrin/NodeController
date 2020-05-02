@@ -1,4 +1,5 @@
 using ColossalFramework.UI;
+using RoadTransitionManager.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,11 @@ namespace RoadTransitionManager.GUI {
             atlas = TextureUtil.GetAtlas("Ingame"); 
         }
 
+        public override void Start() {
+            base.Start();
+            RefreshSizeRecursive();
+        }
+
         private bool m_AutoSize;
         public override bool autoSize {
             get {
@@ -26,10 +32,19 @@ namespace RoadTransitionManager.GUI {
             set {
                 m_AutoSize = value;
                 Invalidate();
+                RefreshSizeRecursive();
             }
         }
 
+        public void RefreshSizeRecursive() {
+            foreach (UIComponent item in components) {
+                (item as UIAutoSizePanel)?.RefreshSizeRecursive();
+            }
+            RefreshSize();
+        }
+
         private void RefreshSize() {
+            // copy pasted from UIPanel.AutoArrage().
             float widthAcc = 0f;
             if (this.autoLayoutStart.StartsAtLeft()) {
                 widthAcc = (float)this.padding.left + (float)this.autoLayoutPadding.left;
@@ -53,6 +68,8 @@ namespace RoadTransitionManager.GUI {
                 } else if (this.autoLayoutStart.StartsAtRight()) {
                     uicomponent = this.m_ChildComponents[base.childCount - 1 - i];
                 }
+                Log.Debug($"{name}.uicomponent={uicomponent.name}:" +
+                    $"{uicomponent.isVisible} && {uicomponent.enabled} && {uicomponent.gameObject.activeSelf}");
                 if (uicomponent.isVisible && uicomponent.enabled && uicomponent.gameObject.activeSelf) {
                     if (!this.useCenter && this.wrapLayout) {
                         if (this.autoLayoutDirection == LayoutDirection.Horizontal) {
@@ -118,6 +135,8 @@ namespace RoadTransitionManager.GUI {
                     }
                 }
             }
+
+            // Appended code:
             if(autoLayoutDirection == LayoutDirection.Horizontal) {
                 if (autoLayoutStart.StartsAtLeft())
                     widthAcc += padding.right;
@@ -130,16 +149,7 @@ namespace RoadTransitionManager.GUI {
                 else
                     heightAcc -= padding.top;
                 height = heightAcc;
-            }
-        }
-
-        public override void Update() {
-            base.Update();
-            foreach (UIAutoSizePanel panel in this.GetComponents<UIAutoSizePanel>()) {
-                panel.Update();
-            }
-            if(this.m_IsComponentInvalidated && this.autoLayout && base.isVisible) {
-                RefreshSize();
+                //Log.Debug($"updating {name} hieght to " + height);
             }
         }
     }

@@ -86,10 +86,8 @@ namespace RoadTransitionManager.GUI {
 
         public void Apply() {
             if(VERBOSE)Log.Debug("UINodeTypeDropDown.Apply called()\n" + Environment.StackTrace);
-            ushort nodeID = UINodeControllerPanel.Instance.NodeID;
-            if (nodeID == 0)
-                return;
-            var data = NodeManager.Instance.buffer[nodeID];
+            NodeData data = UINodeControllerPanel.Instance.NodeData;
+            if (data == null) return;
             data.NodeType = SelectedItem;
             Assert(!refreshing_, "!refreshing_");
             data.Refresh();

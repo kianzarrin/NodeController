@@ -21,15 +21,10 @@ namespace RoadTransitionManager.GUI {
             builtinKeyNavigation = true;
             isInteractive = true;
             color = Color.grey;
-
-            
-
             name = name;
-
             height = 15f;
-            float padding = 10;
+            float padding = 0; // contianer has padding
             width = parent.width - 2*padding;
-
 
             maxValue = 100;
             minValue = 0;
@@ -71,6 +66,7 @@ namespace RoadTransitionManager.GUI {
             data.Refresh();
             tooltip = value.ToString();
             RefreshTooltip();
+            UIResetButton.Instance.Refresh();
         }
 
         public void Refresh() {
