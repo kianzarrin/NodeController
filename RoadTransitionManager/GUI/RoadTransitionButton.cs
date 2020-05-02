@@ -9,7 +9,7 @@ using static RoadTransitionManager.Util.HelpersExtensions;
 
 namespace RoadTransitionManager.GUI {
     public class RoadTransitionButton : UIButton {
-        string AtlasName = "RoadTransitionButtonUI_rev" +
+        public static string AtlasName = "RoadTransitionButtonUI_rev" +
             typeof(RoadTransitionButton).Assembly.GetName().Version.Revision;
         const int SIZE = 40;
         const string CONTAINING_PANEL_NAME = "RoadsOptionPanel";
@@ -19,8 +19,8 @@ namespace RoadTransitionManager.GUI {
         const string RoadTransitionButtonBg = "RoadTransitionButtonBg";
         const string RoadTransitionButtonBgFocused = "RoadTransitionButtonBgFocused";
         const string RoadTransitionButtonBgHovered = "RoadTransitionButtonBgHovered";
-        const string RoadTransitionIcon = "RoadTransitionIcon";
-        const string RoadTransitionIconActive = "RoadTransitionIconPressed";
+        internal const string RoadTransitionIcon = "RoadTransitionIcon";
+        internal const string RoadTransitionIconActive = "RoadTransitionIconPressed";
 
         static UIComponent GetContainingPanel() {
             var ret = GUI.UIUtils.Instance.FindComponent<UIComponent>(CONTAINING_PANEL_NAME, null, GUI.UIUtils.FindOptions.NameContains);

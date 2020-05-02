@@ -36,7 +36,7 @@ namespace RoadTransitionManager.Patches
             if (blendData == null)
                 return;
 
-            if(blendData.NodeType == NodeTypeT.Crossing)
+            if(blendData.ShouldRenderCenteralCrossingTexture())
             {
                 // puts crossings in the center.
                 data.m_dataVector1.w = 0.01f;

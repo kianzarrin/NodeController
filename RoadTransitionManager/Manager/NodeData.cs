@@ -1,6 +1,7 @@
 namespace RoadTransitionManager {
     using ColossalFramework;
     using ColossalFramework.Math;
+    using RoadTransitionManager.Patches.HideCrosswalksMod;
     using System;
     using UnityEngine;
     using Util;
@@ -32,6 +33,7 @@ namespace RoadTransitionManager {
         public float HWDiff;
         public int PedestrianLaneCount;
         public bool IsStraight;
+        ushort segmentID1, segmentID2;
 
         // Configurable
         public NodeTypeT NodeType;
@@ -65,16 +67,18 @@ namespace RoadTransitionManager {
             if (SegmentCount == 2) {
                 float hw0 = 0;
                 Vector2 dir0 = default;
-                foreach (ushort segmetnID in NetUtil.GetSegmentsCoroutine(NodeID)) {
-                    int nPedLanes = segmetnID.ToSegment().Info.CountPedestrianLanes();
+                foreach (ushort segmentID in NetUtil.GetSegmentsCoroutine(NodeID)) {
+                    int nPedLanes = segmentID.ToSegment().Info.CountPedestrianLanes();
                     if (hw0 == 0) {
-                        hw0 = segmetnID.ToSegment().Info.m_halfWidth;
-                        dir0 = VectorUtils.XZ(segmetnID.ToSegment().GetDirection(NodeID));
+                        segmentID1 = segmentID;
+                        hw0 = segmentID.ToSegment().Info.m_halfWidth;
+                        dir0 = VectorUtils.XZ(segmentID.ToSegment().GetDirection(NodeID));
                         dir0.Normalize();
                         PedestrianLaneCount = nPedLanes;
                     } else {
-                        HWDiff = Mathf.Abs(segmetnID.ToSegment().Info.m_halfWidth - hw0);
-                        Vector2 dir1 = VectorUtils.XZ(segmetnID.ToSegment().GetDirection(NodeID));
+                        segmentID2 = segmentID;
+                        HWDiff = Mathf.Abs(segmentID.ToSegment().Info.m_halfWidth - hw0);
+                        Vector2 dir1 = VectorUtils.XZ(segmentID.ToSegment().GetDirection(NodeID));
                         dir1.Normalize();
                         IsStraight = Mathf.Abs(Vector2.Dot(dir0, dir1) + 1) < 0.001f;
                         PedestrianLaneCount = Math.Max(PedestrianLaneCount, nPedLanes);
@@ -121,19 +125,30 @@ namespace RoadTransitionManager {
             NetManager.instance.UpdateNode(NodeID);
         }
 
+        bool CrossingIsRemoved(ushort segmentId) =>
+            HideCrosswalks.Patches.CalculateMaterialCommons.
+            ShouldHideCrossing(NodeID, segmentId);
+
         public bool NeedMiddleFlag() => NodeType == NodeTypeT.Middle;
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Custom || NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Blend || NodeType == NodeTypeT.Custom;
         public bool ShowClearMarkingsToggle() => NodeType == NodeTypeT.Custom;
+        public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
+
         public bool NeedsTransitionFlag() =>
             SegmentCount == 2 &&
             (NodeType == NodeTypeT.Custom ||
             NodeType == NodeTypeT.Crossing ||
             NodeType == NodeTypeT.UTurn);
 
-        public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
+        public bool ShouldRenderCenteralCrossingTexture() =>
+            NodeType == NodeTypeT.Crossing &&
+            CrossingIsRemoved(segmentID1) &&
+            CrossingIsRemoved(segmentID2);
+
+
 
         public static bool IsSupported(ushort nodeID) {
             var flags = nodeID.ToNode().m_flags;

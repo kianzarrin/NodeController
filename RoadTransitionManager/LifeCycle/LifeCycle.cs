@@ -13,6 +13,7 @@ namespace RoadTransitionManager.LifeCycle
             HarmonyExtension.InstallHarmony();
             NodeControllerTool.Create();
             NodeManager.Instance.OnLoad();
+            SerializableDataExtension.LoadGlobalConfig();
         }
 
         public static void Release()
@@ -20,6 +21,7 @@ namespace RoadTransitionManager.LifeCycle
             Log.Info("LifeCycle.Release() called");
             HarmonyExtension.UninstallHarmony();
             NodeControllerTool.Remove();
+            SerializableDataExtension.SaveGlobalConfig();
         }
     }
 }

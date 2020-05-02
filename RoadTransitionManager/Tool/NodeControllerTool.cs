@@ -207,8 +207,12 @@ namespace RoadTransitionManager.Tool {
         }
 
         protected override void OnSecondaryMouseClicked() {
-            panel_.Close();
-            SelectedNodeID = 0;
+            if (SelectedNodeID == 0) {
+                DisableTool();
+            } else {
+                panel_.Close();
+                SelectedNodeID = 0;
+            }
         }
 
         static string LogControlPoint(NetTool.ControlPoint c) {

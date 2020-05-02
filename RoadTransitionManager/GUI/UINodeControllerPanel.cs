@@ -91,7 +91,15 @@ namespace RoadTransitionManager.GUI {
 
                 var lblCaption = dragHandle_.AddUIComponent<UILabel>();
                 lblCaption.text = "Node controler";
-                lblCaption.relativePosition = new Vector3(60, 14, 0);
+                lblCaption.relativePosition = new Vector3(70, 14, 0);
+
+                var sprite = dragHandle_.AddUIComponent<UISprite>();
+                sprite.size = new Vector2(40, 40);
+                sprite.relativePosition = new Vector3(5, 3, 0);
+                sprite.atlas = TextureUtil.GetAtlas(RoadTransitionButton.AtlasName);
+                sprite.spriteName = RoadTransitionButton.RoadTransitionIconActive;
+
+
             }
 
             {
