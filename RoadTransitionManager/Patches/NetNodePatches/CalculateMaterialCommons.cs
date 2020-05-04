@@ -18,7 +18,7 @@ namespace RoadTransitionManager.Patches {
     public static class CalculateMaterialCommons {
         public static bool ShouldContinueMedian(ushort nodeID, ushort segmentID) {
             var data = NodeManager.Instance.buffer[nodeID];
-            return data != null && data.NodeType == NodeTypeT.Blend;
+            return data != null && data.NodeType == NodeTypeT.Stretch;
         }
 
         public static Material CalculateMaterial(Material material, ushort nodeID, ushort segmentID) {

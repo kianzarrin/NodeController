@@ -10,7 +10,7 @@ namespace RoadTransitionManager {
     public enum NodeTypeT {
         Middle,
         Bend,
-        Blend,
+        Stretch,
         Crossing, // change dataMatrix.w to render crossings in the middle.
         UTurn, // set offset to 5.
         Custom,
@@ -27,10 +27,12 @@ namespace RoadTransitionManager {
         public NetNode.Flags DefaultFlags;
         public NodeTypeT DefaultNodeType;
 
+        // cache
         public bool HasPedestrianLanes;
         public int SegmentCount;
+        public float CurveRaduis0; 
 
-        // only for segment count == 2
+        // cache only for segment count == 2
         public float HWDiff;
         public int PedestrianLaneCount;
         public bool IsStraight;
@@ -136,7 +138,7 @@ namespace RoadTransitionManager {
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Custom || NodeType == NodeTypeT.Crossing;
-        public bool CanModifyOffset() => NodeType == NodeTypeT.Blend || NodeType == NodeTypeT.Custom;
+        public bool CanModifyOffset() => NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
         public bool ShowClearMarkingsToggle() => NodeType == NodeTypeT.Custom && !IsCSUR;
         public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
 
@@ -150,8 +152,6 @@ namespace RoadTransitionManager {
             NodeType == NodeTypeT.Crossing &&
             CrossingIsRemoved(segmentID1) &&
             CrossingIsRemoved(segmentID2);
-
-
 
         public static bool IsSupported(ushort nodeID) {
             var flags = nodeID.ToNode().m_flags;
@@ -175,7 +175,7 @@ namespace RoadTransitionManager {
                     return PedestrianLaneCount >= 2 && HWDiff < 0.001f && IsStraight;
                 case NodeTypeT.UTurn:
                     return Info.m_forwardVehicleLaneCount > 0 && Info.m_backwardVehicleLaneCount > 0;
-                case NodeTypeT.Blend:
+                case NodeTypeT.Stretch:
                     return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle) && IsStraight;
                 case NodeTypeT.Middle:
                     return IsStraight;
@@ -200,7 +200,7 @@ namespace RoadTransitionManager {
                     if(HWDiff > 0.05f)
                         return "Bend: Linearly match segment widths. No crossings/U-turns";
                     return "Bend: Simple road corner. No crossings/U-turns";
-                case NodeTypeT.Blend:
+                case NodeTypeT.Stretch:
                     return "No crossings or UTurns. Stretches texture to match both pavement and road.";
                 case NodeTypeT.UTurn:
                     return "U-Turn: make space for U-turn. U-turn/Crossings configurable in TM:PE.";
@@ -212,24 +212,11 @@ namespace RoadTransitionManager {
 
         #region External Mods
         public TernaryBool ShouldHideCrossingTexture() {
+            if (NodeType == NodeTypeT.Stretch)
+                return TernaryBool.False; // always ignore.
             if (ClearMarkings)
-                return TernaryBool.True;
-
-            switch (NodeType) {
-                case NodeTypeT.Crossing:
-                    return TernaryBool.False; // always show
-                case NodeTypeT.UTurn:
-                    return TernaryBool.True; // allways hide
-                case NodeTypeT.Blend:
-                    return TernaryBool.False; // always don't modify
-                case NodeTypeT.Middle:
-                case NodeTypeT.Bend:
-                    return TernaryBool.Undefined; // don't care
-                case NodeTypeT.Custom:
-                    return TernaryBool.Undefined; // default
-                default:
-                    throw new Exception("Unreachable code");
-            }
+                return TernaryBool.True; // always hide
+            return TernaryBool.Undefined; // default.
         }
 
         // undefined -> don't touch prev value
@@ -241,11 +228,11 @@ namespace RoadTransitionManager {
                     return TernaryBool.False; // always off
                 case NodeTypeT.UTurn:
                     return TernaryBool.Undefined; // default on
-                case NodeTypeT.Blend:
+                case NodeTypeT.Stretch:
                     return TernaryBool.False; // always off
                 case NodeTypeT.Middle:
                 case NodeTypeT.Bend:
-                    return TernaryBool.Undefined; // don't care
+                    return TernaryBool.False; // always default
                 case NodeTypeT.Custom:
                     return TernaryBool.Undefined; // default
                 default:
@@ -260,7 +247,7 @@ namespace RoadTransitionManager {
                     return TernaryBool.False; // always off
                 case NodeTypeT.UTurn:
                     return TernaryBool.True; // default on
-                case NodeTypeT.Blend:
+                case NodeTypeT.Stretch:
                     return TernaryBool.False; // always off
                 case NodeTypeT.Middle:
                 case NodeTypeT.Bend:
@@ -278,11 +265,11 @@ namespace RoadTransitionManager {
                     return TernaryBool.False; // always on
                 case NodeTypeT.UTurn:
                     return TernaryBool.False; // always off
-                case NodeTypeT.Blend:
+                case NodeTypeT.Stretch:
                     return TernaryBool.False; // always off
                 case NodeTypeT.Middle:
                 case NodeTypeT.Bend:
-                    return TernaryBool.Undefined;
+                    return TernaryBool.False; // always default
                 case NodeTypeT.Custom:
                     if (SegmentCount ==  2 && !HasPedestrianLanes) {
                         return TernaryBool.False; // TODO move to TMPE.
@@ -299,7 +286,7 @@ namespace RoadTransitionManager {
                     return TernaryBool.True; // always on
                 case NodeTypeT.UTurn:
                     return TernaryBool.False; // default off
-                case NodeTypeT.Blend:
+                case NodeTypeT.Stretch:
                     return TernaryBool.False; // always off
                 case NodeTypeT.Middle:
                 case NodeTypeT.Bend:
@@ -319,11 +306,11 @@ namespace RoadTransitionManager {
                     return TernaryBool.Undefined; // default off
                 case NodeTypeT.UTurn:
                     return TernaryBool.Undefined; // default
-                case NodeTypeT.Blend:
+                case NodeTypeT.Stretch:
                     return TernaryBool.False; // always on
                 case NodeTypeT.Middle:
                 case NodeTypeT.Bend:
-                    return TernaryBool.Undefined; // don't care
+                    return TernaryBool.False; // always default
                 case NodeTypeT.Custom:
                     if (SegmentCount > 2)
                         return TernaryBool.Undefined;
@@ -343,7 +330,7 @@ namespace RoadTransitionManager {
                     return TernaryBool.False; // default off
                 case NodeTypeT.UTurn:
                     return TernaryBool.Undefined; // default
-                case NodeTypeT.Blend:
+                case NodeTypeT.Stretch:
                     return TernaryBool.True; // always on
                 case NodeTypeT.Middle:
                 case NodeTypeT.Bend:

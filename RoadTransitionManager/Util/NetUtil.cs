@@ -25,7 +25,6 @@ namespace RoadTransitionManager.Util {
         internal static ref NetSegment ToSegment(this ushort id) => ref netMan.m_segments.m_buffer[id];
         internal static ref NetLane ToLane(this uint id) => ref netMan.m_lanes.m_buffer[id];
 
-
         public static bool IsCSUR(NetInfo info) {
             if (info == null ||
                 (info.m_netAI.GetType() != typeof(RoadAI) &&

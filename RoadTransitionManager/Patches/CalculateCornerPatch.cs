@@ -11,7 +11,6 @@ namespace RoadTransitionManager.Patches {
 
     [UsedImplicitly]
     [HarmonyPatch]
-    [HarmonyAfter("csur.toolbox")]
     static class CalculateCornerPatch {
         static float GetMinCornerOffset(float cornerOffset0, ushort nodeID) {
             var data = NodeManager.Instance.buffer[nodeID];
@@ -36,6 +35,7 @@ namespace RoadTransitionManager.Patches {
 
         static MethodInfo targetMethod_ = TargetMethod() as MethodInfo;
 
+        [HarmonyBefore(CSURUtil.HARMONY_ID)]
         public static IEnumerable<CodeInstruction> Transpiler(ILGenerator il, IEnumerable<CodeInstruction> instructions) {
             CodeInstruction ldarg_startNodeID = GetLDArg(targetMethod_, "startNodeID"); // push startNodeID into stack,
             CodeInstruction call_GetMinCornerOffset = new CodeInstruction(OpCodes.Call, mGetMinCornerOffset);

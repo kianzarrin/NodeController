@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace RoadTransitionManager.Util {
     public static class CSURUtil {
+        public const string HARMONY_ID = "csur.toolbox";
         public static float GetMinCornerOffset(ushort nodeID) {
             NetInfo info = nodeID.ToNode().Info;
             float ret = info.m_minCornerOffset;
@@ -18,4 +19,5 @@ namespace RoadTransitionManager.Util {
             return CSURToolBox.Util.CSURUtil.GetMinCornerOffset(cornerOffset0,nodeID);
         }
     }
+
 }

@@ -8,6 +8,10 @@ namespace RoadTransitionManager.GUI {
     using TrafficManager.Util;
     using UnityEngine;
     using RoadTransitionManager.Util;
+    using CSUtil.Commons;
+    using RoadTransitionManager.Patches.TMPE;
+    using Log = Util.Log;
+    using System.Reflection;
 
     /// <summary>
     /// Class handles rendering of priority signs overlay.
@@ -200,7 +204,7 @@ namespace RoadTransitionManager.GUI {
                     signsPerRow: isIncoming ? 2 : 1,
                     baseZoom: TMPEUtils.GetBaseZoom());
 
-                IJunctionRestrictionsManager jrMan = JunctionRestrictionsManager.Instance;
+                JunctionRestrictionsManager jrMan = JunctionRestrictionsManager.Instance;
 
                 #region UTURN
                 // draw "u-turns allowed" sign at (1; 0)
@@ -281,8 +285,22 @@ namespace RoadTransitionManager.GUI {
                     startNode: isStartNode,
                     node: ref node);
 
-                isDefault = allowed == jrMan.GetDefaultPedestrianCrossingAllowed(
-                    segmentId, isStartNode, ref node);
+
+
+                //{
+                //    bool defaultVal = jrMan.GetDefaultPedestrianCrossingAllowed(
+                //        segmentId, isStartNode, ref node);
+                //    isDefault = allowed == defaultVal;
+
+                //    SegmentEndFlags flags = jrMan.GetFlags(segmentId, isStartNode);
+
+                //    //TernaryBool saved_allowed = jrMan.GetPedestrianCrossingAllowed(segmentId, isStartNode);
+
+                //    Log.Debug($"pedestrian crossing for segment:segmentId node:{nodeId}\n" +
+                //        $"    configuragle={configurable} IsAllowed={allowed}  GetDefault={defaultVal}\n" +
+                //        $"    saved_allowed={flags.pedestrianCrossingAllowed} saved_default={flags.defaultPedestrianCrossingAllowed}");
+
+                //}
 
                 {
                     bool signHovered = signsLayout.DrawSign(
