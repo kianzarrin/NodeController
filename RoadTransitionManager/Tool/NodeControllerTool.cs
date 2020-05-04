@@ -145,6 +145,9 @@ namespace RoadTransitionManager.Tool {
         public ushort SelectedNodeID;
         public override void RenderOverlay(RenderManager.CameraInfo cameraInfo) {
             base.RenderOverlay(cameraInfo);
+            if (!m_mouseRayValid || handleHovered_)
+                return;
+
             if (SelectedNodeID != 0) {
                 DrawNodeCircle(cameraInfo, Color.white, SelectedNodeID, false);
                 foreach (var segmentID in NetUtil.GetSegmentsCoroutine(SelectedNodeID)) {
@@ -153,11 +156,6 @@ namespace RoadTransitionManager.Tool {
                         DrawNodeCircle(cameraInfo, Color.gray, nodeID, true);
                 }
             }
-            //var c = m_cachedControlPoint;
-            //Log.Debug($"RenderOverlay: Control point= node:{c.m_node} segment:{c.m_segment} position:{c.m_position}" +
-            //    $"elevation:{c.m_elevation} ");
-            //Debug.Log ("[Crossings] Render Overlay");
-            base.RenderOverlay(cameraInfo);
 
             if (IsHoverValid && m_prefab != null) {
                 NetTool.ControlPoint controlPoint = m_cachedControlPoint;
@@ -166,7 +164,7 @@ namespace RoadTransitionManager.Tool {
                     bool fail = !NodeData.IsSupported(nodeID);
                     DrawNodeCircle(cameraInfo, GetColor(fail), nodeID, false);
                 } else if (controlPoint.m_segment != 0) {
-                    bool isRoad = m_prefab.m_netAI is RoadBaseAI;
+                    bool isRoad = m_prefab.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(m_prefab);
                     ToolErrors error = m_cachedErrors;
                     error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
                     bool fail = error != ToolErrors.None || !isRoad;
@@ -177,8 +175,33 @@ namespace RoadTransitionManager.Tool {
             }
         }
 
+        protected override void OnToolGUI(Event e) {
+            base.OnToolGUI(e);
+            DrawSigns();
+        }
+
+        bool handleHovered_;
+        //ushort updatedNodeId_;
+        private void DrawSigns() {
+            Vector3 camPos = Singleton<SimulationManager>.instance.m_simulationView.m_position;
+            if (SelectedNodeID == 0) {
+                TrafficRulesOverlay overlay =
+                        new GUI.TrafficRulesOverlay(handleClick: false);
+                foreach (NodeData nodeData in NodeManager.Instance.buffer) {
+                    if (nodeData == null) continue;
+                    overlay.DrawSignHandles(
+                        nodeData.NodeID, camPos: ref camPos, out _);
+                }
+            } else {
+                TrafficRulesOverlay overlay =
+                        new GUI.TrafficRulesOverlay(handleClick: true);
+                handleHovered_ = overlay.DrawSignHandles(
+                    SelectedNodeID, camPos: ref camPos, out _);
+            }
+        }
+
         protected override void OnPrimaryMouseClicked() {
-            if (!IsHoverValid)
+            if (!IsHoverValid || handleHovered_)
                 return;
             Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
             if (m_errors != ToolErrors.None || m_prefab == null)
@@ -192,7 +215,7 @@ namespace RoadTransitionManager.Tool {
                 SelectedNodeID = c.m_node;
                 panel_.ShowNode(SelectedNodeID);
             } else if (c.m_segment != 0) {
-                if (m_prefab.m_netAI is RoadBaseAI) {
+                if (m_prefab.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(m_prefab)) {
                     SimulationManager.instance.AddAction(delegate () {
                         NodeData nodeData = NodeManager.Instance.InsertNode(c);
                         if (nodeData != null) {

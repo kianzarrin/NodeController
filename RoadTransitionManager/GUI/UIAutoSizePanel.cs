@@ -68,8 +68,8 @@ namespace RoadTransitionManager.GUI {
                 } else if (this.autoLayoutStart.StartsAtRight()) {
                     uicomponent = this.m_ChildComponents[base.childCount - 1 - i];
                 }
-                Log.Debug($"{name}.uicomponent={uicomponent.name}:" +
-                    $"{uicomponent.isVisible} && {uicomponent.enabled} && {uicomponent.gameObject.activeSelf}");
+                //Log.Debug($"{name}.uicomponent={uicomponent.name}:" +
+                //    $"{uicomponent.isVisible} && {uicomponent.enabled} && {uicomponent.gameObject.activeSelf}");
                 if (uicomponent.isVisible && uicomponent.enabled && uicomponent.gameObject.activeSelf) {
                     if (!this.useCenter && this.wrapLayout) {
                         if (this.autoLayoutDirection == LayoutDirection.Horizontal) {

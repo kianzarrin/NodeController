@@ -18,13 +18,6 @@ namespace RoadTransitionManager.Patches.TMPE {
             ushort nodeID = startNode ? segmentId.ToSegment().m_startNode : segmentId.ToSegment().m_endNode;
             NodeData data = NodeManager.Instance.buffer[nodeID];
 
-
-            // TODO move to TMPE
-            //if(data == null && nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Transition)) {
-            //    __result = false;
-            //    return false;
-            //}
-
             return PrefixUtils.HandleTernaryBool(
                 data?.GetDefaultPedestrianCrossingAllowed(),
                 ref __result);

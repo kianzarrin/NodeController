@@ -5,11 +5,10 @@ namespace RoadTransitionManager.LifeCycle
 
     public static class LifeCycle
     {
-        public static bool bFirstFrame;
         public static void Load()
         {
             Log.Info("LifeCycle.Load() called");
-            bFirstFrame = true;
+            PluginUtil.Init();
             HarmonyExtension.InstallHarmony();
             NodeControllerTool.Create();
             NodeManager.Instance.OnLoad();

@@ -22,7 +22,7 @@ namespace RoadTransitionManager
         {
             Log.Info("UnPatching...");
             var harmony = new Harmony(HARMONY_ID);
-            harmony.UnpatchAll();
+            harmony.UnpatchAll(HARMONY_ID);
             Log.Info("UnPatched.");
         }
     }

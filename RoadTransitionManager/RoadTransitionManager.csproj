@@ -40,6 +40,11 @@
       <HintPath>$(MangedDLLPath)\ColossalManaged.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="CSURToolBox">
+      <HintPath>..\libs\CSURToolBox.dll</HintPath>
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
     <Reference Include="CSUtil.Commons">
       <HintPath>..\libs\CSUtil.Commons.dll</HintPath>
       <Private>true</Private>
@@ -51,6 +56,10 @@
     <Reference Include="ICities">
       <HintPath>$(MangedDLLPath)\ICities.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="TMPE.API">
+      <HintPath>..\libs\TMPE.API.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="TrafficManager">
       <HintPath>..\libs\TrafficManager.dll</HintPath>

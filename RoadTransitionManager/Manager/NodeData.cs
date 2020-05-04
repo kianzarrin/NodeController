@@ -22,7 +22,8 @@ namespace RoadTransitionManager {
         public ushort NodeID;
 
         // defaults
-        public float DefaultCornerOffset => NodeID.ToNode().Info.m_minCornerOffset;
+        public float DefaultCornerOffset =>
+             CSURUtil.GetMinCornerOffset(NodeID);
         public NetNode.Flags DefaultFlags;
         public NodeTypeT DefaultNodeType;
 
@@ -129,12 +130,14 @@ namespace RoadTransitionManager {
             HideCrosswalks.Patches.CalculateMaterialCommons.
             ShouldHideCrossing(NodeID, segmentId);
 
+        public bool IsCSUR => NetUtil.IsCSUR(Info);
+        public NetInfo Info => NodeID.ToNode().Info;
         public bool NeedMiddleFlag() => NodeType == NodeTypeT.Middle;
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Custom || NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Blend || NodeType == NodeTypeT.Custom;
-        public bool ShowClearMarkingsToggle() => NodeType == NodeTypeT.Custom;
+        public bool ShowClearMarkingsToggle() => NodeType == NodeTypeT.Custom && !IsCSUR;
         public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
 
         public bool NeedsTransitionFlag() =>
@@ -155,20 +158,23 @@ namespace RoadTransitionManager {
             if (flags.IsFlagSet(NetNode.Flags.LevelCrossing|NetNode.Flags.End|NetNode.Flags.Outside))
                 return false;
             int n = nodeID.ToNode().CountSegments();
-            if (n > 2) return true;
-            if (n == 2) return nodeID.ToNode().Info.m_netAI is RoadBaseAI;
+            if (n > 2)
+                return true;
+            var info = nodeID.ToNode().Info;
+            if (n == 2)
+                return info.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(info)!;
             return false;
         }
 
         public bool CanChangeTo(NodeTypeT newNodeType) {
-            if (SegmentCount > 2)
+            if (SegmentCount > 2 || IsCSUR)
                 return newNodeType == NodeTypeT.Custom;
 
             switch (newNodeType) {
                 case NodeTypeT.Crossing:
                     return PedestrianLaneCount >= 2 && HWDiff < 0.001f && IsStraight;
                 case NodeTypeT.UTurn:
-                    return NodeID.ToNode().Info.m_forwardVehicleLaneCount > 0 && NodeID.ToNode().Info.m_backwardVehicleLaneCount > 0;
+                    return Info.m_forwardVehicleLaneCount > 0 && Info.m_backwardVehicleLaneCount > 0;
                 case NodeTypeT.Blend:
                     return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle) && IsStraight;
                 case NodeTypeT.Middle:
