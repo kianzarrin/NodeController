@@ -11,6 +11,7 @@ namespace RoadTransitionManager {
         // check if NetAI of the node or any of its segments allows traffic lights.
         // if that is the case then set traffic-lights flag.
         // trains cannot have traffic-lights flag.
+        // Credits to Crossings mod.
 
         static void Postfix(ref RoadBaseAI __instance, ref NetNode data) {
             if (data.CountSegments() != 2)

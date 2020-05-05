@@ -11,10 +11,9 @@ namespace RoadTransitionManager.GUI {
     public class RoadTransitionButton : UIButton {
         public static string AtlasName = "RoadTransitionButtonUI_rev" +
             typeof(RoadTransitionButton).Assembly.GetName().Version.Revision;
-        const int SIZE = 40;
+        const int SIZE = 31;
         const string CONTAINING_PANEL_NAME = "RoadsOptionPanel";
         readonly static Vector2 RELATIVE_POSITION = new Vector3(94, 38);
-
 
         const string RoadTransitionButtonBg = "RoadTransitionButtonBg";
         const string RoadTransitionButtonBgFocused = "RoadTransitionButtonBgFocused";

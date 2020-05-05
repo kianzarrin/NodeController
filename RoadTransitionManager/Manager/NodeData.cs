@@ -191,21 +191,21 @@ namespace RoadTransitionManager {
         public string ToolTip(NodeTypeT nodeType) {
             switch (nodeType) {
                 case NodeTypeT.Crossing:
-                    return "Crossing node. No U-turns";
+                    return "Crossing node.";
                 case NodeTypeT.Middle:
                     return "Middle: No node.";
                 case NodeTypeT.Bend:
                     if (IsAsymRevert())
-                        return "Bend: Asymmetrical road changes direction. No crossings/U-turns";
+                        return "Bend: Asymmetrical road changes direction.";
                     if(HWDiff > 0.05f)
-                        return "Bend: Linearly match segment widths. No crossings/U-turns";
-                    return "Bend: Simple road corner. No crossings/U-turns";
+                        return "Bend: Linearly match segment widths. ";
+                    return "Bend: Simple road corner.";
                 case NodeTypeT.Stretch:
-                    return "No crossings or UTurns. Stretches texture to match both pavement and road.";
+                    return "Stretch: Match both pavement and road.";
                 case NodeTypeT.UTurn:
-                    return "U-Turn: make space for U-turn. U-turn/Crossings configurable in TM:PE.";
+                    return "U-Turn: node with enough space for U-Turn.";
                 case NodeTypeT.Custom:
-                    return "transition size and traffic rules are configrable.";
+                    return "Custom: transition size and traffic rules are configrable.";
             }
             return null;
         }
@@ -234,7 +234,7 @@ namespace RoadTransitionManager {
                 case NodeTypeT.Bend:
                     return TernaryBool.False; // always default
                 case NodeTypeT.Custom:
-                    return TernaryBool.Undefined; // default
+                    return TernaryBool.Undefined; // default 
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -269,7 +269,7 @@ namespace RoadTransitionManager {
                     return TernaryBool.False; // always off
                 case NodeTypeT.Middle:
                 case NodeTypeT.Bend:
-                    return TernaryBool.False; // always default
+                    return TernaryBool.False; // always off
                 case NodeTypeT.Custom:
                     if (SegmentCount ==  2 && !HasPedestrianLanes) {
                         return TernaryBool.False; // TODO move to TMPE.
@@ -290,7 +290,7 @@ namespace RoadTransitionManager {
                     return TernaryBool.False; // always off
                 case NodeTypeT.Middle:
                 case NodeTypeT.Bend:
-                    return TernaryBool.Undefined; // don't care
+                    return TernaryBool.False; // always off
                 case NodeTypeT.Custom:
                     if (SegmentCount == 2)
                         return TernaryBool.False; // default off
@@ -318,7 +318,7 @@ namespace RoadTransitionManager {
                     if(oneway & !HasPedestrianLanes) {
                         return TernaryBool.False; // always on.
                     }
-                    return TernaryBool.Undefined;
+                    return TernaryBool.Undefined; // default on.
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -338,11 +338,12 @@ namespace RoadTransitionManager {
                 case NodeTypeT.Custom:
                     if (SegmentCount > 2)
                         return TernaryBool.Undefined;
-                    bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
-                    if (oneway & !HasPedestrianLanes) {
-                        return TernaryBool.True; // always on.
-                    }
-                    return TernaryBool.Undefined;
+                    return TernaryBool.True;
+                    //bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
+                    //if (oneway & !HasPedestrianLanes) {
+                    //    return TernaryBool.True; // always on.
+                    //}
+                    //return TernaryBool.Undefined;
                 default:
                     throw new Exception("Unreachable code");
             }

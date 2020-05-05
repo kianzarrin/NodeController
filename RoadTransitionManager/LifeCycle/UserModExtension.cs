@@ -9,8 +9,8 @@ namespace RoadTransitionManager.LifeCycle
     {
         public static Version ModVersion => typeof(UserModExtension).Assembly.GetName().Version;
         public static string VersionString => ModVersion.ToString(2);
-        public string Name => "Road transition manager " + VersionString;
-        public string Description => "gives you control of segment transitions into other segments or intersections.";
+        public string Name => "Node controller " + VersionString;
+        public string Description => "control Road/junction transitions";
 
         [UsedImplicitly]
         public void OnEnabled()
