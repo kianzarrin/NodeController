@@ -7,6 +7,7 @@ namespace RoadTransitionManager.LifeCycle
     using RoadTransitionManager.GUI;
     using System.IO;
     using UnityEngine;
+    using RoadTransitionManager.Util;
 
     [UsedImplicitly]
     public class SerializableDataExtension
@@ -31,8 +32,13 @@ namespace RoadTransitionManager.LifeCycle
         }
 
         public static void LoadGlobalConfig() {
+            try { 
             var data = File.ReadAllBytes(global_config_path_);
-            UINodeControllerPanel.Deserialize(data);
+                UINodeControllerPanel.Deserialize(data);
+            }
+            catch {
+                Log.Info(global_config_path_ + "does not exist. loading default global settings.");
+            }
         }
 
         public static void SaveGlobalConfig() {

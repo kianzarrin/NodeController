@@ -7,7 +7,7 @@ namespace RoadTransitionManager.Patches {
     [HarmonyPatch(typeof(NetNode), nameof(NetNode.CalculateNode))]
     class CalculateNode {
         static void Postfix(ref NetNode __instance) {
-            Log.Debug("CalculateNode.PostFix() was called");
+            //Log.Debug("CalculateNode.PostFix() was called");
             ushort nodeID = NetUtil.GetID(__instance);
             NodeManager.Instance.OnBeforeCalculateNode(nodeID);
 

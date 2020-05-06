@@ -1,12 +1,11 @@
 namespace RoadTransitionManager {
     using ColossalFramework;
     using ColossalFramework.Math;
-    using RoadTransitionManager.Patches.HideCrosswalksMod;
     using System;
     using UnityEngine;
     using Util;
     using TernaryBool = CSUtil.Commons.TernaryBool;
-  
+
     public enum NodeTypeT {
         Middle,
         Bend,
@@ -30,7 +29,7 @@ namespace RoadTransitionManager {
         // cache
         public bool HasPedestrianLanes;
         public int SegmentCount;
-        public float CurveRaduis0; 
+        public float CurveRaduis0;
 
         // cache only for segment count == 2
         public float HWDiff;
@@ -155,8 +154,13 @@ namespace RoadTransitionManager {
 
         public static bool IsSupported(ushort nodeID) {
             var flags = nodeID.ToNode().m_flags;
-            if (flags.IsFlagSet(NetNode.Flags.LevelCrossing|NetNode.Flags.End|NetNode.Flags.Outside))
+            if (!flags.CheckFlags(
+                required:  NetNode.Flags.Created,
+                forbidden: NetNode.Flags.LevelCrossing | NetNode.Flags.End |
+                           NetNode.Flags.Outside | NetNode.Flags.Deleted)) {
                 return false;
+            }
+
             int n = nodeID.ToNode().CountSegments();
             if (n > 2)
                 return true;
@@ -197,7 +201,7 @@ namespace RoadTransitionManager {
                 case NodeTypeT.Bend:
                     if (IsAsymRevert())
                         return "Bend: Asymmetrical road changes direction.";
-                    if(HWDiff > 0.05f)
+                    if (HWDiff > 0.05f)
                         return "Bend: Linearly match segment widths. ";
                     return "Bend: Simple road corner.";
                 case NodeTypeT.Stretch:
@@ -271,7 +275,7 @@ namespace RoadTransitionManager {
                 case NodeTypeT.Bend:
                     return TernaryBool.False; // always off
                 case NodeTypeT.Custom:
-                    if (SegmentCount ==  2 && !HasPedestrianLanes) {
+                    if (SegmentCount == 2 && !HasPedestrianLanes) {
                         return TernaryBool.False; // TODO move to TMPE.
                     }
                     return TernaryBool.Undefined; // default off
@@ -315,7 +319,7 @@ namespace RoadTransitionManager {
                     if (SegmentCount > 2)
                         return TernaryBool.Undefined;
                     bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
-                    if(oneway & !HasPedestrianLanes) {
+                    if (oneway & !HasPedestrianLanes) {
                         return TernaryBool.False; // always on.
                     }
                     return TernaryBool.Undefined; // default on.
@@ -339,11 +343,11 @@ namespace RoadTransitionManager {
                     if (SegmentCount > 2)
                         return TernaryBool.Undefined;
                     return TernaryBool.True;
-                    //bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
-                    //if (oneway & !HasPedestrianLanes) {
-                    //    return TernaryBool.True; // always on.
-                    //}
-                    //return TernaryBool.Undefined;
+                //bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
+                //if (oneway & !HasPedestrianLanes) {
+                //    return TernaryBool.True; // always on.
+                //}
+                //return TernaryBool.Undefined;
                 default:
                     throw new Exception("Unreachable code");
             }
