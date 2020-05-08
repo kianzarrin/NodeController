@@ -3,11 +3,11 @@ using UnityEngine;
 using System.IO;
 using System.Reflection;
 
-namespace RoadTransitionManager.GUI {
+namespace NodeController.GUI {
     using static Util.HelpersExtensions;
 
     public static class TextureUtil {
-        const string PATH = "RoadTransitionManager.Resources.";
+        const string PATH = "NodeController.Resources.";
         public static UITextureAtlas CreateTextureAtlas(string textureFile, string atlasName, Material baseMaterial, int spriteWidth, int spriteHeight, string[] spriteNames) {
             Texture2D texture2D = new Texture2D(spriteWidth * spriteNames.Length, spriteHeight, TextureFormat.ARGB32, false);
             Assert(texture2D != null, "texture2D");

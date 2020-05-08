@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections;
 using ColossalFramework.UI;
 
-namespace RoadTransitionManager.Util {
+namespace NodeController.Util {
     public static class TextureUtils {
         public delegate Texture2D TProcessor(Texture2D tex);
         public delegate Texture2D TProcessor2(Texture2D tex, Texture2D tex2);

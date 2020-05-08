@@ -1,10 +1,10 @@
-namespace RoadTransitionManager.LifeCycle
+namespace NodeController.LifeCycle
 {
     using System;
     using JetBrains.Annotations;
     using ICities;
     using CitiesHarmony.API;
-    using RoadTransitionManager.Util;
+    using NodeController.Util;
     public class UserModExtension : IUserMod
     {
         public static Version ModVersion => typeof(UserModExtension).Assembly.GetName().Version;

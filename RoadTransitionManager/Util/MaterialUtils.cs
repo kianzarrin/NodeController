@@ -5,7 +5,7 @@ using UnityEngine;
 // TODO check out material.MainTextureScale
 // regarding weird nodes, what if we return a copy of the material?
 // Loading screens Mod owner wrote this about LODs: https://steamcommunity.com/workshop/filedetails/discussion/667342976/1636416951459546732/
-namespace RoadTransitionManager.Util {
+namespace NodeController.Util {
     using static TextureUtils;
     public static class MaterialUtils {
         public static Texture2D TryGetTexture2D(this Material material, int textureID) {

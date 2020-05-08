@@ -1,4 +1,4 @@
-namespace RoadTransitionManager.GUI {
+namespace NodeController.GUI {
     using ColossalFramework;
     using TrafficManager.API.Manager;
     using TrafficManager.API.Traffic.Data;
@@ -7,9 +7,9 @@ namespace RoadTransitionManager.GUI {
     using TrafficManager.UI.Textures;
     using TrafficManager.Util;
     using UnityEngine;
-    using RoadTransitionManager.Util;
+    using NodeController.Util;
     using CSUtil.Commons;
-    using RoadTransitionManager.Patches.TMPE;
+    using NodeController.Patches.TMPE;
     using Log = Util.Log;
     using System.Reflection;
 

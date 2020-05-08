@@ -1,8 +1,8 @@
-using RoadTransitionManager.Util;
+using NodeController.Util;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace RoadTransitionManager.Util {
+namespace NodeController.Util {
     public static class CSURUtil {
         public const string HARMONY_ID = "csur.toolbox";
         public static float GetMinCornerOffset(ushort nodeID) {

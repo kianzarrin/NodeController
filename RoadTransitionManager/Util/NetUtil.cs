@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-namespace RoadTransitionManager.Util {
+namespace NodeController.Util {
     public class NetServiceException : Exception {
         public NetServiceException(string m) : base(m) { }
         public NetServiceException() : base() { }

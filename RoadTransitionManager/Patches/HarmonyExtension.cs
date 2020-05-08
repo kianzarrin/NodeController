@@ -1,8 +1,8 @@
 
-namespace RoadTransitionManager
+namespace NodeController
 {
     using HarmonyLib;
-    using RoadTransitionManager.Util;
+    using NodeController.Util;
     using System.Reflection;
 
     public static class HarmonyExtension

@@ -1,12 +1,12 @@
 using ColossalFramework.UI;
-using RoadTransitionManager.Util;
+using NodeController.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace RoadTransitionManager.GUI {
+namespace NodeController.GUI {
     public class UIAutoSizePanel :UIPanel{
         public override void Awake() {
             base.Awake();

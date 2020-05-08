@@ -1,5 +1,5 @@
 
-namespace RoadTransitionManager.Util {
+namespace NodeController.Util {
     using System;
     using System.Collections.Generic;
     using System.Text;

@@ -1,5 +1,5 @@
-namespace RoadTransitionManager.GUI {
-    using RoadTransitionManager.Util;
+namespace NodeController.GUI {
+    using NodeController.Util;
     using ColossalFramework;
     using ColossalFramework.UI;
     using System;

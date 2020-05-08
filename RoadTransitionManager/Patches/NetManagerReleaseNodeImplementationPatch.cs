@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using HarmonyLib;
 
-namespace RoadTransitionManager.Patches
+namespace NodeController.Patches
 {
     [HarmonyPatch]
     public static class NetManagerReleaseNodeImplementationPatch

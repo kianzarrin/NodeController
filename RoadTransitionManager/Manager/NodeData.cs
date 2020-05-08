@@ -1,4 +1,4 @@
-namespace RoadTransitionManager {
+namespace NodeController {
     using ColossalFramework;
     using ColossalFramework.Math;
     using System;

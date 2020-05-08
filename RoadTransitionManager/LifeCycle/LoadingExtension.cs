@@ -1,7 +1,7 @@
-namespace RoadTransitionManager.LifeCycle
+namespace NodeController.LifeCycle
 {
     using ICities;
-    using RoadTransitionManager.Util;
+    using NodeController.Util;
 
     public class LoadingExtention : LoadingExtensionBase
     {

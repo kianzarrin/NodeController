@@ -1,9 +1,9 @@
-namespace RoadTransitionManager.Patches.TMPE {
+namespace NodeController.Patches.TMPE {
     using System.Reflection;
     using TrafficManager.Manager.Impl;
     using CSUtil.Commons;
-    using RoadTransitionManager;
-    using RoadTransitionManager.Util;
+    using NodeController;
+    using NodeController.Util;
     using HarmonyLib;
 
     [HarmonyPatch]

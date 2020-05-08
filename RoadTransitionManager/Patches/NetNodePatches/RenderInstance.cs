@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Collections.Generic;
 
-namespace RoadTransitionManager.Patches.NetNodePatches {
+namespace NodeController.Patches.NetNodePatches {
     using Util;
 
     [HarmonyPatch()]

@@ -1,5 +1,5 @@
-namespace RoadTransitionManager.Patches {
-    using RoadTransitionManager.Util;
+namespace NodeController.Patches {
+    using NodeController.Util;
     using HarmonyLib;
     using JetBrains.Annotations;
     using System;

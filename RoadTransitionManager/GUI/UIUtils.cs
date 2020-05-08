@@ -1,4 +1,4 @@
-namespace RoadTransitionManager.GUI {
+namespace NodeController.GUI {
     using System;
     using ColossalFramework.UI;
     using UnityEngine;

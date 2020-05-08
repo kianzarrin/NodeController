@@ -1,6 +1,6 @@
-namespace RoadTransitionManager.Patches.HideCrosswalksMod {
+namespace NodeController.Patches.HideCrosswalksMod {
     using System.Reflection;
-    using RoadTransitionManager;
+    using NodeController;
     using CSUtil.Commons;
     using HarmonyLib;
 

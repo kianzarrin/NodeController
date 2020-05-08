@@ -1,9 +1,9 @@
 using ColossalFramework.UI;
-using RoadTransitionManager.Util;
+using NodeController.Util;
 using System;
 using UnityEngine;
 
-namespace RoadTransitionManager.Tool {
+namespace NodeController.Tool {
     using ColossalFramework;
     using GUI;
     using System.Threading;
@@ -22,7 +22,7 @@ namespace RoadTransitionManager.Tool {
         private object m_cacheLock = new object();
 
         protected override void Awake() {
-            button_ = RoadTransitionButton.CreateButton(); // ToolButton.Create();
+            button_ = NodeControllerButton.CreateButton(); // ToolButton.Create();
             panel_ = UINodeControllerPanel.Create();
             base.Awake();
         }

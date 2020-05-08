@@ -1,4 +1,4 @@
-namespace RoadTransitionManager.GUI {
+namespace NodeController.GUI {
     using UnityEngine;
     using ColossalFramework.UI;
     using System.Collections.Generic;
@@ -96,8 +96,8 @@ namespace RoadTransitionManager.GUI {
                 var sprite = dragHandle_.AddUIComponent<UISprite>();
                 sprite.size = new Vector2(40, 40);
                 sprite.relativePosition = new Vector3(5, 3, 0);
-                sprite.atlas = TextureUtil.GetAtlas(RoadTransitionButton.AtlasName);
-                sprite.spriteName = RoadTransitionButton.RoadTransitionIconActive;
+                sprite.atlas = TextureUtil.GetAtlas(NodeControllerButton.AtlasName);
+                sprite.spriteName = NodeControllerButton.NodeControllerIconActive;
 
 
             }
@@ -105,7 +105,7 @@ namespace RoadTransitionManager.GUI {
             {
                 var panel = AddPanel();
                 var label = panel.AddUIComponent<UILabel>();
-                label.text = "Choose transition type";
+                label.text = "Choose node type";
 
                 var dropdown_ = panel.AddUIComponent<UINodeTypeDropDown>();
                 Controls.Add(dropdown_);

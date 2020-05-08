@@ -6,7 +6,7 @@ using UnityEngine;
 using HarmonyLib;
 using System.Reflection;
 
-namespace RoadTransitionManager.Util {
+namespace NodeController.Util {
     public static class TMPEUtils {
         internal static bool WorldToScreenPoint(Vector3 worldPos, out Vector3 screenPos) {
             screenPos = Camera.main.WorldToScreenPoint(worldPos);

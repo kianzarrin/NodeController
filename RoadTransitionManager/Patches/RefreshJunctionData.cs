@@ -1,12 +1,12 @@
-using RoadTransitionManager;
-using RoadTransitionManager.Util;
+using NodeController;
+using NodeController.Util;
 using HarmonyLib;
 using System;
 using System.Reflection;
 using UnityEngine;
 using JetBrains.Annotations;
 
-namespace RoadTransitionManager.Patches
+namespace NodeController.Patches
 {
     [UsedImplicitly]
     [HarmonyPatch]

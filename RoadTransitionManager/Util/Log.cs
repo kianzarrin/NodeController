@@ -1,4 +1,4 @@
-namespace RoadTransitionManager.Util
+namespace NodeController.Util
 {
     using System.Diagnostics;
     using System.IO;

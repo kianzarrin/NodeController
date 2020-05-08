@@ -2,7 +2,7 @@ using ColossalFramework;
 using HarmonyLib;
 
 
-namespace RoadTransitionManager.Patches {
+namespace NodeController.Patches {
     using Util;
     [HarmonyPatch(typeof(NetNode), nameof(NetNode.CalculateNode))]
     class CalculateNode {

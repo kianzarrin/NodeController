@@ -1,7 +1,7 @@
-namespace RoadTransitionManager.LifeCycle
+namespace NodeController.LifeCycle
 {
-    using RoadTransitionManager.Tool;
-    using RoadTransitionManager.Util;
+    using NodeController.Tool;
+    using NodeController.Util;
 
     public static class LifeCycle
     {
