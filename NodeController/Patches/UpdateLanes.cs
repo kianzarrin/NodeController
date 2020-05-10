@@ -16,6 +16,7 @@ namespace NodeController {
         }
 
         static void Postfix(ref RoadBaseAI __instance, ushort segmentID) {
+            if (!NetUtil.IsSegmentValid(segmentID)) return;
             foreach (var dir in new[] { NetInfo.Direction.Forward, NetInfo.Direction.Backward }) {
                 if (AllFlagsAreForward(segmentID, dir)) {
                     foreach (var lane in NetUtil.GetLanesCoroutine2(segmentID, direction: dir)) {

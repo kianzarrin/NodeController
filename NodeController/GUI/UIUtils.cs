@@ -2,6 +2,8 @@ namespace NodeController.GUI {
     using System;
     using ColossalFramework.UI;
     using UnityEngine;
+    using System.Linq;
+    using System.Collections.Generic;
 
     public class UIUtils {
         // Token: 0x17000006 RID: 6
@@ -78,6 +80,15 @@ namespace NodeController.GUI {
             }
             return default(T);
         }
+
+        public static IEnumerable<T> GetCompenentsWithName<T>(string name) where T: UIComponent {
+            T[] components = GameObject.FindObjectsOfType<T>();
+            foreach(T component in components) {
+                if (component.name == name)
+                    yield return component;
+            }
+        }
+
 
         // Token: 0x04000024 RID: 36
         private static UIUtils instance = null;

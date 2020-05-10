@@ -10,7 +10,7 @@ namespace NodeController.Tool {
     using static Util.RenderUtil;
 
     public sealed class NodeControllerTool : KianToolBase {
-        UIButton button_;
+        NodeControllerButton Button => NodeControllerButton.Instace;
         UINodeControllerPanel panel_;
 
         NetTool.ControlPoint m_controlPoint;
@@ -22,7 +22,7 @@ namespace NodeController.Tool {
         private object m_cacheLock = new object();
 
         protected override void Awake() {
-            button_ = NodeControllerButton.CreateButton(); // ToolButton.Create();
+            NodeControllerButton.CreateButton();
             panel_ = UINodeControllerPanel.Create();
             base.Awake();
         }
@@ -30,7 +30,8 @@ namespace NodeController.Tool {
         public static NodeControllerTool Create() {
             Log.Debug("NodeControllerTool.Create()");
             GameObject toolModControl = ToolsModifierControl.toolController.gameObject;
-            var tool = toolModControl.GetComponent<NodeControllerTool>() ?? toolModControl.AddComponent<NodeControllerTool>();
+            //var tool = toolModControl.GetComponent<NodeControllerTool>() ?? toolModControl.AddComponent<NodeControllerTool>();
+            var tool = toolModControl.AddComponent<NodeControllerTool>();
             return tool;
         }
 
@@ -50,8 +51,8 @@ namespace NodeController.Tool {
 
         protected override void OnDestroy() {
             Log.Debug("NodeControllerTool.OnDestroy()\n" + Environment.StackTrace);
-            button_?.Hide();
-            Destroy(button_);
+            Button?.Hide();
+            Destroy(Button);
             panel_?.Hide();
             Destroy(panel_);
             base.OnDestroy();
@@ -59,20 +60,17 @@ namespace NodeController.Tool {
 
         protected override void OnEnable() {
             Log.Debug("NodeControllerTool.OnEnable");
-            button_?.Focus();
+            Log.Debug(Button?.ToString());
             base.OnEnable();
-            button_?.Focus();
-            button_?.Invalidate();
+            Button?.Activate();
             panel_?.Close();
             SelectedNodeID = 0;
         }
 
         protected override void OnDisable() {
             Log.Debug("NodeControllerTool.OnDisable");
-            button_?.Unfocus();
             base.OnDisable();
-            button_?.Unfocus();
-            button_?.Invalidate();
+            Button?.Dectivate();
             panel_?.Close();
             SelectedNodeID = 0;
         }
@@ -282,6 +280,5 @@ namespace NodeController.Tool {
             //Log.Debug("MakeControlPoint: on segment.");
             return true;
         }
-
     } //end class
 }

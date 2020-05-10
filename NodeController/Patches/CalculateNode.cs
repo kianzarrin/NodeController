@@ -9,6 +9,8 @@ namespace NodeController.Patches {
         static void Postfix(ref NetNode __instance) {
             //Log.Debug("CalculateNode.PostFix() was called");
             ushort nodeID = NetUtil.GetID(__instance);
+            if (!NetUtil.IsNodeValid(nodeID)) return;
+
             NodeManager.Instance.OnBeforeCalculateNode(nodeID);
 
             NodeData nodeData = NodeManager.Instance.buffer[nodeID];

@@ -34,6 +34,9 @@ namespace NodeController.Util {
             return (value & (required|forbidden)) == required;
         }
 
+        public static bool CheckFlags(this NetSegment.Flags value, NetSegment.Flags required, NetSegment.Flags forbidden) {
+            return (value & (required | forbidden)) == required;
+        }
 
         internal static AppMode currentMode => SimulationManager.instance.m_ManagersWrapper.loading.currentMode;
         internal static bool CheckGameMode(AppMode mode)
@@ -116,12 +119,12 @@ namespace NodeController.Util {
             return stringToCenter.PadLeft(leftPadding).PadRight(totalLength);
         }
 
-        internal static string ToSTR<T>(this IEnumerable<T> segmentList)
+        internal static string ToSTR<T>(this IEnumerable<T> list)
         {
             string ret = "{ ";
-            foreach (T segmentId in segmentList)
+            foreach (T item in list)
             {
-                ret += $"{segmentId}, ";
+                ret += $"{item}, ";
             }
             ret.Remove(ret.Length - 2, 2);
             ret += " }";

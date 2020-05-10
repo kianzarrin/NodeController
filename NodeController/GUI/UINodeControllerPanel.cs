@@ -90,7 +90,7 @@ namespace NodeController.GUI {
                 dragHandle_.target = parent;
 
                 var lblCaption = dragHandle_.AddUIComponent<UILabel>();
-                lblCaption.text = "Node controler";
+                lblCaption.text = "Node controller";
                 lblCaption.relativePosition = new Vector3(70, 14, 0);
 
                 var sprite = dragHandle_.AddUIComponent<UISprite>();

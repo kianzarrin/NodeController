@@ -139,9 +139,16 @@ namespace NodeController.Util {
 
         public static bool IsSegmentValid(ushort segmentId) {
             if (segmentId != 0) {
-                return (segmentId.ToSegment().m_flags &
-                (NetSegment.Flags.Created | NetSegment.Flags.Deleted)) ==
-                NetSegment.Flags.Created;
+                return segmentId.ToSegment().m_flags.
+                    CheckFlags(required: NetSegment.Flags.Created, forbidden: NetSegment.Flags.Deleted);
+            }
+            return false;
+        }
+
+        public static bool IsNodeValid(ushort nodeId) {
+            if (nodeId != 0) {
+                return nodeId.ToNode().m_flags.
+                    CheckFlags(required: NetNode.Flags.Created, forbidden: NetNode.Flags.Deleted);
             }
             return false;
         }
@@ -273,8 +280,13 @@ namespace NodeController.Util {
             NetInfo.LaneType laneType = NetInfo.LaneType.All,
             VehicleInfo.VehicleType vehicleType = VehicleInfo.VehicleType.All) {
             int idx = 0;
+            if (segmentId.ToSegment().Info == null) {
+                Log.Error("null info: potentially cuased by missing assets");
+                yield break;
+            }
+            int n = segmentId.ToSegment().Info.m_lanes.Length;
             for (uint laneID = segmentId.ToSegment().m_lanes;
-                laneID != 0;
+                laneID != 0 && idx < n;
                 laneID = laneID.ToLane().m_nextLane, idx++) {
                 var ret = new LaneData {
                     LaneID = laneID,

@@ -5,9 +5,9 @@ namespace NodeController.LifeCycle
     using ICities;
     using CitiesHarmony.API;
     using NodeController.Util;
-    public class UserModExtension : IUserMod
+    public class NodeControllerMod : IUserMod
     {
-        public static Version ModVersion => typeof(UserModExtension).Assembly.GetName().Version;
+        public static Version ModVersion => typeof(NodeControllerMod).Assembly.GetName().Version;
         public static string VersionString => ModVersion.ToString(2);
         public string Name => "Node controller " + VersionString;
         public string Description => "control Road/junction transitions";
