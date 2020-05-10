@@ -36,6 +36,7 @@ namespace NodeController.GUI {
         }
 
         public override void Start() {
+            base.Start();
             Log.Info("NodeControllerButton.Start() is called.");
 
             name = "NodeControllerButton";
@@ -65,6 +66,8 @@ namespace NodeController.GUI {
             this.atlas = atlas;
 
             Activate();
+            hoveredBgSprite = NodeControllerButtonBgHovered;
+
 
             relativePosition = RELATIVE_POSITION;
             size = new Vector2(SIZE, SIZE); 
