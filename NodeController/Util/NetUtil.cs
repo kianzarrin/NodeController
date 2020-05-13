@@ -1,8 +1,8 @@
 using ColossalFramework;
+using ColossalFramework.Math;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace NodeController.Util {
@@ -24,7 +24,6 @@ namespace NodeController.Util {
         internal static ref NetNode ToNode(this ushort id) => ref netMan.m_nodes.m_buffer[id];
         internal static ref NetSegment ToSegment(this ushort id) => ref netMan.m_segments.m_buffer[id];
         internal static ref NetLane ToLane(this uint id) => ref netMan.m_lanes.m_buffer[id];
-
         public static bool IsCSUR(NetInfo info) {
             if (info == null ||
                 (info.m_netAI.GetType() != typeof(RoadAI) &&
@@ -35,7 +34,7 @@ namespace NodeController.Util {
             return info.name.Contains(".CSUR ");
         }
 
-        public static ToolBase.ToolErrors InsertNode(NetTool.ControlPoint controlPoint, out ushort nodeId, bool test=false) {
+        public static ToolBase.ToolErrors InsertNode(NetTool.ControlPoint controlPoint, out ushort nodeId, bool test = false) {
             var ret = NetTool.CreateNode(
                 controlPoint.m_segment.ToSegment().Info,
                 controlPoint, controlPoint, controlPoint,
@@ -109,6 +108,24 @@ namespace NodeController.Util {
                     ret = hw;
             }
             return ret;
+        }
+
+        /// Note: inverted flag or LHT does not influce the beizer.
+        internal static Bezier3 CalculateSegmentBezier3(this ref NetSegment seg) {
+            ref NetNode startNode = ref seg.m_startNode.ToNode();
+            ref NetNode endNode = ref seg.m_endNode.ToNode();
+            Bezier3 bezier = new Bezier3 {
+                a = startNode.m_position,
+                d = endNode.m_position,
+            };
+            NetSegment.CalculateMiddlePoints(
+                bezier.a, seg.m_startDirection,
+                bezier.d, seg.m_endDirection,
+                startNode.m_flags.IsFlagSet(NetNode.Flags.Middle),
+                endNode.m_flags.IsFlagSet(NetNode.Flags.Middle),
+                out bezier.b,
+                out bezier.c);
+            return bezier;
         }
 
 
