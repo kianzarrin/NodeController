@@ -283,11 +283,46 @@ namespace NodeController.Util {
             }
         }
 
+        public static void LaneTest(ushort segmentId) {
+            string message = $"STRANGE LANE ISSUE: lane count mismatch for " +
+                $"segment:{segmentId} Info:{segmentId.ToSegment().Info} IsSegmentValid={IsSegmentValid(segmentId)}\n";
+            if (segmentId.ToSegment().Info != null) {
+
+                var laneIDs = new List<uint>();
+                for (uint laneID = segmentId.ToSegment().m_lanes;
+                    laneID != 0;
+                    laneID = laneID.ToLane().m_nextLane) {
+                    laneIDs.Add(laneID);
+                }
+
+                var laneInfos = segmentId.ToSegment().Info.m_lanes;
+
+                if (laneIDs.Count == laneInfos.Length) return;
+
+                string m1 = "laneIDs=\n";
+                foreach (uint laneID in laneIDs)
+                    m1 += $"\tlaneID:{laneID} flags:{laneID.ToLane().m_flags} segment:{laneID.ToLane().m_segment} bezier.a={laneID.ToLane().m_bezier.a}\n";
+
+                string m2 = "laneInfoss=\n";
+                for (int i = 0; i < laneInfos.Length; ++i) {
+                    m2 += $"\tlaneID:{laneInfos[i]} dir:{laneInfos[i].m_direction} laneType:{laneInfos[i].m_laneType} vehicleType:{laneInfos[i].m_vehicleType} pos:{laneInfos[i].m_position}\n";
+                }
+
+                message += m1 + m2;
+                Util.Log.Error(message, true);
+                Util.Log.LogToFileSimple(file:"NodeControler.Strage.log" ,message:message);
+            }
+        }
+
+        // TODO use start node instead of direction.
         public static IEnumerable<LaneData> GetLanesCoroutine(
             ushort segmentId,
             NetInfo.Direction? direction,
             NetInfo.LaneType laneType = NetInfo.LaneType.All,
             VehicleInfo.VehicleType vehicleType = VehicleInfo.VehicleType.All) {
+
+            LaneTest(segmentId);
+
             int idx = 0;
             if (segmentId.ToSegment().Info == null) {
                 Log.Error("null info: potentially cuased by missing assets");

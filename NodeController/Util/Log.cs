@@ -156,5 +156,18 @@ namespace NodeController.Util
                 // ignore
             }
         }
+
+        internal  static void LogToFileSimple(string file, string message) {
+            try {
+                using StreamWriter w = File.AppendText(file);
+                w.WriteLine(message);
+                w.WriteLine(new StackTrace().ToString());
+                w.WriteLine();
+            }
+            catch {
+                // ignore
+            }
+        }
+
     }
 }

@@ -7,7 +7,7 @@
     <Product>NodeController</Product>
     <Copyright>Copyright ©  2020</Copyright>
     <Deterministic>false</Deterministic>
-    <AssemblyVersion>1.0.0.*</AssemblyVersion>
+    <AssemblyVersion>1.0.1.*</AssemblyVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -52,7 +52,7 @@
     </Reference>
     <Reference Include="CSUtil.Commons">
       <HintPath>..\libs\CSUtil.Commons.dll</HintPath>
-      <Private>true</Private>
+      <Private>false</Private>
     </Reference>
     <Reference Include="HideCrosswalks">
       <HintPath>..\libs\HideCrosswalks.dll</HintPath>
