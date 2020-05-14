@@ -283,15 +283,7 @@ namespace NodeController.Util {
             }
         }
 
-        public static IEnumerable<uint> GetLanesCoroutine(ushort segmentId) {
-            for (uint laneID = segmentId.ToSegment().m_lanes;
-                laneID != 0;
-                laneID = laneID.ToLane().m_nextLane) {
-                yield return laneID;
-            }
-        }
-
-        public static IEnumerable<LaneData> GetLanesCoroutine2(
+        public static IEnumerable<LaneData> GetLanesCoroutine(
             ushort segmentId,
             NetInfo.Direction? direction,
             NetInfo.LaneType laneType = NetInfo.LaneType.All,
