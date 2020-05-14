@@ -309,9 +309,9 @@ namespace NodeController.Util {
                 }
 
                 message += m1 + m2;
-                Util.Log.Error(message, true);
-                Util.Log.LogToFileSimple(file:"NodeControler.Strage.log" ,message:message);
             }
+            Util.Log.Error(message, true);
+            Util.Log.LogToFileSimple(file: "NodeControler.Strage.log", message: message);
         }
 
         // TODO use start node instead of direction.
