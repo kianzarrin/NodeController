@@ -75,7 +75,7 @@ namespace NodeController.Tool {
         protected override void OnDisable() {
             Log.Debug("NodeControllerTool.OnDisable");
             base.OnDisable();
-            Button?.Dectivate();
+            Button?.Deactivate();
             panel_?.Close();
             SelectedNodeID = 0;
         }
@@ -128,6 +128,8 @@ namespace NodeController.Tool {
             } else {
                 m_prefab = null;
             }
+
+            ToolCursor = m_mouseRayValid ? NetUtil.netTool.m_upgradeCursor : null;
         }
 
         protected override void OnToolLateUpdate() {

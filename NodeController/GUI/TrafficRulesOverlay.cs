@@ -1,17 +1,12 @@
 namespace NodeController.GUI {
     using ColossalFramework;
+    using NodeController.Util;
     using TrafficManager.API.Manager;
     using TrafficManager.API.Traffic.Data;
     using TrafficManager.Manager.Impl;
-    using TrafficManager.State;
     using TrafficManager.UI.Textures;
-    using TrafficManager.Util;
     using UnityEngine;
-    using NodeController.Util;
-    using CSUtil.Commons;
-    using NodeController.Patches.TMPE;
     using Log = Util.Log;
-    using System.Reflection;
 
     /// <summary>
     /// Class handles rendering of priority signs overlay.
@@ -58,8 +53,7 @@ namespace NodeController.GUI {
             public SignsLayout(ushort segmentId,
                                bool startNode,
                                int signsPerRow,
-                               float baseZoom)
-            {
+                               float baseZoom) {
                 int segmentEndIndex = ExtSegmentEndManager.Instance.GetIndex(segmentId, startNode);
                 ref ExtSegmentEnd segmentEnd = ref ExtSegmentEndManager.Instance.ExtSegmentEnds[segmentEndIndex];
 
@@ -82,8 +76,7 @@ namespace NodeController.GUI {
             public bool DrawSign(bool handleClick,
                                  ref Vector3 camPos,
                                  Color guiColor,
-                                 Texture2D signTexture)
-            {
+                                 Texture2D signTexture) {
                 int col = counter_ / signsPerRow_;
                 int row = counter_ - (col * signsPerRow_);
                 counter_++;
@@ -135,6 +128,57 @@ namespace NodeController.GUI {
             }
         }
 
+        public bool DrawTrafficLightSign(
+            ushort nodeId,
+            float baseZoom,
+            bool handleClick,
+            ref Vector3 camPos,
+            Color guiColor,
+            Texture2D signTexture) {
+
+
+            // +0.5f so that the signs don't cover crossings.
+            Vector3 signCenter = nodeId.ToNode().m_position;
+            bool visible = TMPEUtils.WorldToScreenPoint(
+                worldPos: signCenter, screenPos: out Vector3 signScreenPos);
+            if (!visible) {
+                return false;
+            }
+
+            Vector3 diff = signCenter - camPos;
+            float zoom = 100.0f * baseZoom / diff.magnitude;
+            float size = SIGN_SIZE_PIXELS * zoom;
+            if (!handleClick) size *= 0.75f * VIEW_SIZE_RATIO;
+
+            var boundingBox = new Rect(
+                x: signScreenPos.x - (size * 0.5f),
+                y: signScreenPos.y - (size * 0.5f),
+                width: size,
+                height: size);
+
+            bool hoveredHandle = handleClick && TMPEUtils.IsMouseOver(boundingBox);
+            if (!handleClick) {
+                // Readonly signs look grey-ish
+                guiColor = Color.Lerp(guiColor, Color.gray, 0.5f);
+                guiColor.a = TMPEUtils.GetHandleAlpha(hovered: false);
+            } else {
+                // Handles in edit mode are always visible. Hovered handles are also highlighted.
+                guiColor.a = 1f;
+
+                if (hoveredHandle) {
+                    guiColor = Color.Lerp(
+                        a: guiColor,
+                        b: new Color(r: 1f, g: .7f, b: 0f),
+                        t: 0.5f);
+                }
+            }
+            // guiColor.a = TrafficManagerTool.GetHandleAlpha(hoveredHandle);
+
+            GUI.color = guiColor;
+            GUI.DrawTexture(boundingBox, signTexture);
+            return hoveredHandle;
+        }
+
         bool CheckClicked =>
             Event.current.type == EventType.MouseDown &&
             Event.current.button == 0;
@@ -163,7 +207,7 @@ namespace NodeController.GUI {
             stateUpdated = false;
 
             NodeData nodeData = NodeManager.Instance.buffer[nodeId];
-            if (nodeData == null) { 
+            if (nodeData == null) {
                 return false;
             }
 
@@ -322,8 +366,58 @@ namespace NodeController.GUI {
                         }
                     }
                 }
+                #endregion
+
+            }
+
+
+            #region traffic light
+            {
+                var tlman = TrafficLightManager.Instance;
+                // draw "entering blocked junctions allowed" sign at (0; 1)
+                bool allowed = tlman.HasTrafficLight(
+                        nodeId,
+                        ref node);
+
+                bool configurable = tlman.CanToggleTrafficLight(
+                    nodeId: nodeId,
+                    flag: !allowed,
+                    ref node,
+                    out _);
+                {
+                    Texture2D overlayTex;
+                    if (TrafficLightSimulationManager.Instance.HasTimedSimulation(nodeId)) {
+                        overlayTex = TrafficLightTextures.TrafficLightEnabledTimed;
+                    } else if (allowed) {
+                        // Render traffic light icon
+                        overlayTex = TrafficLightTextures.TrafficLightEnabled;
+                    } else {
+                        // Render traffic light possible but disabled icon
+                        overlayTex = TrafficLightTextures.TrafficLightDisabled;
+                    }
+
+                    bool signHovered = DrawTrafficLightSign(
+                        nodeId:nodeId,
+                        baseZoom: TMPEUtils.GetBaseZoom(),
+                        handleClick: configurable && handleClick_,
+                        camPos: ref camPos,
+                        guiColor: guiColor,
+                        signTexture: overlayTex);
+
+                    if (signHovered && this.handleClick_ && configurable) {
+                        isAnyHovered = true;
+
+                        if (CheckClicked) {
+                            Log.Debug($"calling ToggleTrafficLight() for {nodeId} ...");
+                            tlman.ToggleTrafficLight(nodeId, ref node);
+                            stateUpdated = true;
+                        }
+                    }
+                }
             }
             #endregion
+
+
 
             guiColor.a = 1f;
             GUI.color = guiColor;

@@ -1,5 +1,6 @@
 using ColossalFramework;
 using HarmonyLib;
+using TrafficManager.Manager.Impl;
 
 namespace NodeController {
     using Util;
@@ -13,40 +14,16 @@ namespace NodeController {
         // trains cannot have traffic-lights flag.
         // Credits to Crossings mod.
 
-        static void Postfix(ref RoadBaseAI __instance, ref NetNode data) {
-            if (data.CountSegments() != 2)
-                return;
+        static void Postfix(ref NetNode data) {
+            if (data.CountSegments() != 2)return;
             
             ushort nodeID = NetUtil.GetID(data);
-            NodeData blendData = NodeManager.Instance.buffer[nodeID];
-            if (blendData == null)
-                return;
+            NodeData nodeData = NodeManager.Instance.buffer[nodeID];
 
-            if (!blendData.WantsTrafficLight()) {
-                data.m_flags &= ~NetNode.Flags.TrafficLights;
-                return;
-            }
+            if (nodeData == null || !nodeData.WantsTrafficLight()) return;
 
-            bool wantTrafficLights = __instance.WantTrafficLights();
-            if (!wantTrafficLights) {
-                foreach (var segmentID in NetUtil.GetSegmentsCoroutine(nodeID)) {
-                    NetInfo info = segmentID.ToSegment().Info;
-                    if (info != null) {
-                        if (info.m_vehicleTypes.IsFlagSet(VehicleInfo.VehicleType.Train)) {
-                            // No crossings allowed where there's a railway intersecting
-                            return;
-                        }
-
-                        if (info.m_netAI.WantTrafficLights()) {
-                            wantTrafficLights = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (wantTrafficLights) {
-                data.m_flags |= NetNode.Flags.TrafficLights;
+            if(TrafficLightManager.Instance.CanEnableTrafficLight(nodeID, ref data, out var res)) {
+                TrafficLightManager.Instance.SetTrafficLight(nodeID, true, ref data);
             }
         }
     }

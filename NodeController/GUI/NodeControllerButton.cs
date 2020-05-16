@@ -65,14 +65,16 @@ namespace NodeController.GUI {
             Log.Debug("atlas name is: " + atlas.name);
             this.atlas = atlas;
 
-            Activate();
+            Deactivate();
             hoveredBgSprite = NodeControllerButtonBgHovered;
 
 
             relativePosition = RELATIVE_POSITION;
             size = new Vector2(SIZE, SIZE); 
             Show();
-            Log.Info("NodeControllerButton created sucessfully.");  
+            Log.Info("NodeControllerButton created sucessfully.");
+            Unfocus();
+            Invalidate();
             //if (parent.name == "RoadsOptionPanel(RoadOptions)") {
             //    Destroy(Instace); // destroy old instance after cloning
             //}
@@ -85,7 +87,7 @@ namespace NodeController.GUI {
             Invalidate();
         }
 
-        public void Dectivate() {
+        public void Deactivate() {
             focusedFgSprite = normalBgSprite = pressedBgSprite = disabledBgSprite = NodeControllerButtonBg;
             normalFgSprite = focusedFgSprite = NodeControllerIcon;
             Invalidate();
