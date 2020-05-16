@@ -25,5 +25,11 @@ namespace NodeController.LifeCycle
         {
             LifeCycle.Release();
         }
+
+        [UsedImplicitly]
+        public void OnSettingsUI(UIHelperBase helper) {
+            GUI.Settings.OnSettingsUI(helper);
+        }
+
     }
 }

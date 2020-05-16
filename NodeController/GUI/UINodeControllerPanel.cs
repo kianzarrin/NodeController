@@ -7,39 +7,26 @@ namespace NodeController.GUI {
     using System.IO;
     using System.Linq;
     using Util;
+    using ColossalFramework;
+
     public class UINodeControllerPanel : UIAutoSizePanel, IDataControllerUI {
+        public static readonly SavedInputKey ActivationShortcut = new SavedInputKey(
+            "ActivationShortcut",
+            Settings.FileName,
+            SavedInputKey.Encode(KeyCode.N, true, false, false),
+            true);
+
+        public static readonly SavedFloat SavedX = new SavedFloat(
+            "PanelX", Settings.FileName, 87, true);
+        public static readonly SavedFloat SavedY = new SavedFloat(
+            "PanelY", Settings.FileName, 58, true);
+
+
         #region Instanciation
         public static UINodeControllerPanel Instance { get; private set; }
-        static float savedX_ = 87;
-        static float savedY_ = 58;
 
         static BinaryFormatter GetBinaryFormatter =>
             new BinaryFormatter { AssemblyFormat = FormatterAssemblyStyle.Simple };
-
-        public static void Deserialize(byte[] data) {
-            if (data == null) {
-                Instance = new UINodeControllerPanel();
-                Log.Debug($"UINodeControllerPanel.Deserialize(data=null)");
-                return;
-            }
-            Log.Debug($"UINodeControllerPanel.Deserialize (data): data.Length={data?.Length}");
-
-            var memoryStream = new MemoryStream();
-            memoryStream.Write(data, 0, data.Length);
-            memoryStream.Position = 0;
-            var formatter = GetBinaryFormatter;
-            savedX_ = (float)formatter.Deserialize(memoryStream);
-            savedY_ = (float)formatter.Deserialize(memoryStream);
-        }
-
-        public static byte[] Serialize() {
-            var memoryStream = new MemoryStream();
-            var formatter = GetBinaryFormatter;
-            formatter.Serialize(memoryStream, savedX_);
-            formatter.Serialize(memoryStream, savedY_);
-            memoryStream.Position = 0; // redundant
-            return memoryStream.ToArray();
-        }
 
         public static UINodeControllerPanel Create() {
             var uiView = UIView.GetAView();
@@ -78,7 +65,7 @@ namespace NodeController.GUI {
             width = 250;
             name = "UINodeControllerPanel";
             backgroundSprite = "MenuPanel2";
-            absolutePosition = new Vector3(savedX_, savedY_);
+            absolutePosition = new Vector3(SavedX, SavedY);
 
             isVisible = false;
 
@@ -157,8 +144,8 @@ namespace NodeController.GUI {
                 Mathf.Clamp(absolutePosition.x, 0, resolution.x - width),
                 Mathf.Clamp(absolutePosition.y, 0, resolution.y - height));
 
-            savedX_ = absolutePosition.x;
-            savedY_ = absolutePosition.y;
+            SavedX.value = absolutePosition.x;
+            SavedY.value = absolutePosition.y;
             Log.Debug("absolutePosition: " + absolutePosition);
         }
 

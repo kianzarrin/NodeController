@@ -1,4 +1,3 @@
-using ColossalFramework.UI;
 using NodeController.Util;
 using System;
 using UnityEngine;
@@ -10,6 +9,12 @@ namespace NodeController.Tool {
     using static Util.RenderUtil;
 
     public sealed class NodeControllerTool : KianToolBase {
+        public static readonly SavedInputKey ActivationShortcut = new SavedInputKey(
+            "ActivationShortcut",
+            Settings.FileName,
+            SavedInputKey.Encode(KeyCode.N, true, false, false),
+            true);
+
         NodeControllerButton Button => NodeControllerButton.Instace;
         UINodeControllerPanel panel_;
 

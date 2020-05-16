@@ -72,10 +72,10 @@ namespace NodeController.GUI {
             relativePosition = RELATIVE_POSITION;
             size = new Vector2(SIZE, SIZE); 
             Show();
-            Log.Info("NodeControllerButton created sucessfully.");
-            if (Instace != null) {
-                Destroy(Instace); // destroy old instance after cloning
-            }
+            Log.Info("NodeControllerButton created sucessfully.");  
+            //if (parent.name == "RoadsOptionPanel(RoadOptions)") {
+            //    Destroy(Instace); // destroy old instance after cloning
+            //}
             Instace = this;
         }
 
