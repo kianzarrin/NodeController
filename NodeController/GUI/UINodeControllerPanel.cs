@@ -85,8 +85,6 @@ namespace NodeController.GUI {
                 sprite.relativePosition = new Vector3(5, 3, 0);
                 sprite.atlas = TextureUtil.GetAtlas(NodeControllerButton.AtlasName);
                 sprite.spriteName = NodeControllerButton.NodeControllerIconActive;
-
-
             }
 
             {

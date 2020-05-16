@@ -22,7 +22,7 @@ namespace NodeController.Util {
             return null;
         }
 
-        public static Material GetSegmentMaterial(NetInfo info, int textureID) {
+        public static NetInfo.Segment GetSegment(NetInfo info, int textureID) {
             NetInfo.Segment segmentInfo = null;
             foreach (var segmentInfo2 in info.m_segments ?? Enumerable.Empty<NetInfo.Segment>()) {
                 if (segmentInfo2.m_segmentMaterial.TryGetTexture2D(textureID) != null) {
@@ -30,13 +30,15 @@ namespace NodeController.Util {
                     break;
                 }
             }
-            return segmentInfo?.m_segmentMaterial;
+            return segmentInfo;
         }
 
-        public static Material ContinuesMedian(Material material, Material segMaterial, NetInfo info, bool lod = false) {
+        public static Material ContinuesMedian(Material material, NetInfo info, bool lod = false) {
             if (material == null) throw new ArgumentNullException("material");
             if (info == null) throw new ArgumentNullException("info");
-            segMaterial = segMaterial ?? GetSegmentMaterial(info, ID_APRMap);
+            var segment = GetSegment(info, ID_APRMap);
+            var segMaterial = segment.m_material;
+
             material = new Material(material);
 
             Texture2D tex;
@@ -48,7 +50,14 @@ namespace NodeController.Util {
             if (tex != null) material.SetTexture(ID_XYSMap, tex);
 
             return material;
-        } 
+        }
+
+        public static Mesh ContinuesMedian(Mesh mesh, NetInfo info, bool lod = false) {
+            if (mesh == null) throw new ArgumentNullException("mesh");
+            if (info == null) throw new ArgumentNullException("info");
+            var segment = GetSegment(info, ID_APRMap);
+            return segment?.m_mesh??mesh;
+        }
     } // end class
 } // end namesapce
 

@@ -70,6 +70,7 @@ namespace NodeController.Tool {
             Button?.Activate();
             panel_?.Close();
             SelectedNodeID = 0;
+            handleHovered_ = false;
         }
 
         protected override void OnDisable() {
@@ -235,6 +236,7 @@ namespace NodeController.Tool {
         }
 
         protected override void OnSecondaryMouseClicked() {
+            handleHovered_ = false;
             if (SelectedNodeID == 0) {
                 DisableTool();
             } else {

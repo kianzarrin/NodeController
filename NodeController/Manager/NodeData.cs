@@ -2,6 +2,7 @@ namespace NodeController {
     using ColossalFramework;
     using ColossalFramework.Math;
     using System;
+    using TrafficManager.API.Traffic.Enums;
     using UnityEngine;
     using Util;
     using TernaryBool = CSUtil.Commons.TernaryBool;
@@ -41,16 +42,19 @@ namespace NodeController {
         public NodeTypeT NodeType;
         public float CornerOffset;
         public bool ClearMarkings;
+        public bool FirstTimeTrafficLight = false; // turn on traffic light when inserting pedestrian node for the first time.
 
         public NodeData(ushort nodeID) {
             NodeID = nodeID;
             Calculate();
             NodeType = DefaultNodeType;
             CornerOffset = DefaultCornerOffset;
+            FirstTimeTrafficLight = NodeType == NodeTypeT.Crossing;
         }
 
         public NodeData(ushort nodeID, NodeTypeT nodeType) : this(nodeID) {
             NodeType = nodeType;
+            FirstTimeTrafficLight = NodeType == NodeTypeT.Crossing;
         }
 
         public void Calculate() {
@@ -299,6 +303,24 @@ namespace NodeController {
                     if (SegmentCount == 2)
                         return TernaryBool.False; // default off
                     return TernaryBool.Undefined; // don't care
+                default:
+                    throw new Exception("Unreachable code");
+            }
+        }
+
+        public TernaryBool CanHaveTrafficLights(out ToggleTrafficLightError reason) {
+            reason = ToggleTrafficLightError.None;
+            switch (NodeType) {
+                case NodeTypeT.Crossing:
+                case NodeTypeT.UTurn:
+                    return TernaryBool.Undefined;
+                case NodeTypeT.Stretch:
+                case NodeTypeT.Middle:
+                case NodeTypeT.Bend:
+                    reason = ToggleTrafficLightError.NoJunction;
+                    return TernaryBool.False; 
+                case NodeTypeT.Custom:
+                    return TernaryBool.Undefined; // default off
                 default:
                     throw new Exception("Unreachable code");
             }

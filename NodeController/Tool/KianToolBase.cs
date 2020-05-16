@@ -46,7 +46,7 @@ namespace NodeController.Tool {
 
         protected override void OnToolGUI(Event e) {
             base.OnToolGUI(e);
-            if (e.type == EventType.mouseDown && m_mouseRayValid) {
+            if (e.type == EventType.MouseUp && m_mouseRayValid) {
                 if (e.button == 0) OnPrimaryMouseClicked();
                 else if (e.button == 1) OnSecondaryMouseClicked();
             }
