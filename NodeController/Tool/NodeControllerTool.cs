@@ -36,11 +36,11 @@ namespace NodeController.Tool {
             panel_ = UINodeControllerPanel.Create();
 
             CursorCrossing = ScriptableObject.CreateInstance<CursorInfo>();
-            CursorCrossing.m_texture = TextureUtil.LoadTextureFromAssembly("cursor crossing.png",31,31);
+            CursorCrossing.m_texture = TextureUtil.LoadTextureFromAssembly("cursor_crossing.png", 31,31);
             CursorCrossing.m_hotspot = new Vector2(5f, 0f);
 
             CursorEdit = ScriptableObject.CreateInstance<CursorInfo>();
-            CursorEdit.m_texture = TextureUtil.LoadTextureFromAssembly("cursor edit.png", 31, 31);
+            CursorEdit.m_texture = TextureUtil.LoadTextureFromAssembly("cursor_edit.png", 31, 31);
             CursorEdit.m_hotspot = new Vector2(5f, 0f);
 
             CursorNormal = ScriptableObject.CreateInstance<CursorInfo>();

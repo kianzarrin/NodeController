@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace AutomaticNodePainter.Math {
+namespace Kian.Math {
     public static class VectorUtil {
         /// <summary>
         /// return value is between 0 to pi. v1 and v2 are interchangable.

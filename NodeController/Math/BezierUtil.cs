@@ -1,5 +1,5 @@
 
-namespace AutomaticNodePainter.Math {
+namespace Kian.Math {
     using ColossalFramework.Math;
     using UnityEngine;
     using static MathUtil;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace AutomaticNodePainter.Math {
+namespace Kian.Math {
     // start dir and end dir are pointing inwards.
     public struct CubicBezier3 {
         public PointDir3 Start;

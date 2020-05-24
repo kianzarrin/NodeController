@@ -1,4 +1,4 @@
-namespace AutomaticNodePainter.Math {
+namespace Kian.Math {
     using UnityEngine;
 
     public struct PointDir3 {
