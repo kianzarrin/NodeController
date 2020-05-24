@@ -31,6 +31,9 @@
     <Compile Remove="DecompiledSources\NetNode.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Resources\curosr transition.png" />
+    <None Remove="Resources\cursor crossing.png" />
+    <None Remove="Resources\cursor junction.png" />
     <None Remove="Resources\sprites.png" />
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +88,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\cursor crossing.png" />
     <EmbeddedResource Include="Resources\sprites.png" />
   </ItemGroup>
   <ItemGroup>

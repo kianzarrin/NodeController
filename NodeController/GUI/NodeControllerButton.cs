@@ -59,7 +59,7 @@ namespace NodeController.GUI {
 
             var atlas = TextureUtil.GetAtlas(AtlasName);
             if (atlas == UIView.GetAView().defaultAtlas) {
-                atlas = TextureUtil.CreateTextureAtlas("sprites.png", AtlasName, tabButton.atlas.material, SIZE, SIZE, spriteNames);
+                atlas = TextureUtil.CreateTextureAtlas("sprites.png", AtlasName, SIZE, SIZE, spriteNames);
             }
 
             Log.Debug("atlas name is: " + atlas.name);

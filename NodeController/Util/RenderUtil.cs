@@ -1,3 +1,4 @@
+using AutomaticNodePainter.Math;
 using ColossalFramework;
 using ColossalFramework.Math;
 using System;
@@ -24,7 +25,7 @@ namespace NodeController.Util {
                 return;
             }
             ref NetSegment segment = ref segmentId.ToSegment();
-            float width = segment.Info.m_halfWidth;
+            float halfWidth = segment.Info.m_halfWidth;
 
             NetNode[] nodeBuffer = Singleton<NetManager>.instance.m_nodes.m_buffer;
             bool IsMiddle(ushort nodeId) => (nodeBuffer[nodeId].m_flags & NetNode.Flags.Middle) != 0;
@@ -54,14 +55,51 @@ namespace NodeController.Util {
                 cameraInfo,
                 color,
                 bezier,
-                width * 2f,
-                bStartNode ? 0 : width,
-                bStartNode ? width : 0,
+                halfWidth * 2f,
+                bStartNode ? 0 : halfWidth,
+                bStartNode ? halfWidth : 0,
                 -1f,
                 1280f,
                 false,
                 alpha);
         }
+
+            public static void RenderStripOnSegment(RenderManager.CameraInfo cameraInfo,
+                       ushort segmentId,
+                       Vector3 pos,
+                       float width,
+                       Color color,
+                       bool alpha = false) {
+            if (segmentId == 0) {
+                return;
+            }
+            ref NetSegment segment = ref segmentId.ToSegment();
+            float halfWidth = segment.Info.m_halfWidth;
+            Bezier3 bezier = segment.CalculateSegmentBezier3();
+            float len = bezier.ArcLength();
+            float delta_t = 0.5f * width / len;
+
+            float t = bezier.GetClosestT(pos);
+            float t1 = t - delta_t;
+            float t2 = t + delta_t;
+            if (t1 < 0)  t1 = 0;
+            if (t2 > 1) t2 = 1;
+            bezier = bezier.Cut(t1,t2);
+
+            Singleton<ToolManager>.instance.m_drawCallData.m_overlayCalls++;
+            Singleton<RenderManager>.instance.OverlayEffect.DrawBezier(
+                cameraInfo,
+                color,
+                bezier,
+                halfWidth * 2f,
+                halfWidth,
+                halfWidth,
+                -1f,
+                1280f,
+                false,
+                alpha);
+        }
+
 
         public static void RenderSegmnetOverlay(
             RenderManager.CameraInfo cameraInfo,

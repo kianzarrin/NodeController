@@ -8,21 +8,13 @@ namespace NodeController.GUI {
 
     public static class TextureUtil {
         const string PATH = "NodeController.Resources.";
-        public static UITextureAtlas CreateTextureAtlas(string textureFile, string atlasName, Material baseMaterial, int spriteWidth, int spriteHeight, string[] spriteNames) {
-            Texture2D texture2D = new Texture2D(spriteWidth * spriteNames.Length, spriteHeight, TextureFormat.ARGB32, false);
-            Assert(texture2D != null, "texture2D");
-            texture2D.filterMode = FilterMode.Bilinear;
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            string path = PATH + textureFile;
-            Stream manifestResourceStream = executingAssembly.GetManifestResourceStream(path);
-            Assert(manifestResourceStream != null, "could not find " + path);
-            byte[] array = new byte[manifestResourceStream.Length];
-            manifestResourceStream.Read(array, 0, array.Length);
-            texture2D.LoadImage(array);
-            texture2D.Apply(true, true);
+        public static UITextureAtlas CreateTextureAtlas(string textureFile, string atlasName, int spriteWidth, int spriteHeight, string[] spriteNames) {
+            Texture2D texture2D = LoadTextureFromAssembly(
+                textureFile, spriteWidth * spriteNames.Length, spriteHeight);
+
             UITextureAtlas uitextureAtlas = ScriptableObject.CreateInstance<UITextureAtlas>();
             Assert(uitextureAtlas != null, "uitextureAtlas");
-            Material material = UnityEngine.Object.Instantiate<Material>(baseMaterial);
+            Material material = Object.Instantiate<Material>(UIView.GetAView().defaultAtlas.material);
             Assert(material != null, "material");
             material.mainTexture = texture2D;
             uitextureAtlas.material = material;
@@ -95,14 +87,19 @@ namespace NodeController.GUI {
             return UIView.GetAView().defaultAtlas;
         }
 
-        private static Texture2D loadTextureFromAssembly(string path) {
-            Stream manifestResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
-
+        public static Texture2D LoadTextureFromAssembly(string textureFile, int width, int height) {
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            string path = PATH + textureFile;
+            Stream manifestResourceStream = executingAssembly.GetManifestResourceStream(path);
+            Assert(manifestResourceStream != null, "could not find " + path);
             byte[] array = new byte[manifestResourceStream.Length];
             manifestResourceStream.Read(array, 0, array.Length);
 
-            Texture2D texture2D = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+            Texture2D texture2D = new Texture2D(width, height, TextureFormat.ARGB32, false);
+            Assert(texture2D != null, "texture2D");
+            texture2D.filterMode = FilterMode.Bilinear;
             texture2D.LoadImage(array);
+            texture2D.Apply(true, true);
 
             return texture2D;
         }

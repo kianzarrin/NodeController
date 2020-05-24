@@ -26,9 +26,27 @@ namespace NodeController.Tool {
 
         private object m_cacheLock = new object();
 
+        private CursorInfo CursorCrossing;
+        private CursorInfo CursorEdit;
+        private CursorInfo CursorNormal;
+
+
         protected override void Awake() {
             NodeControllerButton.CreateButton();
             panel_ = UINodeControllerPanel.Create();
+
+            CursorCrossing = ScriptableObject.CreateInstance<CursorInfo>();
+            CursorCrossing.m_texture = TextureUtil.LoadTextureFromAssembly("cursor crossing.png",31,31);
+            CursorCrossing.m_hotspot = new Vector2(5f, 0f);
+
+            CursorEdit = ScriptableObject.CreateInstance<CursorInfo>();
+            CursorEdit.m_texture = TextureUtil.LoadTextureFromAssembly("cursor edit.png", 31, 31);
+            CursorEdit.m_hotspot = new Vector2(5f, 0f);
+
+            CursorNormal = ScriptableObject.CreateInstance<CursorInfo>();
+            CursorNormal.m_texture = TextureUtil.LoadTextureFromAssembly("cursor.png", 31, 31);
+            CursorNormal.m_hotspot = new Vector2(5f, 0f);
+
             base.Awake();
         }
 
@@ -111,6 +129,29 @@ namespace NodeController.Tool {
             }
         }
 
+        CursorInfo GetCursor() {
+            if (IsHoverValid && m_prefab != null) {
+                NetTool.ControlPoint controlPoint = m_cachedControlPoint;
+                ushort nodeID = controlPoint.m_node;
+                if (nodeID != 0) {
+                    bool fail = !NodeData.IsSupported(nodeID);
+                    if (fail) return CursorNormal;
+                    return CursorEdit;
+                } else if (controlPoint.m_segment != 0) {
+                    bool isRoad = m_prefab.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(m_prefab);
+                    ToolErrors error = m_cachedErrors;
+                    error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
+                    bool fail = error != ToolErrors.None || !isRoad;
+                    if (fail)
+                        return CursorNormal;
+                    if (m_prefab.CountPedestrianLanes() < 2)
+                        return CursorCrossing; // add crossing node
+                    return CursorNormal; // add middle node.
+                }
+            }
+            return null;
+        }
+
         protected override void OnToolUpdate() {
             base.OnToolUpdate();
 
@@ -130,7 +171,7 @@ namespace NodeController.Tool {
                 m_prefab = null;
             }
 
-            ToolCursor = m_mouseRayValid ? NetUtil.netTool.m_upgradeCursor : null;
+            ToolCursor = GetCursor();
         }
 
         protected override void OnToolLateUpdate() {
@@ -175,6 +216,10 @@ namespace NodeController.Tool {
                     error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
                     bool fail = error != ToolErrors.None || !isRoad;
                     Color color = GetColor(fail);
+                    if (fail)
+                        RenderStripOnSegment(cameraInfo, controlPoint.m_segment, controlPoint.m_position, 2.5f, color);
+                    else
+                        RenderStripOnSegment(cameraInfo, controlPoint.m_segment, controlPoint.m_position, 2.5f, color);
                     DrawOverlayCircle(cameraInfo, color, controlPoint.m_position, m_prefab.m_halfWidth, false);
                 }
                 DrawOverlayCircle(cameraInfo, Color.red, raycastOutput.m_hitPos, 1, true);
