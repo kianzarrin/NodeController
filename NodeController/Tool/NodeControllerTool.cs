@@ -36,15 +36,15 @@ namespace NodeController.Tool {
             panel_ = UINodeControllerPanel.Create();
 
             CursorCrossing = ScriptableObject.CreateInstance<CursorInfo>();
-            CursorCrossing.m_texture = TextureUtil.LoadTextureFromAssembly("cursor_crossing.png", 31,31);
+            CursorCrossing.m_texture = TextureUtil.GetTextureFromAssemblyManifest("cursor_crossing.png");
             CursorCrossing.m_hotspot = new Vector2(5f, 0f);
 
             CursorEdit = ScriptableObject.CreateInstance<CursorInfo>();
-            CursorEdit.m_texture = TextureUtil.LoadTextureFromAssembly("cursor_edit.png", 31, 31);
+            CursorEdit.m_texture = TextureUtil.GetTextureFromAssemblyManifest("cursor_edit.png");
             CursorEdit.m_hotspot = new Vector2(5f, 0f);
 
             CursorNormal = ScriptableObject.CreateInstance<CursorInfo>();
-            CursorNormal.m_texture = TextureUtil.LoadTextureFromAssembly("cursor.png", 31, 31);
+            CursorNormal.m_texture = TextureUtil.GetTextureFromAssemblyManifest("cursor.png");
             CursorNormal.m_hotspot = new Vector2(5f, 0f);
 
             base.Awake();
@@ -144,11 +144,13 @@ namespace NodeController.Tool {
                     bool fail = error != ToolErrors.None || !isRoad;
                     if (fail)
                         return CursorNormal;
-                    if (m_prefab.CountPedestrianLanes() < 2)
+                    if (m_prefab.CountPedestrianLanes() >= 2)
                         return CursorCrossing; // add crossing node
                     return CursorNormal; // add middle node.
                 }
             }
+            if (m_mouseRayValid)
+                return CursorNormal;
             return null;
         }
 
@@ -181,7 +183,7 @@ namespace NodeController.Tool {
 
         public Color GetColor(bool error) {
             if (error)
-                return base.GetToolColor(false,true);
+                return base.GetToolColor(false, true);
             Color c = base.GetToolColor(false, false);
             Color ret = Color.yellow;
             ret.a = base.GetToolColor(false, false).a;
@@ -216,11 +218,7 @@ namespace NodeController.Tool {
                     error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
                     bool fail = error != ToolErrors.None || !isRoad;
                     Color color = GetColor(fail);
-                    if (fail)
-                        RenderStripOnSegment(cameraInfo, controlPoint.m_segment, controlPoint.m_position, 2.5f, color);
-                    else
-                        RenderStripOnSegment(cameraInfo, controlPoint.m_segment, controlPoint.m_position, 2.5f, color);
-                    DrawOverlayCircle(cameraInfo, color, controlPoint.m_position, m_prefab.m_halfWidth, false);
+                    RenderStripOnSegment(cameraInfo, controlPoint.m_segment, controlPoint.m_position, 1.5f, color);
                 }
                 DrawOverlayCircle(cameraInfo, Color.red, raycastOutput.m_hitPos, 1, true);
             }

@@ -1,6 +1,6 @@
-using Kian.Math;
 using ColossalFramework;
 using ColossalFramework.Math;
+using Kian.Math;
 using UnityEngine;
 
 namespace NodeController.Util {
@@ -60,12 +60,12 @@ namespace NodeController.Util {
                 alpha);
         }
 
-            public static void RenderStripOnSegment(RenderManager.CameraInfo cameraInfo,
-                       ushort segmentId,
-                       Vector3 pos,
-                       float width,
-                       Color color,
-                       bool alpha = false) {
+        public static void RenderStripOnSegment(RenderManager.CameraInfo cameraInfo,
+                   ushort segmentId,
+                   Vector3 pos,
+                   float width,
+                   Color color,
+                   bool alpha = false) {
             if (segmentId == 0) {
                 return;
             }
@@ -78,9 +78,9 @@ namespace NodeController.Util {
             float t = bezier.GetClosestT(pos);
             float t1 = t - delta_t;
             float t2 = t + delta_t;
-            if (t1 < 0)  t1 = 0;
+            if (t1 < 0) t1 = 0;
             if (t2 > 1) t2 = 1;
-            bezier = bezier.Cut(t1,t2);
+            bezier = bezier.Cut(t1, t2);
 
             Singleton<ToolManager>.instance.m_drawCallData.m_overlayCalls++;
             Singleton<RenderManager>.instance.OverlayEffect.DrawBezier(
@@ -101,10 +101,9 @@ namespace NodeController.Util {
             RenderManager.CameraInfo cameraInfo,
             ushort segmentId,
             Color color,
-            bool alphaBlend = false)
-        {
+            bool alphaBlend = false) {
             if (segmentId == 0) return;
-        
+
             ref NetSegment segment = ref segmentId.ToSegment();
             float hw = segment.Info.m_halfWidth;
 
@@ -137,8 +136,7 @@ namespace NodeController.Util {
             Vector3 pos = nodeId.ToNode().m_position;
             float r = 0;
             int n = 0;
-            foreach(ushort segmentId in NetUtil.GetSegmentsCoroutine(nodeId))
-            {
+            foreach (ushort segmentId in NetUtil.GetSegmentsCoroutine(nodeId)) {
                 r += segmentId.ToSegment().Info.m_halfWidth;
                 n++;
             }
@@ -150,7 +148,7 @@ namespace NodeController.Util {
                                Color color,
                                Vector3 position,
                                float raduis,
-                               bool alphaBlend =false) {
+                               bool alphaBlend = false) {
             Singleton<ToolManager>.instance.m_drawCallData.m_overlayCalls++;
             Singleton<RenderManager>.instance.OverlayEffect.DrawCircle(
                 cameraInfo,
@@ -163,7 +161,7 @@ namespace NodeController.Util {
                 alphaBlend);
         }
 
-        public static void Render(this Bezier3 bezier, RenderManager.CameraInfo cameraInfo, Color color, float hw, bool alphaBlend=false) {
+        public static void Render(this Bezier3 bezier, RenderManager.CameraInfo cameraInfo, Color color, float hw, bool alphaBlend = false) {
             Singleton<ToolManager>.instance.m_drawCallData.m_overlayCalls++;
             RenderManager.instance.OverlayEffect.DrawBezier(
                 cameraInfo, color,

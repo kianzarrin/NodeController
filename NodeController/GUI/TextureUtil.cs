@@ -7,7 +7,7 @@ namespace NodeController.GUI {
     using static Util.HelpersExtensions;
 
     public static class TextureUtil {
-        const string PATH = "NodeController.Resources.";
+        const string PATH = nameof(NodeController)+ ".Resources.";
         public static UITextureAtlas CreateTextureAtlas(string textureFile, string atlasName, int spriteWidth, int spriteHeight, string[] spriteNames) {
             Texture2D texture2D = LoadTextureFromAssembly(
                 textureFile, spriteWidth * spriteNames.Length, spriteHeight);
@@ -101,6 +101,19 @@ namespace NodeController.GUI {
             texture2D.LoadImage(array);
             texture2D.Apply(true, true);
 
+            return texture2D;
+        }
+
+        public static Texture2D GetTextureFromAssemblyManifest(string file) {
+            string path = string.Concat(PATH, file);
+            Texture2D texture2D = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            using (Stream manifestResourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(path)) {
+                byte[] array = new byte[manifestResourceStream.Length];
+                manifestResourceStream.Read(array, 0, array.Length);
+                texture2D.LoadImage(array);
+            }
+            texture2D.wrapMode = TextureWrapMode.Clamp;
+            texture2D.Apply();
             return texture2D;
         }
 
