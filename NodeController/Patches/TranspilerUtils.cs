@@ -19,9 +19,9 @@ namespace NodeController.Patches {
             return codes;
         }
 
-
         public static CodeInstruction GetLDArg(MethodInfo method, string argName) {
-            byte idx = (byte)GetParameterLoc(method, argName);
+            int idx = GetParameterLoc(method, argName);
+            if (idx == -1) return null;
             if (!method.IsStatic)
                 idx++; // first argument is object instance.
             if (idx == 0) {
@@ -40,9 +40,11 @@ namespace NodeController.Patches {
         /// <summary>
         /// Post condtion: for instnace method add one to get argument location
         /// </summary>
-        public static byte GetParameterLoc(MethodInfo method, string name) {
+        /// <return>Parameter index (excluding instance) if sucessful
+        /// -1 otherwise.</return>
+        public static int GetParameterLoc(MethodInfo method, string name) {
             var parameters = method.GetParameters();
-            for (byte i = 0; i < parameters.Length; ++i) {
+            for (int i = 0; i < parameters.Length; ++i) {
                 if (parameters[i].Name == name) {
                     return i;
                 }

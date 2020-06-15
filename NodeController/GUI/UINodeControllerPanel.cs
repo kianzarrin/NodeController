@@ -114,6 +114,11 @@ namespace NodeController.GUI {
                 var checkBox = panel.AddUIComponent<UIHideMarkingsCheckbox>();
                 Controls.Add(checkBox);
             }
+            {
+                var panel = AddPanel();
+                var checkBox = panel.AddUIComponent<UIFlatJunctionsCheckbox>();
+                Controls.Add(checkBox);
+            }
 
             {
                 var panel = AddPanel();

@@ -22,8 +22,8 @@ namespace NodeController {
         public ushort NodeID;
 
         // defaults
-        public float DefaultCornerOffset =>
-             CSURUtil.GetMinCornerOffset(NodeID);
+        public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(NodeID);
+        public bool DefaultFlatJunctions => NodeID.ToNode().Info.m_flatJunctions;
         public NetNode.Flags DefaultFlags;
         public NodeTypeT DefaultNodeType;
 
@@ -41,6 +41,7 @@ namespace NodeController {
         // Configurable
         public NodeTypeT NodeType;
         public float CornerOffset;
+        public bool FlatJunctions;
         public bool ClearMarkings;
         public bool FirstTimeTrafficLight = false; // turn on traffic light when inserting pedestrian node for the first time.
 
@@ -49,6 +50,7 @@ namespace NodeController {
             Calculate();
             NodeType = DefaultNodeType;
             CornerOffset = DefaultCornerOffset;
+            FlatJunctions = DefaultFlatJunctions;
             FirstTimeTrafficLight = NodeType == NodeTypeT.Crossing;
         }
 
@@ -99,9 +101,10 @@ namespace NodeController {
         }
 
         public bool IsDefault() {
-            bool ret = Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.5f;
-            ret &= NodeType == DefaultNodeType;
+            bool ret = NodeType == DefaultNodeType;
             ret &= ClearMarkings == false;
+            ret &= FlatJunctions == DefaultFlatJunctions;
+            ret = ret && Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.5f;
             return ret;
         }
 
@@ -109,6 +112,7 @@ namespace NodeController {
             NodeType = DefaultNodeType;
             CornerOffset = DefaultCornerOffset;
             ClearMarkings = false;
+            FlatJunctions = DefaultFlatJunctions;
             NetManager.instance.UpdateNode(NodeID);
         }
 
@@ -123,6 +127,9 @@ namespace NodeController {
                     CornerOffset = 0f;
                 else if (NodeType != NodeTypeT.Custom)
                     CornerOffset = DefaultCornerOffset;
+            }
+            if(!CanModifyFlatJunctions()) {
+                FlatJunctions = DefaultFlatJunctions;
             }
             Log.Debug($"NodeData.Refresh() Updating node:{NodeID}");
             if (HelpersExtensions.VERBOSE)
@@ -142,6 +149,7 @@ namespace NodeController {
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
+        public bool CanModifyFlatJunctions() => !NeedMiddleFlag();
         public bool ShowClearMarkingsToggle() => NodeType == NodeTypeT.Custom && !IsCSUR;
         public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
 

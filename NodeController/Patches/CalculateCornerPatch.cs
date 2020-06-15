@@ -37,6 +37,9 @@ namespace NodeController.Patches {
 
         [HarmonyBefore(CSURUtil.HARMONY_ID)]
         public static IEnumerable<CodeInstruction> Transpiler(ILGenerator il, IEnumerable<CodeInstruction> instructions) {
+            // apply the flat junctions traspiler
+            instructions = FlatJunctionsCommons.ModifyFlatJunctionsTranspiler(instructions, targetMethod_);
+
             CodeInstruction ldarg_startNodeID = GetLDArg(targetMethod_, "startNodeID"); // push startNodeID into stack,
             CodeInstruction call_GetMinCornerOffset = new CodeInstruction(OpCodes.Call, mGetMinCornerOffset);
 
