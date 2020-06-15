@@ -49,7 +49,8 @@ namespace NodeController.Patches {
                     return i;
                 }
             }
-            throw new Exception($"did not found parameter with name:<{name}>");
+            return -1;
+            //throw new Exception($"did not found parameter with name:<{name}>");
         }
 
         public static bool IsSameInstruction(CodeInstruction a, CodeInstruction b, bool debug = false) {

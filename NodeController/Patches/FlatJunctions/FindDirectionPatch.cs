@@ -15,6 +15,7 @@ namespace NodeController.Patches {
             AccessTools.DeclaredMethod(typeof(NetSegment),nameof(NetSegment.FindDirection)) ??
                 throw new System.Exception("FindDirectionPatch Could not find target method.");
 
+        [UsedImplicitly]
         public static IEnumerable<CodeInstruction> Transpiler(ILGenerator il, IEnumerable<CodeInstruction> instructions) {
             return FlatJunctionsCommons.ModifyFlatJunctionsTranspiler(instructions, targetMethod_);
         }
