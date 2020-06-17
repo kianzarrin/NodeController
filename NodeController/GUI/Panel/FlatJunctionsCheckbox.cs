@@ -49,7 +49,7 @@ namespace NodeController.GUI {
             NodeData data = UINodeControllerPanel.Instance.NodeData;
             if (data == null)
                 return;
-            data.ClearMarkings = this.isChecked;
+            data.FlatJunctions = this.isChecked;
             Assert(!refreshing_, "!refreshing_");
             data.Refresh();
             UINodeControllerPanel.Instance.Refresh();
@@ -67,9 +67,9 @@ namespace NodeController.GUI {
                 return;
             }
 
-            this.isChecked = data.ClearMarkings;
+            this.isChecked = data.FlatJunctions;
 
-            parent.isVisible = isVisible = this.isEnabled = data.ShowClearMarkingsToggle();
+            parent.isVisible = isVisible = this.isEnabled = data.CanModifyFlatJunctions();
             parent.Invalidate();
             Invalidate();
             refreshing_ = false;
