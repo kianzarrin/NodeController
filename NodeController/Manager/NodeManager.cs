@@ -31,26 +31,28 @@ namespace NodeController {
 
         #region data tranfer
         public static byte[] CopyNodeData(ushort nodeID) =>
-            Instance.CopyNodeDataImp(nodeID)?.Serialize();
+            Instance.CopyNodeDataImp(nodeID);
 
         public static void PasteNodeData(ushort nodeID, byte[] data) =>
-            Instance.PasteNodeDataImp(nodeID, TransferableNodeData.Deserialize(data));
+            Instance.PasteNodeDataImp(nodeID, data);
 
 
-        private TransferableNodeData CopyNodeDataImp(ushort nodeID) {
+        private byte[] CopyNodeDataImp(ushort nodeID) {
             var nodeData = buffer[nodeID];
             if (nodeData == null) {
                 Log.Debug($"node:{nodeID} has no custom data");
                 return null;
             }
-            return new TransferableNodeData(nodeData);
+            return SerializationUtil.Serialize(nodeData);
         }
 
-        private void PasteNodeDataImp(ushort nodeID, TransferableNodeData data) {
+        private void PasteNodeDataImp(ushort nodeID, byte[] data) {
             if (data == null) {
                 ResetNodeToDefault(nodeID);
             } else {
-                buffer[nodeID] = new NodeData(nodeID, data);
+                buffer[nodeID] = SerializationUtil.Deserialize(data) as NodeData;
+                buffer[nodeID].NodeID = nodeID;
+                RefreshData(nodeID);
             }
         }
         #endregion

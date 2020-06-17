@@ -49,19 +49,6 @@ namespace NodeController {
         public bool ClearMarkings;
         public bool FirstTimeTrafficLight; // turn on traffic light when inserting pedestrian node for the first time.
 
-        public NodeData(ushort nodeID, TransferableNodeData data) {
-            HelpersExtensions.AssertNotNull(data, "transfarableData");
-            HelpersExtensions.Assert(nodeID!=0, "nodeID!=0");
-            Log.Debug($"Paste node:{nodeID} <= {data}");
-            NodeID = nodeID;
-            NodeType = data.NodeType;
-            CornerOffset = data.CornerOffset;
-            FlatJunctions = data.FlatJunctions;
-            ClearMarkings = data.ClearMarkings;
-            FirstTimeTrafficLight = data.FirstTimeTrafficLight;
-            Calculate();
-        }
-
         public NodeData(ushort nodeID) {
             NodeID = nodeID;
             Calculate();
