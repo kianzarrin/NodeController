@@ -2,8 +2,12 @@ namespace NodeController {
     using ColossalFramework;
     using ColossalFramework.Math;
     using System;
+    using System.IO;
+    using System.Runtime.Serialization.Formatters;
+    using System.Runtime.Serialization.Formatters.Binary;
     using TrafficManager.API.Traffic.Enums;
     using UnityEngine;
+    using UnityEngine.Assertions;
     using Util;
     using TernaryBool = CSUtil.Commons.TernaryBool;
 
@@ -43,7 +47,7 @@ namespace NodeController {
         public float CornerOffset;
         public bool FlatJunctions;
         public bool ClearMarkings;
-        public bool FirstTimeTrafficLight = false; // turn on traffic light when inserting pedestrian node for the first time.
+        public bool FirstTimeTrafficLight; // turn on traffic light when inserting pedestrian node for the first time.
 
         public NodeData(ushort nodeID) {
             NodeID = nodeID;
@@ -149,7 +153,7 @@ namespace NodeController {
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
-        public bool CanModifyFlatJunctions() => !NeedMiddleFlag();
+        public bool CanModifyFlatJunctions() => false;//!NeedMiddleFlag();
         public bool ShowClearMarkingsToggle() => NodeType == NodeTypeT.Custom && !IsCSUR;
         public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
 

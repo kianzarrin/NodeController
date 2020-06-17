@@ -52,7 +52,6 @@ namespace NodeController.Patches {
         static MethodInfo mShouldContinueMedian => typeof(CalculateMaterialCommons).GetMethod("ShouldContinueMedian");
         static MethodInfo mGetSegment => typeof(NetNode).GetMethod("GetSegment");
 
-        // returns the position of First DrawMesh after index.
         public static void PatchCheckFlags(List<CodeInstruction> codes, int occurance, MethodInfo method) {
             HelpersExtensions.Assert(mDrawMesh != null, "mDrawMesh!=null failed");
             HelpersExtensions.Assert(fNodeMaterial != null, "fNodeMaterial!=null failed");
@@ -63,6 +62,7 @@ namespace NodeController.Patches {
             HelpersExtensions.Assert(mShouldContinueMedian != null, "mShouldContinueMedian!=null failed");
 
             int index = 0;
+            // returns the position of First DrawMesh after index.
             index = SearchInstruction(codes, new CodeInstruction(OpCodes.Call, mDrawMesh), index, counter: occurance);
             HelpersExtensions.Assert(index != 0, "index!=0");
 
