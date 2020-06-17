@@ -1,9 +1,5 @@
 namespace NodeController {
-    using ColossalFramework;
     using System;
-    using System.IO;
-    using System.Runtime.Serialization.Formatters;
-    using System.Runtime.Serialization.Formatters.Binary;
     using Util;
 
     [Serializable]
@@ -11,28 +7,17 @@ namespace NodeController {
         #region LifeCycle
         public static NodeManager Instance { get; private set; } = new NodeManager();
 
-        static BinaryFormatter GetBinaryFormatter =>
-            new BinaryFormatter { AssemblyFormat = FormatterAssemblyStyle.Simple };
+        public static byte[] Serialize() => SerializationUtil.Serialize(Instance);
 
         public static void Deserialize(byte[] data) {
             if (data == null) {
                 Instance = new NodeManager();
                 Log.Debug($"NodeBlendManager.Deserialize(data=null)");
-                return;
+
+            } else {
+                Log.Debug($"NodeBlendManager.Deserialize(data): data.Length={data?.Length}");
+                Instance = SerializationUtil.Deserialize(data) as NodeManager;
             }
-            Log.Debug($"NodeBlendManager.Deserialize(data): data.Length={data?.Length}");
-
-            var memoryStream = new MemoryStream();
-            memoryStream.Write(data, 0, data.Length);
-            memoryStream.Position = 0;
-            Instance = GetBinaryFormatter.Deserialize(memoryStream) as NodeManager;
-        }
-
-        public static byte[] Serialize() {
-            var memoryStream = new MemoryStream();
-            GetBinaryFormatter.Serialize(memoryStream, Instance);
-            memoryStream.Position = 0; // redundant
-            return memoryStream.ToArray();
         }
 
         public void OnLoad() {
@@ -42,6 +27,35 @@ namespace NodeController {
         #endregion LifeCycle
 
         public NodeData[] buffer = new NodeData[NetManager.MAX_NODE_COUNT];
+
+
+        #region data tranfer
+        public static byte[] CopyNodeData(ushort nodeID) =>
+            Instance.CopyNodeDataImp(nodeID);
+
+        public static void PasteNodeData(ushort nodeID, byte[] data) =>
+            Instance.PasteNodeDataImp(nodeID, data);
+
+
+        private byte[] CopyNodeDataImp(ushort nodeID) {
+            var nodeData = buffer[nodeID];
+            if (nodeData == null) {
+                Log.Debug($"node:{nodeID} has no custom data");
+                return null;
+            }
+            return SerializationUtil.Serialize(nodeData);
+        }
+
+        private void PasteNodeDataImp(ushort nodeID, byte[] data) {
+            if (data == null) {
+                ResetNodeToDefault(nodeID);
+            } else {
+                buffer[nodeID] = SerializationUtil.Deserialize(data) as NodeData;
+                buffer[nodeID].NodeID = nodeID;
+                RefreshData(nodeID);
+            }
+        }
+        #endregion
 
         public NodeData InsertNode(NetTool.ControlPoint controlPoint, NodeTypeT nodeType = NodeTypeT.Crossing) {
             if(ToolBase.ToolErrors.None != NetUtil.InsertNode(controlPoint, out ushort nodeID))
@@ -73,12 +87,19 @@ namespace NodeController {
             if (nodeID == 0 || buffer[nodeID] == null)
                 return;
             if (buffer[nodeID].IsDefault()) {
-                Log.Info($"node reset to defualt");
-                buffer[nodeID] = null;
-                NetManager.instance.UpdateNode(nodeID);
+                ResetNodeToDefault(nodeID);
             } else {
                 buffer[nodeID].Refresh();
             }
+        }
+
+        public void ResetNodeToDefault(ushort nodeID) {
+            if(buffer[nodeID]!=null)
+                Log.Debug($"node:{nodeID} reset to defualt");
+            else
+                Log.Debug($"node:{nodeID} is alreadey null. no ne");
+            buffer[nodeID] = null;
+            NetManager.instance.UpdateNode(nodeID);
         }
 
         public void RefreshAllNodes() {

@@ -24,7 +24,7 @@ namespace NodeController.GUI {
             name = name;
             height = 15f;
             float padding = 0; // contianer has padding
-            width = parent.width - 2*padding;
+            width = parent.width - 2 * padding;
 
             maxValue = 100;
             minValue = 0;
