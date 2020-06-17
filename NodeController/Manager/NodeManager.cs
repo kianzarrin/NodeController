@@ -31,15 +31,18 @@ namespace NodeController {
 
         #region data tranfer
         public static byte[] CopyNodeData(ushort nodeID) =>
-            Instance.CopyNodeDataImp(nodeID).Serialize();
+            Instance.CopyNodeDataImp(nodeID)?.Serialize();
 
         public static void PasteNodeData(ushort nodeID, byte[] data) =>
             Instance.PasteNodeDataImp(nodeID, TransferableNodeData.Deserialize(data));
 
+
         private TransferableNodeData CopyNodeDataImp(ushort nodeID) {
             var nodeData = buffer[nodeID];
-            if (nodeData == null)
+            if (nodeData == null) {
+                Log.Debug($"node:{nodeID} has no custom data");
                 return null;
+            }
             return new TransferableNodeData(nodeData);
         }
 
@@ -89,7 +92,10 @@ namespace NodeController {
         }
 
         public void ResetNodeToDefault(ushort nodeID) {
-            Log.Info($"node reset to defualt");
+            if(buffer[nodeID]!=null)
+                Log.Debug($"node:{nodeID} reset to defualt");
+            else
+                Log.Debug($"node:{nodeID} is alreadey null. no ne");
             buffer[nodeID] = null;
             NetManager.instance.UpdateNode(nodeID);
         }

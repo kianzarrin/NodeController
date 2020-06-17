@@ -22,9 +22,6 @@ namespace NodeController {
 
     [Serializable]
     public class NodeData {
-
-
-
         // intrinsic
         public ushort NodeID;
 
@@ -55,6 +52,7 @@ namespace NodeController {
         public NodeData(ushort nodeID, TransferableNodeData data) {
             HelpersExtensions.AssertNotNull(data, "transfarableData");
             HelpersExtensions.Assert(nodeID!=0, "nodeID!=0");
+            Log.Debug($"Paste node:{nodeID} <= {data}");
             NodeID = nodeID;
             NodeType = data.NodeType;
             CornerOffset = data.CornerOffset;

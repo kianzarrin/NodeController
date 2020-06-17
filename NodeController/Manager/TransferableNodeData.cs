@@ -16,10 +16,20 @@ namespace NodeController {
             FlatJunctions = nodeData.FlatJunctions;
             ClearMarkings = nodeData.ClearMarkings;
             FirstTimeTrafficLight = nodeData.FirstTimeTrafficLight;
+            Log.Debug($"Copy node:{nodeData.NodeID} => {this}");
+
+            var data = Serialize();
+            var copy = Deserialize(data);
+            Log.Debug($"TEST: Serialize->{data}->Deserialize->{copy}");
+
         }
 
+        public override string ToString() =>
+            $"TransferableNodeData[NodeType={NodeType} CornerOffset={CornerOffset} FJ={FlatJunctions} CM={ClearMarkings} FTTL={FirstTimeTrafficLight}]";
+
+
         public static TransferableNodeData Deserialize(byte[] data) =>
-        SerializationUtil.Deserialize(data) as TransferableNodeData;
+            (TransferableNodeData)SerializationUtil.Deserialize(data);
 
         public byte[] Serialize() => SerializationUtil.Serialize(this);
     }

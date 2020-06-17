@@ -17,7 +17,7 @@ namespace NodeController.Util {
             var memoryStream = new MemoryStream();
             memoryStream.Write(data, 0, data.Length);
             memoryStream.Position = 0;
-            return GetBinaryFormatter.Deserialize(memoryStream) as NodeManager;
+            return GetBinaryFormatter.Deserialize(memoryStream);
         }
 
         public static byte[] Serialize(object obj) {
