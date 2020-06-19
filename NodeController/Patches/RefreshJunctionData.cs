@@ -57,6 +57,7 @@ namespace NodeController.Patches
                 // puts crossings in the center.
                 data.m_dataVector1.w = 0.01f;
             }
+#if false
             if(blendData.NodeType == NodeTypeT.Stretch) {
                 // should data vectors be inverted?
                 ushort segmentID = __instance.GetSegment(data.m_dataInt0 & 7);
@@ -85,6 +86,7 @@ namespace NodeController.Patches
                     //data.m_dataVector3.w = -data.m_dataVector3.w;
                 }
             }
+#endif
         }
     }
 }
