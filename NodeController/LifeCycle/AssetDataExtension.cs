@@ -6,6 +6,35 @@ using System.Linq;
 using System.Text;
 
 namespace NodeController.LifeCycle {
+    using HarmonyLib;
+    using ColossalFramework.UI;
+
+    // Credits to boformer
+    [HarmonyPatch(typeof(LoadAssetPanel), "OnLoad")]
+    public static class OnLoadPatch {
+        /// <summary>
+        /// when loading asset from file, IAssetData.OnAssetLoaded() is called for all assets but the one that is loaded from file.
+        /// this postfix calls IAssetData.OnAssetLoaded() for asset loaded from file.
+        /// </summary>
+        public static void Postfix(LoadAssetPanel __instance, UIListBox ___m_SaveList) {
+            // Taken from LoadAssetPanel.OnLoad
+            var selectedIndex = ___m_SaveList.selectedIndex;
+            var getListingMetaDataMethod = typeof(LoadSavePanelBase<CustomAssetMetaData>).GetMethod(
+                "GetListingMetaData", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            var listingMetaData = (CustomAssetMetaData)getListingMetaDataMethod.Invoke(__instance, new object[] { selectedIndex });
+
+            // Taken from LoadingManager.LoadCustomContent
+            if (listingMetaData.userDataRef != null) {
+                AssetDataWrapper.UserAssetData userAssetData = listingMetaData.userDataRef.Instantiate() as AssetDataWrapper.UserAssetData;
+                if (userAssetData == null) {
+                    userAssetData = new AssetDataWrapper.UserAssetData();
+                }
+                AssetDataExtension.Instance.OnAssetLoaded(listingMetaData.name, ToolsModifierControl.toolController.m_editPrefabInfo, userAssetData.Data);
+            }
+        }
+    }
+
+
     [Serializable]
     public class pathInfoExt {
         public ushort SegmentId;
