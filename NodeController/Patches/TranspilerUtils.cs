@@ -6,11 +6,36 @@ using HarmonyLib;
 namespace NodeController.Patches {
     using CSUtil.Commons;
     using System.Reflection;
+    using NodeController.Util;
+    using System.Linq;
+
     public static class TranspilerUtils {
         static bool VERBOSE => Util.HelpersExtensions.VERBOSE;
 
         static void Log(object message) {
             Util.Log.Info("TRANSPILER " + message);
+        }
+
+        /// <typeparam name="TDelegate">delegate type</typeparam>
+        /// <returns>Type[] represeting arguments of the delegate.</returns>
+        internal static Type[] GetParameterTypes<TDelegate>() where TDelegate : Delegate {
+            return typeof(TDelegate).GetMethod("Invoke").GetParameters().Select(p => p.ParameterType).ToArray();
+        }
+
+        /// <summary>
+        /// Gets directly declared method.
+        /// </summary>
+        /// <typeparam name="TDelegate">delegate that has the same argument types as the intented overloaded method</typeparam>
+        /// <param name="type">the class/type where the method is delcared</param>
+        /// <param name="name">the name of the method</param>
+        /// <returns>a method or null when type is null or when a method is not found</returns>
+        internal static MethodInfo DeclaredMethod<TDelegate>(Type type, string name)
+            where TDelegate : Delegate {
+            var args = GetParameterTypes<TDelegate>();
+            var ret = AccessTools.DeclaredMethod(type, name, args);
+            if (ret == null)
+                Util.Log.Error($"failed to retrieve method {type}.{name}({args.ToSTR()})");
+            return ret;
         }
 
         public static List<CodeInstruction> ToCodeList(IEnumerable<CodeInstruction> instructions) {

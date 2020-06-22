@@ -14,8 +14,8 @@ namespace NodeController.LifeCycle
         : SerializableDataExtensionBase
     {
         private const string DATA_ID = "NodeController_V1.0";
-        const string FILE_NAME = "NodeController.xml";
-        static string global_config_path_ = Path.Combine(Application.dataPath, FILE_NAME);
+        //const string FILE_NAME = "NodeController.xml";
+        //static string global_config_path_ = Path.Combine(Application.dataPath, FILE_NAME);
 
         public override void OnLoadData()
         {

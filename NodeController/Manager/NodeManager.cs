@@ -1,5 +1,6 @@
 namespace NodeController {
     using System;
+    using System.Collections.Generic;
     using Util;
 
     [Serializable]
@@ -28,6 +29,14 @@ namespace NodeController {
 
         public NodeData[] buffer = new NodeData[NetManager.MAX_NODE_COUNT];
 
+        public List<NodeData> GetNodeDataList() {
+            var ret = new List<NodeData>();
+            foreach(NodeData nodeData in buffer){
+                if (nodeData != null)
+                    ret.Add(nodeData);
+            }
+            return ret;
+        }
 
         #region data tranfer
         public static byte[] CopyNodeData(ushort nodeID) =>
@@ -36,6 +45,15 @@ namespace NodeController {
         public static void PasteNodeData(ushort nodeID, byte[] data) =>
             Instance.PasteNodeDataImp(nodeID, data);
 
+        /// <summary>
+        /// clones node data before transfering it to newNodeID
+        /// </summary>
+        public void TransferNodeData(ushort newNodeID, NodeData nodedata, bool refresh=true) {
+            buffer[newNodeID] = nodedata.Clone();
+            buffer[newNodeID].NodeID = newNodeID;
+            if(refresh)
+                RefreshData(newNodeID);
+        }
 
         private byte[] CopyNodeDataImp(ushort nodeID) {
             var nodeData = buffer[nodeID];

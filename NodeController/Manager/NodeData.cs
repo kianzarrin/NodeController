@@ -49,6 +49,10 @@ namespace NodeController {
         public bool ClearMarkings;
         public bool FirstTimeTrafficLight; // turn on traffic light when inserting pedestrian node for the first time.
 
+        public byte[] Serialize() => SerializationUtil.Serialize(this);
+        public static NodeData Deserialize(byte[] data) => SerializationUtil.Deserialize(data) as NodeData;
+        public NodeData Clone() => Deserialize(Serialize());
+
         public NodeData(ushort nodeID) {
             NodeID = nodeID;
             Calculate();
