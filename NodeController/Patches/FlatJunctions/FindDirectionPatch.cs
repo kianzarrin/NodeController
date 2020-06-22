@@ -6,7 +6,7 @@ namespace NodeController.Patches {
     using System.Reflection.Emit;
 
     [UsedImplicitly]
-    [HarmonyPatch]
+    //[HarmonyPatch]
     static class FindDirectionPatch {
         [UsedImplicitly]
         static MethodBase TargetMethod() => targetMethod_;
