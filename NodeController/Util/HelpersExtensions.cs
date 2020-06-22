@@ -38,6 +38,9 @@ namespace NodeController.Util {
             return (value & (required | forbidden)) == required;
         }
 
+        internal static bool InSimulationThread() =>
+            System.Threading.Thread.CurrentThread == SimulationManager.instance.m_simulationThread;
+
         internal static AppMode currentMode => SimulationManager.instance.m_ManagersWrapper.loading.currentMode;
         internal static bool CheckGameMode(AppMode mode)
         {
@@ -112,7 +115,6 @@ namespace NodeController.Util {
             }
         }
 
-
         internal static string CenterString(this string stringToCenter, int totalLength)
         {
             int leftPadding = ((totalLength - stringToCenter.Length) / 2) + stringToCenter.Length;
@@ -121,6 +123,8 @@ namespace NodeController.Util {
 
         internal static string ToSTR<T>(this IEnumerable<T> list)
         {
+            if (list == null)
+                return "null";
             string ret = "{ ";
             foreach (T item in list)
             {

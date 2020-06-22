@@ -21,7 +21,14 @@ namespace NodeController.LifeCycle {
 
             map[new InstanceID { NetNode = EndNodeId }] =
                 new InstanceID { NetNode = newSegmentId.ToSegment().m_endNode };
+
+            Log.Debug($"pathInfoExt.MapInstanceIDs: " +
+                $"[{StartNodeId} .- {SegmentId} -. {EndNodeId}] -> " +
+                $"[{newSegmentId.ToSegment().m_startNode} .- {newSegmentId} -. {newSegmentId.ToSegment().m_endNode}]");
         }
+
+        public override string ToString() =>
+            $"pathInfoExt[{StartNodeId} .- {SegmentId} -. {EndNodeId}]";
     }
 
     public class AssetDataExtension: AssetDataExtensionBase {
@@ -43,16 +50,23 @@ namespace NodeController.LifeCycle {
         }
 
         public override void OnAssetLoaded(string name, object asset, Dictionary<string, byte[]> userData) {
+            Log.Debug($"AssetDataExtension.OnAssetLoaded({name}, {asset}, userData) called");
             if (asset is BuildingInfo prefab) {
+                Log.Debug("AssetDataExtension.OnAssetLoaded():  prefab is " + prefab);
                 if (userData.TryGetValue(PATH_ID, out byte[] data1)) {
+                    Log.Debug("AssetDataExtension.OnAssetLoaded():  extracted data for " + PATH_ID);
                     var oldPathInfoExts = SerializationUtil.Deserialize(data1) as List<pathInfoExt>;
                     HelpersExtensions.AssertNotNull(oldPathInfoExts, "oldPathInfoExts");
                     Asset2PathInfoExts[prefab] = oldPathInfoExts;
+                    Log.Debug("AssetDataExtension.OnAssetLoaded(): oldPathInfoExts=" + oldPathInfoExts.ToSTR());
                 }
                 if (userData.TryGetValue(NC_ID, out byte[] data2)) {
+                    Log.Debug("AssetDataExtension.OnAssetLoaded():  extracted data for " + NC_ID);
                     var nodeDatas = SerializationUtil.Deserialize(data2) as List<NodeData>;
                     HelpersExtensions.AssertNotNull(nodeDatas,"nodedatas");
                     Asset2NodeDatas[prefab] = nodeDatas;
+                    Log.Debug("AssetDataExtension.OnAssetLoaded(): nodeDatas=" + nodeDatas.ToSTR());
+
                 }
             }
         }
@@ -70,14 +84,18 @@ namespace NodeController.LifeCycle {
         //}
 
         public override void OnAssetSaved(string name, object asset, out Dictionary<string, byte[]> userData) {
+            Log.Debug($"AssetDataExtension.OnAssetSaved({name}, {asset}, userData) called");
             userData = null;
             //var info = ToolsModifierControl.toolController.m_editPrefabInfo;
-            if(asset is BuildingInfo buildingInfo) {
-                var oldPathInfoExts = GetOldNetworkIDs(buildingInfo);
+            if(asset is BuildingInfo prefab) {
+                Log.Debug("AssetDataExtension.OnAssetSaved():  prefab is " + prefab);
+                var oldPathInfoExts = GetOldNetworkIDs(prefab);
                 userData = new Dictionary<string, byte[]>();
                 userData.Add(PATH_ID, SerializationUtil.Serialize(oldPathInfoExts));
+                Log.Debug("AssetDataExtension.OnAssetSaved(): oldPathInfoExts=" + oldPathInfoExts.ToSTR());
 
                 List<NodeData> nodeDatas = NodeManager.Instance.GetNodeDataList();
+                Log.Debug("AssetDataExtension.OnAssetSaved(): nodeDatas=" + nodeDatas.ToSTR());
                 userData.Add(NC_ID, SerializationUtil.Serialize(nodeDatas));
             }
         }

@@ -13,10 +13,10 @@ namespace NodeController {
         public static void Deserialize(byte[] data) {
             if (data == null) {
                 Instance = new NodeManager();
-                Log.Debug($"NodeBlendManager.Deserialize(data=null)");
+                Log.Debug($"NodeManager.Deserialize(data=null)");
 
             } else {
-                Log.Debug($"NodeBlendManager.Deserialize(data): data.Length={data?.Length}");
+                Log.Debug($"NodeManager.Deserialize(data): data.Length={data?.Length}");
                 Instance = SerializationUtil.Deserialize(data) as NodeManager;
             }
         }
@@ -49,8 +49,10 @@ namespace NodeController {
         /// clones node data before transfering it to newNodeID
         /// </summary>
         public void TransferNodeData(ushort newNodeID, NodeData nodedata, bool refresh=true) {
+            Log.Debug($"transfering {nodedata} to {newNodeID}");
             buffer[newNodeID] = nodedata.Clone();
             buffer[newNodeID].NodeID = newNodeID;
+            
             if(refresh)
                 RefreshData(newNodeID);
         }
@@ -143,7 +145,7 @@ namespace NodeController {
 
         //public void ChangeNode(ushort nodeID) {
         //    Log.Info($"ChangeNode({nodeID}) called");
-        //    NodeBlendData data = GetOrCreate(nodeID);
+        //    NodeData data = GetOrCreate(nodeID);
         //    data.ChangeNodeType();
         //    Instance.buffer[nodeID] = data;
         //    RefreshData(nodeID);

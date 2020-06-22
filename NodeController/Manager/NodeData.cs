@@ -52,6 +52,8 @@ namespace NodeController {
         public byte[] Serialize() => SerializationUtil.Serialize(this);
         public static NodeData Deserialize(byte[] data) => SerializationUtil.Deserialize(data) as NodeData;
         public NodeData Clone() => Deserialize(Serialize());
+        public override string ToString() =>
+            $"NodeData[NodeID:{NodeID} NodeType:{NodeType} CornerOffset:{CornerOffset}]";
 
         public NodeData(ushort nodeID) {
             NodeID = nodeID;

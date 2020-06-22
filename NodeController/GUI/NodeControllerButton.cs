@@ -32,7 +32,7 @@ namespace NodeController.GUI {
 
         public override void Awake() {
             base.Awake();
-            Log.Debug("NodeControllerButton.Awake() is called." + Environment.StackTrace);
+            Log.Debug("NodeControllerButton.Awake() is called." /*+ Environment.StackTrace*/);
         }
 
         public override void Start() {

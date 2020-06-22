@@ -16,8 +16,11 @@ namespace NodeController.LifeCycle
         public void OnEnabled()
         {
             HarmonyHelper.EnsureHarmonyInstalled();   
-            if (HelpersExtensions.InGame)
+            if (HelpersExtensions.IsActive)
                 LifeCycle.Load();
+#if DEBUG
+            //HarmonyExtension.InstallHarmony(); // Only for testing
+#endif
         }
 
         [UsedImplicitly]
