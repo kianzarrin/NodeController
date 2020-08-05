@@ -1,13 +1,13 @@
 namespace NodeController.GUI {
-    using UnityEngine;
     using ColossalFramework.UI;
     using System.Collections.Generic;
     using System.Runtime.Serialization.Formatters.Binary;
     using System.Runtime.Serialization.Formatters;
-    using System.IO;
     using System.Linq;
-    using Util;
+    using UnityEngine;
     using ColossalFramework;
+    using KianCommons;
+    using KianCommons.UI;
 
     public class UINodeControllerPanel : UIAutoSizePanel, IDataControllerUI {
         public static readonly SavedInputKey ActivationShortcut = new SavedInputKey(

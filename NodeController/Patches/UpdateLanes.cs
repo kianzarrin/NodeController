@@ -2,27 +2,26 @@ using ColossalFramework;
 using HarmonyLib;
 
 namespace NodeController {
-    using Util;
+    using KianCommons;
+
     [HarmonyPatch(typeof(RoadBaseAI))]
     [HarmonyPatch(nameof(RoadBaseAI.UpdateLanes))]
     [HarmonyBefore("de.viathinksoft.tmpe")]
     class UpdateLanes {
-        public static bool AllFlagsAreForward(ushort segmentID, NetInfo.Direction dir) {
+        public static bool AllFlagsAreForward(ushort segmentID, bool startNode) {
             NetLane.Flags flags = 0;
-            foreach (var lane in NetUtil.GetLanesCoroutine(segmentID, direction:dir)) {
-                flags |= (NetLane.Flags)lane.LaneID.ToLane().m_flags;
+            foreach (var lane in NetUtil.IterateLanes(segmentID, startNode:startNode)) {
+                flags |= lane.Flags ;
             }
             return (flags & NetLane.Flags.LeftForwardRight) == NetLane.Flags.Forward;
         }
 
         static void Postfix(ref RoadBaseAI __instance, ushort segmentID) {
             if (!NetUtil.IsSegmentValid(segmentID)) return;
-            foreach (var dir in new[] { NetInfo.Direction.Forward, NetInfo.Direction.Backward }) {
-                if (AllFlagsAreForward(segmentID, dir)) {
-                    foreach (var lane in NetUtil.GetLanesCoroutine(segmentID, direction: dir)) {
-                        NetLane.Flags flags = (NetLane.Flags)lane.LaneID.ToLane().m_flags;
-                        flags = flags & ~NetLane.Flags.LeftForwardRight;
-                        lane.LaneID.ToLane().m_flags = (ushort)flags;
+            foreach (bool startNode in HelpersExtensions.ALL_BOOL) {
+                if (AllFlagsAreForward(segmentID, startNode)) {
+                    foreach (var lane in NetUtil.IterateLanes(segmentID, startNode:startNode)) {
+                        lane.Flags &= ~NetLane.Flags.LeftForwardRight;
                     }
                 }
             }

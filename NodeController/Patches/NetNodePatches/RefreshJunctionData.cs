@@ -1,11 +1,9 @@
-using NodeController;
-using NodeController.Util;
+using KianCommons;
 using HarmonyLib;
 using System;
 using System.Reflection;
 using UnityEngine;
 using JetBrains.Annotations;
-using ColossalFramework;
 
 namespace NodeController.Patches
 {
@@ -65,13 +63,13 @@ namespace NodeController.Patches
                 var startNode = NetUtil.IsStartNode(segmentId:segmentID, nodeId: nodeID);
                 bool flip = startNode == !invert; // tested works.
                 if (flip) {// flip across x axis
-                    //data.m_dataVector0.x = -data.m_dataVector0.x;
-                    data.m_dataVector0.z = -data.m_dataVector0.z;
+                    data.m_dataVector0.x = -data.m_dataVector0.x;
+                    //data.m_dataVector0.z = -data.m_dataVector0.z;
                     data.m_dataVector0.y = -data.m_dataVector0.y;
                     //data.m_dataVector0.w = -data.m_dataVector0.w;
 
                     //data.m_dataVector2.x = -data.m_dataVector2.x;
-                    data.m_dataVector2.z = -data.m_dataVector2.z;
+                    //data.m_dataVector2.z = -data.m_dataVector2.z;
                     data.m_dataVector2.y = -data.m_dataVector2.y;
                     //data.m_dataVector2.w = -data.m_dataVector2.w;
                      

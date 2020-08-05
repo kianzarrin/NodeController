@@ -1,9 +1,9 @@
-using System;
-using UnityEngine;
-using System.Collections;
-using ColossalFramework.UI;
-
 namespace NodeController.Util {
+    using System;
+    using UnityEngine;
+    using ColossalFramework.UI;
+    using KianCommons;
+
     public static class TextureUtils {
         public delegate Texture2D TProcessor(Texture2D tex);
         public delegate Texture2D TProcessor2(Texture2D tex, Texture2D tex2);

@@ -28,9 +28,22 @@
     <RootNamespace>NodeController</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="DecompiledSources\NetNode.cs" />
+    <Compile Remove="KianCommons\KianCommons\Properties\**" />
+    <Compile Remove="KianCommons\libs\**" />
+    <EmbeddedResource Remove="KianCommons\KianCommons\Properties\**" />
+    <EmbeddedResource Remove="KianCommons\libs\**" />
+    <None Remove="KianCommons\KianCommons\Properties\**" />
+    <None Remove="KianCommons\libs\**" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="DecompiledSources\NetNode.cs" />
+    <Compile Remove="KianCommons\KianCommons\Util\CSURUtil.cs" />
+    <Compile Remove="KianCommons\KianCommons\Util\PluginUtil.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="KianCommons\.git" />
+    <None Remove="KianCommons\.gitattributes" />
+    <None Remove="KianCommons\.gitignore" />
     <None Remove="Resources\curosr transition.png" />
     <None Remove="Resources\cursor junction.png" />
     <None Remove="Resources\cursor.png" />

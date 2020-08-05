@@ -1,12 +1,14 @@
 namespace NodeController.GUI {
     using ColossalFramework;
-    using NodeController.Util;
     using TrafficManager.API.Manager;
     using TrafficManager.API.Traffic.Data;
     using TrafficManager.Manager.Impl;
     using TrafficManager.UI.Textures;
     using UnityEngine;
-    using Log = Util.Log;
+    using KianCommons;
+    using Log = KianCommons.Log;
+    using NodeController.Util;
+
 
     /// <summary>
     /// Class handles rendering of priority signs overlay.

@@ -1,13 +1,14 @@
 namespace NodeController.Patches {
-    using NodeController.Util;
     using HarmonyLib;
     using JetBrains.Annotations;
     using System;
     using System.Collections.Generic;
     using System.Reflection;
     using System.Reflection.Emit;
-    using static TranspilerUtils;
-    using static Util.HelpersExtensions;
+    using KianCommons;
+    using static KianCommons.HelpersExtensions;
+    using static KianCommons.Patches.TranspilerUtils;
+
 
     static class FlatJunctionsCommons {
         static bool GetFlatJunctions(bool flatJunctions0, ushort nodeID) {

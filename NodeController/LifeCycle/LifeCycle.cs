@@ -2,6 +2,8 @@ namespace NodeController.LifeCycle
 {
     using NodeController.Tool;
     using NodeController.Util;
+    using static KianCommons.HelpersExtensions;
+    using KianCommons;
 
     public static class LifeCycle
     {

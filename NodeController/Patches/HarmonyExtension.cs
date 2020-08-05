@@ -1,8 +1,7 @@
-
 namespace NodeController
 {
     using HarmonyLib;
-    using NodeController.Util;
+    using KianCommons;
     using System.Reflection;
 
     public static class HarmonyExtension

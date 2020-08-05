@@ -2,9 +2,9 @@ namespace NodeController.GUI {
     using System;
     using ColossalFramework.UI;
     using UnityEngine;
-    using static Util.HelpersExtensions;
-    using System.Linq;
-    using Util;
+    using static KianCommons.HelpersExtensions;
+    using KianCommons;
+    using KianCommons.UI;
 
     public class UINodeTypeDropDown : UIDropDown, IDataControllerUI{
         public static UINodeTypeDropDown Instance { get; private set; }

@@ -2,8 +2,8 @@ namespace NodeController.GUI {
     using ColossalFramework.UI;
     using System;
     using UnityEngine;
-    using Util;
-    using static Util.HelpersExtensions;
+    using KianCommons;
+    using static KianCommons.HelpersExtensions;
 
     public class UIFlatJunctionsCheckbox : UICheckBox, IDataControllerUI {
         public static UIFlatJunctionsCheckbox Instance { get; private set; }

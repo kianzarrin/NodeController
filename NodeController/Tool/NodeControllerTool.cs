@@ -6,7 +6,10 @@ namespace NodeController.Tool {
     using ColossalFramework;
     using GUI;
     using System.Threading;
-    using static Util.RenderUtil;
+    using static KianCommons.UI.RenderUtil;
+    using KianCommons.UI;
+    using KianCommons;
+
 
     public sealed class NodeControllerTool : KianToolBase {
         public static readonly SavedInputKey ActivationShortcut = new SavedInputKey(
@@ -92,7 +95,7 @@ namespace NodeController.Tool {
         }
 
         protected override void OnDisable() {
-            Log.Debug("NodeControllerTool.OnDisable");
+            Log.Debug("NodeControllerTool.OnDisable" + Environment.StackTrace);
             base.OnDisable();
             Button?.Deactivate();
             panel_?.Close();
@@ -190,7 +193,7 @@ namespace NodeController.Tool {
             return ret;
         }
 
-        Vector3 _cachedHitPos;
+        //Vector3 _cachedHitPos;
         public ushort SelectedNodeID;
         public override void RenderOverlay(RenderManager.CameraInfo cameraInfo) {
             base.RenderOverlay(cameraInfo);

@@ -4,7 +4,8 @@ namespace NodeController.LifeCycle
     using JetBrains.Annotations;
     using ICities;
     using CitiesHarmony.API;
-    using NodeController.Util;
+    using KianCommons;
+
     public class NodeControllerMod : IUserMod
     {
         public static Version ModVersion => typeof(NodeControllerMod).Assembly.GetName().Version;

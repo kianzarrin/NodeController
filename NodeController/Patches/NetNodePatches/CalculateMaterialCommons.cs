@@ -9,8 +9,10 @@ using System.Reflection.Emit;
 namespace NodeController.Patches {
     using System;
     using UnityEngine;
+    using KianCommons;
+    using static KianCommons.Patches.TranspilerUtils;
     using Util;
-    using static TranspilerUtils;
+
     public static class CalculateMaterialCommons {
         public static bool ShouldContinueMedian(ushort nodeID, ushort segmentID) {
             var data = NodeManager.Instance.buffer[nodeID];

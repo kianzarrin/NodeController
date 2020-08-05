@@ -5,11 +5,12 @@ using System.Reflection.Emit;
 using System.Collections.Generic;
 
 namespace NodeController.Patches.NetLanePatches {
-    using Util;
+    using KianCommons;
+    using KianCommons.Patches;
 
     //[HarmonyPatch()]
     public static class RenderInstance {
-        static void Log(string m) => Util.Log.Info("NetLane_RenderInstance Transpiler: " + m);
+        static void Log(string m) => KianCommons.Log.Info("NetLane_RenderInstance Transpiler: " + m);
 
         // RenderInstance(RenderManager.CameraInfo cameraInfo, ushort nodeID, NetInfo info, int iter, Flags flags, ref uint instanceIndex, ref RenderManager.Instance data)
         static MethodInfo Target => typeof(global::NetNode).GetMethod("RenderInstance", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -30,7 +31,7 @@ namespace NodeController.Patches.NetLanePatches {
                 return codes;
             }
             catch (Exception e) {
-                Util.Log.Error(e.ToString());
+                KianCommons.Log.Error(e.ToString());
                 throw e;
             }
         }

@@ -4,7 +4,8 @@ using TrafficManager.Manager.Impl;
 
 namespace NodeController {
     using CSUtil.Commons;
-    using Util;
+    using KianCommons;
+
     [HarmonyPatch(typeof(RoadBaseAI))]
     [HarmonyPatch(nameof(RoadBaseAI.UpdateNodeFlags))]
     class UpdateNodeFlags {

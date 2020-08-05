@@ -3,7 +3,7 @@ using HarmonyLib;
 
 
 namespace NodeController.Patches {
-    using Util;
+    using KianCommons;
     [HarmonyPatch(typeof(NetNode), nameof(NetNode.CalculateNode))]
     class CalculateNode {
         static void Postfix(ref NetNode __instance) {

@@ -1,10 +1,11 @@
 using ColossalFramework.UI;
 using NodeController.Tool;
-using NodeController.Util;
 using System;
-using System.Linq;
 using UnityEngine;
-using static NodeController.Util.HelpersExtensions;
+using KianCommons;
+using KianCommons.UI;
+using UIUtils = KianCommons.UI.UIUtils;
+using static KianCommons.HelpersExtensions;
 
 /* A lot of copy-pasting from Crossings mod by Spectra and Roundabout Mod by Strad. The sprites are partly copied as well. */
 
@@ -25,7 +26,7 @@ namespace NodeController.GUI {
         internal const string NodeControllerIconActive = "NodeControllerIconPressed";
 
         static UIComponent GetContainingPanel() {
-            var ret = GUI.UIUtils.Instance.FindComponent<UIComponent>(CONTAINING_PANEL_NAME, null, GUI.UIUtils.FindOptions.NameContains);
+            var ret = UIUtils.Instance.FindComponent<UIComponent>(CONTAINING_PANEL_NAME, null, UIUtils.FindOptions.NameContains);
             Log.Debug("GetPanel returns " + ret);
             return ret ?? throw new Exception("Could not find " + CONTAINING_PANEL_NAME);
         }
@@ -43,7 +44,7 @@ namespace NodeController.GUI {
             playAudioEvents = true;
             tooltip = "Node Controller";
 
-            var builtinTabstrip = GUI.UIUtils.Instance.FindComponent<UITabstrip>("ToolMode", GetContainingPanel(), GUI.UIUtils.FindOptions.None);
+            var builtinTabstrip = UIUtils.Instance.FindComponent<UITabstrip>("ToolMode", GetContainingPanel(), UIUtils.FindOptions.None);
             AssertNotNull(builtinTabstrip, "builtinTabstrip");
 
             UIButton tabButton = (UIButton)builtinTabstrip.tabs[0];

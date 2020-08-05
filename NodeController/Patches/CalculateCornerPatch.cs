@@ -1,13 +1,13 @@
 namespace NodeController.Patches {
-    using NodeController.Util;
+    using KianCommons;
     using HarmonyLib;
     using JetBrains.Annotations;
     using System;
     using System.Collections.Generic;
     using System.Reflection;
     using System.Reflection.Emit;
-    using static TranspilerUtils;
-    using static Util.HelpersExtensions;
+    using static KianCommons.Patches.TranspilerUtils;
+    using NodeController.Util;
 
     [UsedImplicitly]
     [HarmonyPatch]

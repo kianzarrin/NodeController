@@ -2,7 +2,9 @@ namespace NodeController.GUI {
     using ColossalFramework.UI;
     using System.Globalization;
     using UnityEngine;
-    using static Util.HelpersExtensions;
+    using static KianCommons.HelpersExtensions;
+    using KianCommons;
+    using KianCommons.UI;
 
     public class UIOffsetTextField : UITextField, IDataControllerUI {
         public static UIOffsetTextField Instance { get; private set; }

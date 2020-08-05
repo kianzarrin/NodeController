@@ -1,10 +1,10 @@
 namespace NodeController.GUI {
-    using NodeController.Util;
-    using ColossalFramework;
     using ColossalFramework.UI;
     using System;
     using UnityEngine;
-    using static Util.HelpersExtensions;
+    using static KianCommons.HelpersExtensions;
+    using KianCommons;
+    using KianCommons.UI;
 
     public class UIOffsetSlider : UISlider, IDataControllerUI {
         public static UIOffsetSlider Instance { get; private set; }

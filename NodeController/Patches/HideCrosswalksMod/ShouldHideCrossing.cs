@@ -1,8 +1,9 @@
 namespace NodeController.Patches.HideCrosswalksMod {
     using System.Reflection;
     using NodeController;
-    using CSUtil.Commons;
+    using KianCommons.Patches;
     using HarmonyLib;
+
 
     [HarmonyPatch]
     public static class ShouldHideCrossing {

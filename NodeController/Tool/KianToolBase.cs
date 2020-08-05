@@ -1,13 +1,10 @@
-using ColossalFramework;
-using ColossalFramework.UI;
-using UnityEngine;
-using System;
-
-using static NodeController.Util.HelpersExtensions;
-using NodeController.Util;
-using ColossalFramework.Math;
-
 namespace NodeController.Tool {
+    using ColossalFramework.UI;
+    using UnityEngine;
+    using System;
+    using KianCommons;
+    using static KianCommons.HelpersExtensions;
+
     public abstract class KianToolBase : ToolBase
     {
         public bool ToolEnabled => ToolsModifierControl.toolController?.CurrentTool == this;
