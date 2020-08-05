@@ -1,4 +1,3 @@
-using NodeController.Util;
 using System;
 using UnityEngine;
 
@@ -19,7 +18,8 @@ namespace NodeController.Tool {
             true);
 
         NodeControllerButton Button => NodeControllerButton.Instace;
-        UINodeControllerPanel panel_;
+        UINodeControllerPanel NCPanel;
+        
 
         NetTool.ControlPoint m_controlPoint;
         NetTool.ControlPoint m_cachedControlPoint;
@@ -36,7 +36,7 @@ namespace NodeController.Tool {
 
         protected override void Awake() {
             NodeControllerButton.CreateButton();
-            panel_ = UINodeControllerPanel.Create();
+            NCPanel = UINodeControllerPanel.Create();
 
             CursorCrossing = ScriptableObject.CreateInstance<CursorInfo>();
             CursorCrossing.m_texture = TextureUtil.GetTextureFromAssemblyManifest("cursor_crossing.png");
@@ -76,11 +76,11 @@ namespace NodeController.Tool {
         }
 
         protected override void OnDestroy() {
-            Log.Debug("NodeControllerTool.OnDestroy()\n" + Environment.StackTrace);
+            Log.Debug("NodeControllerTool.OnDestroy()\n" /*+ Environment.StackTrace*/);
             Button?.Hide();
             Destroy(Button);
-            panel_?.Hide();
-            Destroy(panel_);
+            NCPanel?.Hide();
+            Destroy(NCPanel);
             base.OnDestroy();
         }
 
@@ -89,7 +89,7 @@ namespace NodeController.Tool {
             Log.Debug(Button?.ToString());
             base.OnEnable();
             Button?.Activate();
-            panel_?.Close();
+            NCPanel?.Close();
             SelectedNodeID = 0;
             handleHovered_ = false;
         }
@@ -98,7 +98,7 @@ namespace NodeController.Tool {
             Log.Debug("NodeControllerTool.OnDisable" + Environment.StackTrace);
             base.OnDisable();
             Button?.Deactivate();
-            panel_?.Close();
+            NCPanel?.Close();
             SelectedNodeID = 0;
         }
 
@@ -195,10 +195,10 @@ namespace NodeController.Tool {
 
         //Vector3 _cachedHitPos;
         public ushort SelectedNodeID;
+        public ushort SelectedSegmentID;
+
         public override void RenderOverlay(RenderManager.CameraInfo cameraInfo) {
             base.RenderOverlay(cameraInfo);
-            if (!m_mouseRayValid || handleHovered_)
-                return;
 
             if (SelectedNodeID != 0) {
                 DrawNodeCircle(cameraInfo, Color.white, SelectedNodeID, false);
@@ -208,6 +208,8 @@ namespace NodeController.Tool {
                         DrawNodeCircle(cameraInfo, Color.gray, nodeID, true);
                 }
             }
+            if (!m_mouseRayValid || handleHovered_)
+                return;
 
             if (IsHoverValid && m_prefab != null) {
                 NetTool.ControlPoint controlPoint = m_cachedControlPoint;
@@ -265,14 +267,14 @@ namespace NodeController.Tool {
                     return;
                 }
                 SelectedNodeID = c.m_node;
-                panel_.ShowNode(SelectedNodeID);
+                NCPanel.ShowNode(SelectedNodeID);
             } else if (c.m_segment != 0) {
                 if (m_prefab.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(m_prefab)) {
                     SimulationManager.instance.AddAction(delegate () {
                         NodeData nodeData = NodeManager.Instance.InsertNode(c);
                         if (nodeData != null) {
                             SelectedNodeID = nodeData.NodeID;
-                            panel_.ShowNode(SelectedNodeID);
+                            NCPanel.ShowNode(SelectedNodeID);
                         }
                     });
                 }
@@ -286,7 +288,7 @@ namespace NodeController.Tool {
             if (SelectedNodeID == 0) {
                 DisableTool();
             } else {
-                panel_.Close();
+                NCPanel.Close();
                 SelectedNodeID = 0;
             }
         }

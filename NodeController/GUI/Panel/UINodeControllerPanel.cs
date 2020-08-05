@@ -171,10 +171,12 @@ namespace NodeController.GUI {
         }
 
         public void Refresh() {
+            autoLayout = true;
             foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>())
                 control.Refresh();
             //Update();
             RefreshSizeRecursive();
+            autoLayout = false;
         }
     }
 }

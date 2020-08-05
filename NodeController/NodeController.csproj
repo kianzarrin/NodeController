@@ -28,15 +28,13 @@
     <RootNamespace>NodeController</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="KianCommons\KianCommons\Properties\**" />
     <Compile Remove="KianCommons\libs\**" />
-    <EmbeddedResource Remove="KianCommons\KianCommons\Properties\**" />
     <EmbeddedResource Remove="KianCommons\libs\**" />
-    <None Remove="KianCommons\KianCommons\Properties\**" />
     <None Remove="KianCommons\libs\**" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="DecompiledSources\NetNode.cs" />
+    <Compile Remove="KianCommons\KianCommons\Properties\AssemblyInfo.cs" />
     <Compile Remove="KianCommons\KianCommons\Util\CSURUtil.cs" />
     <Compile Remove="KianCommons\KianCommons\Util\PluginUtil.cs" />
   </ItemGroup>
@@ -111,17 +109,27 @@
   <ItemGroup>
     <None Include="DecompiledSources\NetNode.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="KianCommons\KianCommons\Properties\" />
+  </ItemGroup>
   <Target Name="DeployToModDirectory" AfterTargets="Build">
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
       <Output TaskParameter="Assemblies" ItemName="Targets" />
     </GetAssemblyIdentity>
     <PropertyGroup>
       <DeployDir>$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(ProjectName)\</DeployDir>
+      <UnityPath>$(MSBuildExtensionsPath64)\..\Unity\</UnityPath>
+      <UnityPath Condition="! Exists ('$(UnityPath)')">..\Unity\</UnityPath>
+      <MonoDir>$(UnityPath)Editor\Data\MonoBleedingEdge\</MonoDir>    
     </PropertyGroup>
     <ItemGroup>
       <AuxilaryFiles Include="$(TargetDir)**/*.*" Exclude="$(TargetPath);$(TargetDir)*.pdb" />
       <VersionNumber Include="@(Targets->'%(Version)')" />
     </ItemGroup>
+    <Delete Files="$(TargetPath).mdb" />
+    <Exec Command="&quot;$(MonoDir)bin\mono.exe&quot; &quot;$(MonoDir)lib\mono\4.5\pdb2mdb.exe&quot; &quot;$(TargetPath)&quot;" />
+    <Copy SourceFiles="$(TargetPath).mdb" DestinationFolder="$(DeployDir)" />
+   
     <Copy SourceFiles="@(AuxilaryFiles)" DestinationFolder="$(DeployDir)" />
     <!-- <Message Importance="high" Text="Deleting $(DeployDir)$(TargetFileName)" /> -->
     <Delete Files="$(DeployDir)$(TargetFileName)" />

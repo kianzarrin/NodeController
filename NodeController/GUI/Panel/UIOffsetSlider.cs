@@ -2,12 +2,11 @@ namespace NodeController.GUI {
     using ColossalFramework.UI;
     using System;
     using UnityEngine;
-    using static KianCommons.HelpersExtensions;
-    using KianCommons;
-    using KianCommons.UI;
 
     public class UIOffsetSlider : UISlider, IDataControllerUI {
         public static UIOffsetSlider Instance { get; private set; }
+
+        public NetworkTypeT NetworkType { get; private set; }
 
         public override void Awake() {
             base.Awake();
@@ -31,7 +30,7 @@ namespace NodeController.GUI {
             stepSize = 1;
             AlignTo(parent, UIAlignAnchor.TopLeft);
 
-            Log.Debug("parent:" + parent);
+            KianCommons.Log.Debug("parent:" + parent);
             slicedSprite_ = AddUIComponent<UISlicedSprite>();
             slicedSprite_.spriteName = "ScrollbarTrack";
             slicedSprite_.height = 12;
@@ -59,15 +58,27 @@ namespace NodeController.GUI {
         }
 
         public void Apply() {
+            switch (NetworkType) {
+                case NetworkTypeT.Node:
+                    ApplyNode();
+                    break;
+                case NetworkTypeT.SegmentEnd:
+                    throw new NotImplementedException();
+            }
+
+            tooltip = value.ToString();
+            RefreshTooltip();
+            UIResetButton.Instance.Refresh();
+        }
+
+        public void ApplyNode() {
             NodeData data = UINodeControllerPanel.Instance.NodeData;
             if (data == null)
                 return;
             data.CornerOffset = value;
             data.Refresh();
-            tooltip = value.ToString();
-            RefreshTooltip();
-            UIResetButton.Instance.Refresh();
         }
+
 
         public void Refresh() {
             NodeData data = UINodeControllerPanel.Instance.NodeData;
