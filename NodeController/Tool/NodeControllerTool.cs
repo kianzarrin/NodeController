@@ -9,7 +9,6 @@ namespace NodeController.Tool {
     using KianCommons.UI;
     using KianCommons;
 
-
     public sealed class NodeControllerTool : KianToolBase {
         public static readonly SavedInputKey ActivationShortcut = new SavedInputKey(
             "ActivationShortcut",
@@ -19,7 +18,6 @@ namespace NodeController.Tool {
 
         NodeControllerButton Button => NodeControllerButton.Instace;
         UINodeControllerPanel NCPanel;
-        
 
         NetTool.ControlPoint m_controlPoint;
         NetTool.ControlPoint m_cachedControlPoint;

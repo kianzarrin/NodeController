@@ -1,0 +1,103 @@
+namespace NodeController.GUI {
+    using ColossalFramework.UI;
+    using System.Collections.Generic;
+    using System.Runtime.Serialization.Formatters.Binary;
+    using System.Runtime.Serialization.Formatters;
+    using System.Linq;
+    using UnityEngine;
+    using ColossalFramework;
+    using KianCommons;
+    using KianCommons.UI;
+
+    public abstract class UIPanelBase : UIAutoSizePanel, IDataControllerUI {
+        public static readonly SavedFloat SavedX = new SavedFloat(
+            "PanelX", Settings.FileName, 87, true);
+        public static readonly SavedFloat SavedY = new SavedFloat(
+            "PanelY", Settings.FileName, 58, true);
+
+        public List<IDataControllerUI> Controls;
+
+        public string Caption {
+            get => lblCaption_.text;
+            set => lblCaption_.text = value;
+        }
+        UILabel lblCaption_;
+
+
+        public abstract NetworkTypeT NetworkType { get; }
+
+        public override void Awake() {
+            base.Awake();
+            Controls = new List<IDataControllerUI>();
+        }
+
+        public override void Start() {
+            base.Start();
+            Log.Debug("UIPanelBase started");
+
+            width = 250;
+            name = "UIPanelBase";
+            backgroundSprite = "MenuPanel2";
+            absolutePosition = new Vector3(SavedX, SavedY);
+
+            isVisible = false;
+
+            {
+                var dragHandle_ = AddUIComponent<UIDragHandle>();
+                dragHandle_.width = width;
+                dragHandle_.height = 42;
+                dragHandle_.relativePosition = Vector3.zero;
+                dragHandle_.target = parent;
+
+                lblCaption_ = dragHandle_.AddUIComponent<UILabel>();
+                lblCaption_.text = "network controller";
+                lblCaption_.relativePosition = new Vector3(70, 14, 0);
+
+                var sprite = dragHandle_.AddUIComponent<UISprite>();
+                sprite.size = new Vector2(40, 40);
+                sprite.relativePosition = new Vector3(5, 3, 0);
+                sprite.atlas = TextureUtil.GetAtlas(NodeControllerButton.AtlasName);
+                sprite.spriteName = NodeControllerButton.NodeControllerIconActive;
+            }
+        }
+
+        protected UIAutoSizePanel AddPanel() {
+            int pad_horizontal = 10;
+            int pad_vertical = 5;
+            UIAutoSizePanel panel = AddUIComponent<UIAutoSizePanel>();
+            panel.width = width - pad_horizontal * 2;
+            panel.autoLayoutPadding =
+                new RectOffset(pad_horizontal, pad_horizontal, pad_vertical, pad_vertical);
+            return panel;
+        }
+
+        protected override void OnPositionChanged() {
+            base.OnPositionChanged();
+            Log.Debug("OnPositionChanged called");
+
+            Vector2 resolution = GetUIView().GetScreenResolution();
+
+            absolutePosition = new Vector2(
+                Mathf.Clamp(absolutePosition.x, 0, resolution.x - width),
+                Mathf.Clamp(absolutePosition.y, 0, resolution.y - height));
+
+            SavedX.value = absolutePosition.x;
+            SavedY.value = absolutePosition.y;
+            Log.Debug("absolutePosition: " + absolutePosition);
+        }
+
+        public void Apply() {
+            foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>())
+                control.Apply();
+        }
+
+        public void Refresh() {
+            autoLayout = true;
+            foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>())
+                control.Refresh();
+            //Update();
+            RefreshSizeRecursive();
+            autoLayout = false;
+        }
+    }
+}

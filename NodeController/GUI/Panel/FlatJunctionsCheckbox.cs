@@ -8,9 +8,6 @@ namespace NodeController.GUI {
     public class UIFlatJunctionsCheckbox : UICheckBox, IDataControllerUI {
         public static UIFlatJunctionsCheckbox Instance { get; private set; }
 
-        // unsupported
-        public NetworkTypeT NetworkType => throw new NotImplementedException();
-
         public override void Awake() {
             base.Awake();
             Instance = this;

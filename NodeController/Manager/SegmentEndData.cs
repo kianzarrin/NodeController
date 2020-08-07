@@ -5,7 +5,7 @@ namespace NodeController {
     using CSURUtil = Util.CSURUtil;
 
     [Serializable]
-    class SegmentEndData {
+    public class SegmentEndData {
         // intrinsic
         public ushort NodeID;
         public ushort SegmentID;
@@ -32,7 +32,7 @@ namespace NodeController {
         public ref NetNode Node => ref NodeID.ToNode();
         public NodeData NodeData => NodeManager.Instance.buffer[NodeID];
 
-        public SegmentEndData(ushort nodeID, ushort segmentID) {
+        public SegmentEndData(ushort segmentID, ushort nodeID) {
             NodeID = nodeID;
             SegmentID = segmentID;
 
@@ -77,9 +77,9 @@ namespace NodeController {
             NetManager.instance.UpdateNode(NodeID);
         }
 
-        bool CrossingIsRemoved(ushort segmentId) =>
+        bool CrossingIsRemoved() =>
             HideCrosswalks.Patches.CalculateMaterialCommons.
-            ShouldHideCrossing(NodeID, segmentId);
+            ShouldHideCrossing(NodeID, SegmentID);
 
         public bool IsCSUR => NetUtil.IsCSUR(Info);
         public NetInfo Info => Segment.Info;

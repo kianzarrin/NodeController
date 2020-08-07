@@ -4,11 +4,12 @@ namespace NodeController.GUI {
     using UnityEngine;
     using KianCommons;
     using static KianCommons.HelpersExtensions;
-
+    using NodeController.GUI.Panel;
 
     public class UIHideMarkingsCheckbox : UICheckBox, IDataControllerUI {
         public static UIHideMarkingsCheckbox Instance { get; private set; }
 
+        UIPanel root_;
         public override void Awake() {
             base.Awake();
             Instance = this;
@@ -37,7 +38,7 @@ namespace NodeController.GUI {
                     return;
                 Apply();
             };
-
+            root_ = GetRootContainer() as UIPanel;
         }
 
         public override void Start() {
@@ -47,6 +48,17 @@ namespace NodeController.GUI {
 
         public void Apply() {
             if (VERBOSE) Log.Debug("UIHideMarkingsCheckbox.Apply called()\n" + Environment.StackTrace);
+            if (root_ == UINodeControllerPanel.Instance)
+                ApplyNode();
+            else if (root_ == UISegmentEndControllerPanel.Instance)
+                ApplySegmentEnd();
+        }
+
+        // protection against unncessary apply/refresh/infinite recursion.
+        bool refreshing_ = false;
+
+
+        public void ApplyNode() {
             NodeData data = UINodeControllerPanel.Instance.NodeData;
             if (data == null)
                 return;
@@ -54,10 +66,16 @@ namespace NodeController.GUI {
             Assert(!refreshing_, "!refreshing_");
             data.Refresh();
             UINodeControllerPanel.Instance.Refresh();
+
         }
 
-        // protection against unncessary apply/refresh/infinite recursion.
-        bool refreshing_ = false;
+        public void ApplySegmentEnd() {
+            SegmentEndData data = UISegmentEndControllerPanel.Instance.SegmentEndData;
+            if (data == null)
+                return;
+            data.NoMarkings = this.isChecked;
+            data.Refresh();
+        }
 
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);

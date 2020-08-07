@@ -28,7 +28,6 @@ namespace NodeController {
 
         public NodeData[] buffer = new NodeData[NetManager.MAX_NODE_COUNT];
 
-
         #region data tranfer
         public static byte[] CopyNodeData(ushort nodeID) =>
             Instance.CopyNodeDataImp(nodeID);
@@ -70,13 +69,13 @@ namespace NodeController {
             return buffer[nodeID];
         }
 
-        public NodeData GetOrCreate(ushort nodeID) {
-            NodeData data = Instance.buffer[nodeID];
+        public ref NodeData GetOrCreate(ushort nodeID) {
+            ref NodeData data = ref Instance.buffer[nodeID];
             if (data == null) {
                 data = new NodeData(nodeID);
                 buffer[nodeID] = data;
             }
-            return data;
+            return ref data;
         }
 
         /// <summary>

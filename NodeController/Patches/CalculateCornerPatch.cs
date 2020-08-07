@@ -13,8 +13,8 @@ namespace NodeController.Patches {
     [HarmonyPatch]
     static class CalculateCornerPatch {
         static float GetMinCornerOffset(float cornerOffset0, ushort nodeID) {
-            var data = NodeManager.Instance.buffer[nodeID];
-            return data?.CornerOffset ?? cornerOffset0;
+            var segmentData = NodeManager.Instance.buffer[nodeID];
+            return segmentData?.CornerOffset ?? cornerOffset0;
         }
 
         [UsedImplicitly]
