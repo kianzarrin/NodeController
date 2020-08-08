@@ -202,6 +202,7 @@ namespace NodeController.GUI {
         /// <param name="stateUpdated">?</param>
         /// <returns>Whether any of the signs was hovered.</returns>
         public bool DrawSignHandles(ushort nodeId,
+                                    ushort segmentId,
                                     ref Vector3 camPos,
                                     out bool stateUpdated) {
             ref NetNode node = ref nodeId.ToNode();
@@ -219,23 +220,24 @@ namespace NodeController.GUI {
             IExtSegmentEndManager segEndMan = ExtSegmentEndManager.Instance;
 
             for (int i = 0; i < 8; ++i) {
-                ushort segmentId = nodeId.ToNode().GetSegment(i);
+                ushort segmentId2 = nodeId.ToNode().GetSegment(i);
 
-                if (segmentId == 0) {
-                    continue;
-                }
+                if (segmentId2 == 0) continue;
+
+                // show only segmentId iff segmentId == 0
+                if (segmentId != 0 && segmentId != segmentId2) continue;
 
                 bool isStartNode =
-                    (bool)NetUtil.IsStartNode(segmentId, nodeId);
+                    (bool)NetUtil.IsStartNode(segmentId2, nodeId);
 
                 bool isIncoming = segEndMan
-                                  .ExtSegmentEnds[segEndMan.GetIndex(segmentId, isStartNode)]
+                                  .ExtSegmentEnds[segEndMan.GetIndex(segmentId2, isStartNode)]
                                   .incoming;
 
                 NetInfo segmentInfo = Singleton<NetManager>
                                       .instance
                                       .m_segments
-                                      .m_buffer[segmentId]
+                                      .m_buffer[segmentId2]
                                       .Info;
 
                 ItemClass connectionClass = segmentInfo.GetConnectionClass();
@@ -245,7 +247,7 @@ namespace NodeController.GUI {
                 }
 
                 SignsLayout signsLayout = new SignsLayout(
-                    segmentId: segmentId,
+                    segmentId: segmentId2,
                     startNode: isStartNode,
                     signsPerRow: isIncoming ? 2 : 1,
                     baseZoom: TMPEUtils.GetBaseZoom());
@@ -254,13 +256,13 @@ namespace NodeController.GUI {
 
                 #region UTURN
                 // draw "u-turns allowed" sign at (1; 0)
-                bool allowed = jrMan.IsUturnAllowed(segmentId, isStartNode);
+                bool allowed = jrMan.IsUturnAllowed(segmentId2, isStartNode);
                 bool configurable = jrMan.IsUturnAllowedConfigurable(
-                    segmentId: segmentId,
+                    segmentId: segmentId2,
                     startNode: isStartNode,
                     node: ref node);
                 bool isDefault = allowed == jrMan.GetDefaultUturnAllowed(
-                    segmentId: segmentId, startNode: isStartNode, node: ref node);
+                    segmentId: segmentId2, startNode: isStartNode, node: ref node);
 
                 {
                     bool signHovered = signsLayout.DrawSign(
@@ -276,7 +278,7 @@ namespace NodeController.GUI {
 
                         if (CheckClicked) {
                             if (!jrMan.ToggleUturnAllowed(
-                                    segmentId,
+                                    segmentId2,
                                     isStartNode)) {
                                 // TODO MainTool.ShowTooltip(Translation.GetString("..."), Singleton<NetManager>.instance.m_nodes.m_buffer[nodeId].m_position);
                             } else {
@@ -290,14 +292,14 @@ namespace NodeController.GUI {
                 #region keep clear
                 // draw "entering blocked junctions allowed" sign at (0; 1)
                 allowed = jrMan.IsEnteringBlockedJunctionAllowed(
-                    segmentId: segmentId,
+                    segmentId: segmentId2,
                     startNode: isStartNode);
                 configurable = jrMan.IsEnteringBlockedJunctionAllowedConfigurable(
-                    segmentId: segmentId,
+                    segmentId: segmentId2,
                     startNode: isStartNode,
                     node: ref node);
                 isDefault = allowed == jrMan.GetDefaultEnteringBlockedJunctionAllowed(
-                    segmentId, isStartNode, ref node);
+                    segmentId2, isStartNode, ref node);
                 {
                     bool signHovered = signsLayout.DrawSign(
                         handleClick: configurable && handleClick_,
@@ -311,9 +313,9 @@ namespace NodeController.GUI {
                         isAnyHovered = true;
 
                         if (CheckClicked) {
-                            Log.Debug($"calling ToggleEnteringBlockedJunctionAllowed() for {segmentId} ...");
+                            Log.Debug($"calling ToggleEnteringBlockedJunctionAllowed() for {segmentId2} ...");
                             jrMan.ToggleEnteringBlockedJunctionAllowed(
-                                segmentId: segmentId,
+                                segmentId: segmentId2,
                                 startNode: isStartNode);
                             stateUpdated = true;
                         }
@@ -324,10 +326,10 @@ namespace NodeController.GUI {
                 #region Zebra crossings
                 // draw "pedestrian crossing allowed" sign at (1; 1)
                 allowed = jrMan.IsPedestrianCrossingAllowed(
-                    segmentId: segmentId,
+                    segmentId: segmentId2,
                     startNode: isStartNode);
                 configurable = jrMan.IsPedestrianCrossingAllowedConfigurable(
-                    segmentId: segmentId,
+                    segmentId: segmentId2,
                     startNode: isStartNode,
                     node: ref node);
 
@@ -362,7 +364,7 @@ namespace NodeController.GUI {
 
                         if (CheckClicked) {
                             jrMan.TogglePedestrianCrossingAllowed(
-                                segmentId,
+                                segmentId2,
                                 isStartNode);
                             stateUpdated = true;
                         }

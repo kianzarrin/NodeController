@@ -68,9 +68,10 @@ namespace NodeController {
 
         public void Refresh() {
             if (!CanModifyOffset()) {
+                Log.Debug("SegmentEndData.Refresh(): setting CornerOffset = DefaultCornerOffset");
                 CornerOffset = DefaultCornerOffset;
             }
-            Log.Debug($"SegmentEndData.Refresh() Updating segment:{SegmentID} node:{NodeID}");
+            Log.Debug($"SegmentEndData.Refresh() Updating segment:{SegmentID} node:{NodeID} CornerOffset={CornerOffset}");
             if (HelpersExtensions.VERBOSE)
                 Log.Debug(Environment.StackTrace);
 

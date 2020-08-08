@@ -56,8 +56,7 @@ namespace NodeController.Tool {
         internal Vector3 m_mousePosition;
         internal RaycastOutput raycastOutput;
 
-        protected override void OnToolUpdate() {
-            base.OnToolUpdate();
+        public override void SimulationStep() {
             IsHoverValid = DetermineHoveredElements();
         }
 
@@ -74,7 +73,7 @@ namespace NodeController.Tool {
         public ushort HoveredSegmentId { get; private set; } = 0;
         protected bool IsHoverValid { get;private set; }
 
-        private bool DetermineHoveredElements()
+        protected bool DetermineHoveredElements()
         {
             HoveredSegmentId = 0;
             HoveredNodeId = 0;
@@ -100,7 +99,7 @@ namespace NodeController.Tool {
                 HoveredNodeId = raycastOutput.m_netNode;
             }
 
-            HoveredSegmentId = GetSegmentFromNode();
+            HoveredSegmentId = GetSegmentFromNode(raycastOutput.m_hitPos);
 
             if (HoveredSegmentId != 0) {
                 Debug.Assert(HoveredNodeId != 0, "unexpected: HoveredNodeId == 0");
@@ -150,39 +149,19 @@ namespace NodeController.Tool {
             return HoveredNodeId != 0 || HoveredSegmentId != 0;
         }
 
-        static float GetAgnele(Vector3 v1, Vector3 v2) {
-            float ret = Vector3.Angle(v1, v2);
-            if (ret > 180) ret -= 180; //future proofing
-            ret = Math.Abs(ret);
-            return ret;
-        }
-
-        internal ushort GetSegmentFromNode() {
-            bool considerSegmentLenght = false;
+        internal ushort GetSegmentFromNode(Vector3 hitPos) {
+            if (HoveredNodeId == 0) {
+                return 0;
+            }
             ushort minSegId = 0;
-            if (HoveredNodeId != 0) {
-                NetNode node = HoveredNodeId.ToNode();
-                Vector3 dir0 = node.m_position - m_mousePosition;
-                float min_angle = float.MaxValue;
-                for (int i = 0; i < 8; ++i) {
-                    ushort segmentId = node.GetSegment(i);
-                    if (segmentId == 0)
-                        continue;
-                    NetSegment segment = segmentId.ToSegment();
-                    Vector3 dir;
-                    if (segment.m_startNode == HoveredNodeId) {
-                        dir = segment.m_startDirection;
-
-                    } else {
-                        dir = segment.m_endDirection;
-                    }
-                    float angle = GetAgnele(-dir,dir0);
-                    if(considerSegmentLenght)
-                        angle *= segment.m_averageLength;
-                    if (angle < min_angle) {
-                        min_angle = angle;
-                        minSegId = segmentId;
-                    }
+            NetNode node = NetManager.instance.m_nodes.m_buffer[HoveredNodeId];
+            float minDistance = float.MaxValue;
+            foreach (ushort segmentId in NetUtil.IterateNodeSegments(HoveredNodeId)) {
+                Vector3 pos = segmentId.ToSegment().GetClosestPosition(hitPos);
+                float distance = (hitPos - pos).sqrMagnitude;
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    minSegId = segmentId;
                 }
             }
             return minSegId;

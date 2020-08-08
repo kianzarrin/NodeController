@@ -1,8 +1,6 @@
 namespace NodeController.GUI {
     using ColossalFramework.UI;
     using System.Collections.Generic;
-    using System.Runtime.Serialization.Formatters.Binary;
-    using System.Runtime.Serialization.Formatters;
     using System.Linq;
     using UnityEngine;
     using ColossalFramework;
@@ -22,7 +20,8 @@ namespace NodeController.GUI {
             set => lblCaption_.text = value;
         }
         UILabel lblCaption_;
-
+        UISprite sprite_;
+        UIDragHandle dragHandle_;
 
         public abstract NetworkTypeT NetworkType { get; }
 
@@ -43,7 +42,7 @@ namespace NodeController.GUI {
             isVisible = false;
 
             {
-                var dragHandle_ = AddUIComponent<UIDragHandle>();
+                dragHandle_ = AddUIComponent<UIDragHandle>();
                 dragHandle_.width = width;
                 dragHandle_.height = 42;
                 dragHandle_.relativePosition = Vector3.zero;
@@ -51,13 +50,13 @@ namespace NodeController.GUI {
 
                 lblCaption_ = dragHandle_.AddUIComponent<UILabel>();
                 lblCaption_.text = "network controller";
-                lblCaption_.relativePosition = new Vector3(70, 14, 0);
+                lblCaption_.relativePosition = new Vector2(70, 14);
 
-                var sprite = dragHandle_.AddUIComponent<UISprite>();
-                sprite.size = new Vector2(40, 40);
-                sprite.relativePosition = new Vector3(5, 3, 0);
-                sprite.atlas = TextureUtil.GetAtlas(NodeControllerButton.AtlasName);
-                sprite.spriteName = NodeControllerButton.NodeControllerIconActive;
+                sprite_ = dragHandle_.AddUIComponent<UISprite>();
+                sprite_.size = new Vector2(40, 40);
+                sprite_.relativePosition = new Vector2(5, 3);
+                sprite_.atlas = TextureUtil.GetAtlas(NodeControllerButton.AtlasName);
+                sprite_.spriteName = NodeControllerButton.NodeControllerIconActive;
             }
         }
 
@@ -97,7 +96,11 @@ namespace NodeController.GUI {
                 control.Refresh();
             //Update();
             RefreshSizeRecursive();
+            Invalidate();
             autoLayout = false;
+            float spriteEndX = sprite_.relativePosition.x + sprite_.width;
+            float x = spriteEndX + 0.5f * (dragHandle_.width - spriteEndX - lblCaption_.width);
+            lblCaption_.relativePosition = new Vector2(x, 14);
         }
     }
 }

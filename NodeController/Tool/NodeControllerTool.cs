@@ -1,13 +1,13 @@
-using System;
-using UnityEngine;
-
 namespace NodeController.Tool {
+    using System;
+    using UnityEngine;
     using ColossalFramework;
-    using GUI;
     using System.Threading;
     using static KianCommons.UI.RenderUtil;
     using KianCommons.UI;
     using KianCommons;
+    using static KianCommons.HelpersExtensions;
+    using NodeController.GUI;
 
     public sealed class NodeControllerTool : KianToolBase {
         public static readonly SavedInputKey ActivationShortcut = new SavedInputKey(
@@ -35,6 +35,7 @@ namespace NodeController.Tool {
         protected override void Awake() {
             NodeControllerButton.CreateButton();
             NCPanel = UINodeControllerPanel.Create();
+            UISegmentEndControllerPanel.Create();
 
             CursorCrossing = ScriptableObject.CreateInstance<CursorInfo>();
             CursorCrossing.m_texture = TextureUtil.GetTextureFromAssemblyManifest("cursor_crossing.png");
@@ -78,6 +79,8 @@ namespace NodeController.Tool {
             Button?.Hide();
             Destroy(Button);
             NCPanel?.Hide();
+            UISegmentEndControllerPanel.Instance?.Hide();
+            Destroy(UISegmentEndControllerPanel.Instance);
             Destroy(NCPanel);
             base.OnDestroy();
         }
@@ -89,6 +92,7 @@ namespace NodeController.Tool {
             Button?.Activate();
             NCPanel?.Close();
             SelectedNodeID = 0;
+            SelectedSegmentID = 0;
             handleHovered_ = false;
         }
 
@@ -98,9 +102,12 @@ namespace NodeController.Tool {
             Button?.Deactivate();
             NCPanel?.Close();
             SelectedNodeID = 0;
+            SelectedSegmentID = 0;
         }
 
         override public void SimulationStep() {
+            base.SimulationStep();
+
             ServiceTypeGuide optionsNotUsed = Singleton<NetManager>.instance.m_optionsNotUsed;
             if (optionsNotUsed != null && !optionsNotUsed.m_disabled) {
                 optionsNotUsed.Disable();
@@ -139,6 +146,8 @@ namespace NodeController.Tool {
                     if (fail) return CursorNormal;
                     return CursorEdit;
                 } else if (controlPoint.m_segment != 0) {
+                    if (AltIsPressed)
+                        return CursorNormal; //nothing happens.
                     bool isRoad = m_prefab.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(m_prefab);
                     ToolErrors error = m_cachedErrors;
                     error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
@@ -195,12 +204,31 @@ namespace NodeController.Tool {
         public ushort SelectedNodeID;
         public ushort SelectedSegmentID;
 
+        static bool CanSelectSegmentEnd(ushort segmentID, ushort nodeID) {
+            if (nodeID == 0 || segmentID == 0)
+                return false;
+            if (!NodeData.IsSupported(nodeID))
+                return false;
+            return nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Junction);
+        }
+
         public override void RenderOverlay(RenderManager.CameraInfo cameraInfo) {
             base.RenderOverlay(cameraInfo);
 
-            if (SelectedNodeID != 0) {
+            if (SelectedSegmentID != 0 && SelectedNodeID != 0) {
+                DrawCutSegmentEnd(
+                    cameraInfo,
+                    SelectedSegmentID,
+                    0.5f,
+                    NetUtil.IsStartNode(segmentId: SelectedSegmentID, nodeId: SelectedNodeID),
+                    Color.white,
+                    alpha: true);
+                ushort nodeID = SelectedSegmentID.ToSegment().GetOtherNode(SelectedNodeID);
+                if (nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle))
+                    DrawNodeCircle(cameraInfo, Color.gray, nodeID, true);
+            } else if (SelectedNodeID != 0) {
                 DrawNodeCircle(cameraInfo, Color.white, SelectedNodeID, false);
-                foreach (var segmentID in NetUtil.GetSegmentsCoroutine(SelectedNodeID)) {
+                foreach (var segmentID in NetUtil.IterateNodeSegments(SelectedNodeID)) {
                     ushort nodeID = segmentID.ToSegment().GetOtherNode(SelectedNodeID);
                     if (nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle))
                         DrawNodeCircle(cameraInfo, Color.gray, nodeID, true);
@@ -209,7 +237,17 @@ namespace NodeController.Tool {
             if (!m_mouseRayValid || handleHovered_)
                 return;
 
-            if (IsHoverValid && m_prefab != null) {
+            if(AltIsPressed) {
+                if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)){  
+                    DrawCutSegmentEnd(
+                        cameraInfo,
+                        HoveredSegmentId,
+                        0.5f,
+                        NetUtil.IsStartNode(segmentId: HoveredSegmentId, nodeId: HoveredNodeId),
+                        Color.yellow,
+                        alpha: true);
+                }
+            } else if (IsHoverValid && m_prefab != null) {
                 NetTool.ControlPoint controlPoint = m_cachedControlPoint;
                 ushort nodeID = controlPoint.m_node;
                 if (nodeID != 0) {
@@ -233,22 +271,21 @@ namespace NodeController.Tool {
         }
 
         bool handleHovered_;
-        //ushort updatedNodeId_;
         private void DrawSigns() {
             Vector3 camPos = Singleton<SimulationManager>.instance.m_simulationView.m_position;
             if (SelectedNodeID == 0) {
                 TrafficRulesOverlay overlay =
-                        new GUI.TrafficRulesOverlay(handleClick: false);
+                    new TrafficRulesOverlay(handleClick: false);
                 foreach (NodeData nodeData in NodeManager.Instance.buffer) {
                     if (nodeData == null) continue;
                     overlay.DrawSignHandles(
-                        nodeData.NodeID, camPos: ref camPos, out _);
+                        nodeData.NodeID, 0, camPos: ref camPos, out _);
                 }
             } else {
                 TrafficRulesOverlay overlay =
-                        new GUI.TrafficRulesOverlay(handleClick: true);
+                    new TrafficRulesOverlay(handleClick: true);
                 handleHovered_ = overlay.DrawSignHandles(
-                    SelectedNodeID, camPos: ref camPos, out _);
+                    SelectedNodeID, SelectedSegmentID, camPos: ref camPos, out _);
             }
         }
 
@@ -256,15 +293,27 @@ namespace NodeController.Tool {
             if (!IsHoverValid || handleHovered_)
                 return;
             Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
+            if (AltIsPressed) {
+                if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)) {
+                    SelectedSegmentID = HoveredSegmentId;
+                    SelectedNodeID = HoveredNodeId;
+                    UISegmentEndControllerPanel.Instance.
+                        ShowSegmentEnd(segmentID: SelectedSegmentID, nodeID: SelectedNodeID);
+                }
+                return;
+            }
+
             if (m_errors != ToolErrors.None || m_prefab == null)
                 return;
             var c = m_cachedControlPoint;
+
             if (c.m_node != 0) {
                 bool supported = NodeData.IsSupported(c.m_node);
                 if (!supported) {
                     return;
                 }
                 SelectedNodeID = c.m_node;
+                SelectedSegmentID = 0;
                 NCPanel.ShowNode(SelectedNodeID);
             } else if (c.m_segment != 0) {
                 if (m_prefab.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(m_prefab)) {
@@ -272,6 +321,7 @@ namespace NodeController.Tool {
                         NodeData nodeData = NodeManager.Instance.InsertNode(c);
                         if (nodeData != null) {
                             SelectedNodeID = nodeData.NodeID;
+                            SelectedSegmentID = 0;
                             NCPanel.ShowNode(SelectedNodeID);
                         }
                     });
@@ -287,7 +337,8 @@ namespace NodeController.Tool {
                 DisableTool();
             } else {
                 NCPanel.Close();
-                SelectedNodeID = 0;
+                UISegmentEndControllerPanel.Instance.Close();
+                SelectedSegmentID = SelectedNodeID = 0;
             }
         }
 

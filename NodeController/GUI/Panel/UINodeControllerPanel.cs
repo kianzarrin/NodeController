@@ -51,16 +51,16 @@ namespace NodeController.GUI {
                 Controls.Add(dropdown_);
             }
 
-            //{
-            //    var panel = AddPanel();
+            {
+                var panel = AddPanel();
 
-            //    var label = panel.AddUIComponent<UILabel>();
-            //    label.text = "Corner smoothness";
-            //    label.tooltip = "Adjusts Corner offset for smooth junction transition.";
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Corner smoothness";
+                label.tooltip = "Adjusts Corner offset for smooth junction transition.";
 
-            //    var slider_ = panel.AddUIComponent<UIOffsetSlider>();
-            //    Controls.Add(slider_);
-            //}
+                var slider_ = panel.AddUIComponent<UIOffsetSlider>();
+                Controls.Add(slider_);
+            }
 
             AddPanel().name = "Space";
 
@@ -84,7 +84,7 @@ namespace NodeController.GUI {
 
 
         public void ShowNode(ushort nodeID) {
-            // TODO hide the other panel
+            UISegmentEndControllerPanel.Instance.Close();
             NodeManager.Instance.RefreshData(NodeID);
             NodeID = nodeID;
             Show();

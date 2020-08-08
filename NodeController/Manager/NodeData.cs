@@ -55,6 +55,7 @@ namespace NodeController {
                 return ret;
             }
             set {
+                Log.Debug("CornerOffset.set() called for node:{NodeID}" + Environment.StackTrace);
                 for (int i = 0; i < 8; ++i) {
                     ushort segmentID = Node.GetSegment(i);
                     if (segmentID == 0) continue;
@@ -63,6 +64,21 @@ namespace NodeController {
                 }
             }
         }
+
+        public bool HasUniformCornerOffset() {
+            float cornerOffset0 =-1;
+            for (int i = 0; i < 8; ++i) {
+                ushort segmentID = Node.GetSegment(i);
+                if (segmentID == 0) continue;
+                var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                if (cornerOffset0 == -1)
+                    cornerOffset0 = segEnd.CornerOffset;
+                else if (cornerOffset0 != segEnd.CornerOffset)
+                    return false;
+            }
+            return true;
+        }
+
         
         public bool FlatJunctions;
         public bool ClearMarkings;
@@ -131,7 +147,7 @@ namespace NodeController {
             for (int i = 0; i < 8 && ret==true; ++i) {
                 ushort segmentID = Node.GetSegment(i);
                 if (segmentID == 0) continue;
-                var segEnd = SegmentEndManager.Instance.GetSegmentEnd(segmentID: segmentID, nodeID: NodeID);
+                var segEnd = SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: NodeID);
                 ret &= segEnd == null || segEnd.IsDefault();
             }
             return ret;

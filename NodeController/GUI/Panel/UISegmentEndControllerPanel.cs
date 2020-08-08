@@ -14,7 +14,7 @@ namespace NodeController.GUI {
 
         public static void Release() {
             var uiView = UIView.GetAView();
-            var panel = (UISegmentEndControllerPanel)uiView.FindUIComponent<UISegmentEndControllerPanel>("UISegmentEndControllerPanel");
+            var panel = uiView.FindUIComponent<UISegmentEndControllerPanel>("UISegmentEndControllerPanel");
             Destroy(panel);
         }
         #endregion Instanciation
@@ -26,6 +26,7 @@ namespace NodeController.GUI {
         public SegmentEndData SegmentEndData {
             get {
                 if (NodeID == 0) return null;
+                NodeManager.Instance.GetOrCreate(NodeID);
                 return SegmentEndManager.Instance.GetOrCreate(SegmentID, StartNode);
             }
         }
@@ -70,8 +71,8 @@ namespace NodeController.GUI {
             }
         }
 
-        public void ShowNode(ushort segmentID, ushort nodeID) {
-            // TODO hide the other panel
+        public void ShowSegmentEnd(ushort segmentID, ushort nodeID) {
+            UINodeControllerPanel.Instance.Close();
             SegmentID = segmentID;
             NodeID = nodeID;
             SegmentEndManager.Instance.RefreshData(SegmentID, StartNode);

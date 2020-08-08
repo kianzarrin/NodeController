@@ -21,7 +21,7 @@ namespace NodeController.Patches
 
         public static void Prefix(ushort node)
         {
-            NodeManager.Instance.buffer[node] = null;
+            NodeManager.Instance.SetNullNodeAndSegmentEnds(node);
         }
     }
 }

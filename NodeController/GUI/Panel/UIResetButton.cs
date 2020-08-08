@@ -9,6 +9,7 @@ namespace NodeController.GUI {
     public class UIResetButton : UIButton, IDataControllerUI {
         public static UIResetButton Instance { get; private set; }
 
+        UIPanel root_;
         public override void Awake() {
             base.Awake();
             Instance = this;
@@ -30,6 +31,7 @@ namespace NodeController.GUI {
         public override void Start() {
             base.Start();
             width = parent.width;
+            root_ = GetRootContainer() as UIPanel;
         }
 
         protected override void OnClick(UIMouseEventParameter p) {
@@ -41,7 +43,11 @@ namespace NodeController.GUI {
 
         public void Apply() {
             if (VERBOSE) Log.Debug("UIResetButton.Apply called()\n" + Environment.StackTrace);
-            UINodeControllerPanel.Instance.NodeData?.ResetToDefault(); ;
+            if (root_ == UINodeControllerPanel.Instance)
+                UINodeControllerPanel.Instance.NodeData?.ResetToDefault(); 
+            else if (root_ == UISegmentEndControllerPanel.Instance)
+                UISegmentEndControllerPanel.Instance.SegmentEndData?.ResetToDefault();
+
             Assert(!refreshing_, "!refreshing_");
             UINodeControllerPanel.Instance.Refresh();
         }
@@ -63,8 +69,6 @@ namespace NodeController.GUI {
             parent.Invalidate();
             Invalidate();
             refreshing_ = false;
-
-
         }
     }
 }

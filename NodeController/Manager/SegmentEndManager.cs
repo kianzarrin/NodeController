@@ -28,19 +28,24 @@ namespace NodeController {
 
         public SegmentEndData[] buffer = new SegmentEndData[NetManager.MAX_SEGMENT_COUNT * 2];
 
-        public ref SegmentEndData GetSegmentEnd(ushort segmentID, ushort nodeID) {
+        public ref SegmentEndData GetAt(ushort segmentID, ushort nodeID) {
             bool startNode = NetUtil.IsStartNode(segmentId: segmentID, nodeId: nodeID);
             return ref GetOrCreate(segmentID, startNode);
         }
-        public ref SegmentEndData GetSegmentEnd(ushort segmentID, bool startNode) {
+        public ref SegmentEndData GetAt(ushort segmentID, bool startNode) {
             if (startNode)
                 return ref buffer[segmentID * 2];
             else
                 return ref buffer[segmentID * 2 + 1];
         }
 
-        public void SetSegmentEnd(ushort segmentID, bool startNode, SegmentEndData segmentEnd) {
-            GetSegmentEnd(segmentID, startNode) = segmentEnd;
+        public void SetAt(ushort segmentID, ushort nodeID, SegmentEndData value) {
+            bool startNode = NetUtil.IsStartNode(segmentId: segmentID, nodeId: nodeID);
+            SetAt(segmentID, startNode, value);
+        }
+
+        public void SetAt(ushort segmentID, bool startNode, SegmentEndData value) {
+            GetAt(segmentID, startNode) = value;
         }
 
         public ref SegmentEndData GetOrCreate(ushort segmentID, ushort nodeID) {
@@ -49,11 +54,11 @@ namespace NodeController {
         }
 
         public ref SegmentEndData GetOrCreate(ushort segmentID, bool startNode) {
-            ref SegmentEndData data = ref GetSegmentEnd(segmentID, startNode);
+            ref SegmentEndData data = ref GetAt(segmentID, startNode);
             if (data == null) {
                 ushort nodeID = NetUtil.GetSegmentNode(segmentID, startNode);
                 data = new SegmentEndData(segmentID: segmentID, nodeID: nodeID);
-                SetSegmentEnd(segmentID: segmentID, startNode: startNode, data);
+                SetAt(segmentID: segmentID, startNode: startNode, data);
             }
             return ref data;
         }
@@ -68,7 +73,7 @@ namespace NodeController {
 
 
         private byte[] CopySegmentEndDataImp(ushort segmentID, bool startNode) {
-            var nodeData = GetSegmentEnd(segmentID, startNode);
+            var nodeData = GetAt(segmentID, startNode);
             if (nodeData == null) {
                 Log.Debug($"node:{segmentID} startNode:{startNode} has no custom data");
                 return null;
@@ -81,7 +86,7 @@ namespace NodeController {
                 ResetSegmentEndToDefault(segmentID, startNode);
             } else {
                 var segEnd = SerializationUtil.Deserialize(data) as SegmentEndData;
-                SetSegmentEnd(segmentID, startNode, segEnd);
+                SetAt(segmentID, startNode, segEnd);
                 segEnd.SegmentID = segmentID;
                 segEnd.NodeID = NetUtil.GetSegmentNode(segmentID, startNode);
                 RefreshData(segmentID, startNode);
@@ -95,7 +100,7 @@ namespace NodeController {
         /// </summary>
         /// <param name="nodeID"></param>
         public void RefreshData(ushort segmentID, bool startNode) {
-            SegmentEndData segEnd = GetSegmentEnd(segmentID, startNode);
+            SegmentEndData segEnd = GetAt(segmentID, startNode);
             if (segmentID == 0 || segEnd == null) 
                 return;
             if (segEnd.IsDefault()) {
@@ -106,12 +111,12 @@ namespace NodeController {
         }
 
         public void ResetSegmentEndToDefault(ushort segmentID, bool startNode) {
-            SegmentEndData segEnd = GetSegmentEnd(segmentID, startNode);
+            SegmentEndData segEnd = GetAt(segmentID, startNode);
             if (segEnd != null)
                 Log.Debug($"segment End:({segmentID},{startNode}) reset to defualt");
             else
                 Log.Debug($"segment End:({segmentID},{startNode}) is already null.");
-            segEnd = null;
+            SetAt(segmentID, startNode, null);
             NetManager.instance.UpdateSegment(segmentID);
         }
 
@@ -121,12 +126,12 @@ namespace NodeController {
         }
 
         public void OnBeforeCalculateSegmentEnd(ushort segmentID, bool startNode) {
-            SegmentEndData segEnd = GetSegmentEnd(segmentID, startNode);
+            SegmentEndData segEnd = GetAt(segmentID, startNode);
             // nodeID.ToNode still has default flags.
             if (segEnd == null)
                 return;
             if (!NodeData.IsSupported(segEnd.NodeID)) {
-                SetSegmentEnd(segmentID, startNode, null);
+                SetAt(segmentID, startNode, null);
                 return;
             }
 

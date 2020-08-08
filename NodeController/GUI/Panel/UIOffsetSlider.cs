@@ -1,6 +1,6 @@
 namespace NodeController.GUI {
     using ColossalFramework.UI;
-    using NodeController.GUI.Panel;
+    using KianCommons;
     using System;
     using UnityEngine;
 
@@ -62,6 +62,7 @@ namespace NodeController.GUI {
         }
 
         public void Apply() {
+            if (refreshing_) return;
             if (root_ == UINodeControllerPanel.Instance) 
                 ApplyNode();
             else if( root_ == UISegmentEndControllerPanel.Instance)
@@ -70,6 +71,7 @@ namespace NodeController.GUI {
             tooltip = value.ToString();
             RefreshTooltip();
             resetButton_?.Refresh();
+            Refresh();
         }
 
         public void ApplyNode() {
@@ -87,39 +89,49 @@ namespace NodeController.GUI {
             data.Refresh();
         }
 
+        bool refreshing_ = false;
         public void Refresh() {
-            bool visible = false;
+            refreshing_ = true;
             if (root_ == UINodeControllerPanel.Instance)
-                visible = RefreshNode();
+                RefreshNode();
             else if (root_ == UISegmentEndControllerPanel.Instance)
-                visible = RefreshSegmentEnd();
+                RefreshSegmentEnd();
 
-            parent.isVisible = isVisible = slicedSprite_.isEnabled = thumbObject.isEnabled = isEnabled = visible;
+            parent.isVisible = isEnabled;
             parent.Invalidate();
             Invalidate();
             thumbObject.Invalidate();
             slicedSprite_.Invalidate();
             //Log.Debug($"slider.Refresh: node:{data.NodeID} isEnabled={isEnabled}\n" + Environment.StackTrace);
+            refreshing_ = false;
         }
 
-        public bool RefreshNode() {
+        public void RefreshNode() {
             NodeData data = UINodeControllerPanel.Instance.NodeData;
             if (data == null) {
                 Disable();
-                return false;
+                return;
             }
             value = data.CornerOffset;
-            return data.CanModifyOffset();
+            isEnabled = data.CanModifyOffset();
+
+            if (data.HasUniformCornerOffset()) {
+                thumbObject.color = Color.white;
+                thumbObject.opacity = 1;
+            } else {
+                thumbObject.color = Color.grey;
+                thumbObject.opacity = 0.2f;
+            }
         }
 
-        public bool RefreshSegmentEnd() {
+        public void RefreshSegmentEnd() {
             SegmentEndData data = UISegmentEndControllerPanel.Instance.SegmentEndData;
             if (data == null) {
                 Disable();
-                return false;
+                return;
             }
             value = data.CornerOffset;
-            return data.CanModifyOffset();
+            isEnabled = data.CanModifyOffset();
         }
     }
 }

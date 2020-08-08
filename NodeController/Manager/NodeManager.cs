@@ -61,11 +61,17 @@ namespace NodeController {
                 return null;
             HelpersExtensions.Assert(nodeID!=0,"nodeID");
 
+            foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID)) {
+                var segEnd = new SegmentEndData(segmentID, nodeID);
+                SegmentEndManager.Instance.SetAt(segmentID: segmentID, nodeID: nodeID, value: segEnd);
+            }
+
             int nPedLanes = controlPoint.m_segment.ToSegment().Info.CountPedestrianLanes();
             if (nodeType == NodeTypeT.Crossing && nPedLanes<2)
                 buffer[nodeID] = new NodeData(nodeID);
             else
                 buffer[nodeID] = new NodeData(nodeID, nodeType);
+
             return buffer[nodeID];
         }
 
@@ -75,6 +81,12 @@ namespace NodeController {
                 data = new NodeData(nodeID);
                 buffer[nodeID] = data;
             }
+
+            foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID)) {
+                SegmentEndManager.Instance.
+                    GetOrCreate(segmentID: segmentID, nodeID: nodeID);
+            }
+
             return ref data;
         }
 
@@ -88,16 +100,23 @@ namespace NodeController {
             if (buffer[nodeID].IsDefault()) {
                 ResetNodeToDefault(nodeID);
             } else {
+                foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID)) {
+                    var segEnd = SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: nodeID);
+                    segEnd.Refresh();
+                }
                 buffer[nodeID].Refresh();
             }
+
         }
 
         public void ResetNodeToDefault(ushort nodeID) {
             if(buffer[nodeID]!=null)
                 Log.Debug($"node:{nodeID} reset to defualt");
             else
-                Log.Debug($"node:{nodeID} is alreadey null. no ne");
-            buffer[nodeID] = null;
+                Log.Debug($"node:{nodeID} is alreadey null. no need to reset to default");
+
+            SetNullNodeAndSegmentEnds(nodeID);
+
             NetManager.instance.UpdateNode(nodeID);
         }
 
@@ -106,28 +125,36 @@ namespace NodeController {
                 nodeData?.Refresh();
         }
 
+        /// <summary>Called after stock code and before postfix code.</summary>
         public void OnBeforeCalculateNode(ushort nodeID) {
             // nodeID.ToNode still has default flags.
             if (buffer[nodeID] == null)
                 return;
             if (!NodeData.IsSupported(nodeID)) {
-                buffer[nodeID] = null;
+                SetNullNodeAndSegmentEnds(nodeID);
                 return;
+            }
+
+            foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID)) {
+                var segEnd = SegmentEndManager.Instance.
+                    GetOrCreate(segmentID: segmentID, nodeID: nodeID);
+                segEnd.Calculate();
             }
 
             buffer[nodeID].Calculate();
 
             if (!buffer[nodeID].CanChangeTo(buffer[nodeID].NodeType)) {
-                buffer[nodeID] = null;
+                ResetNodeToDefault(nodeID);
             }
         }
 
-        //public void ChangeNode(ushort nodeID) {
-        //    Log.Info($"ChangeNode({nodeID}) called");
-        //    NodeBlendData data = GetOrCreate(nodeID);
-        //    data.ChangeNodeType();
-        //    Instance.buffer[nodeID] = data;
-        //    RefreshData(nodeID);
-        //}
+        public void SetNullNodeAndSegmentEnds(ushort nodeID) {
+            foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID)) {
+                SegmentEndManager.Instance.
+                    SetAt(segmentID: segmentID, nodeID: nodeID, value: null);
+            }
+            buffer[nodeID] = null;
+        }
+
     }
 }
