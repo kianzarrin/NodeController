@@ -31,15 +31,17 @@
     <RootNamespace>NodeController</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="KianCommons\KianCommons\obj\**" />
     <Compile Remove="KianCommons\libs\**" />
+    <EmbeddedResource Remove="KianCommons\KianCommons\obj\**" />
     <EmbeddedResource Remove="KianCommons\libs\**" />
+    <None Remove="KianCommons\KianCommons\obj\**" />
     <None Remove="KianCommons\libs\**" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="DecompiledSources\NetNode.cs" />
     <Compile Remove="KianCommons\KianCommons\Properties\AssemblyInfo.cs" />
     <Compile Remove="KianCommons\KianCommons\Util\CSURUtil.cs" />
-    <Compile Remove="KianCommons\KianCommons\Util\PluginUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="KianCommons\.git" />
@@ -47,10 +49,6 @@
     <None Remove="KianCommons\.gitignore" />
     <None Remove="Resources\curosr transition.png" />
     <None Remove="Resources\cursor junction.png" />
-    <None Remove="Resources\cursor.png" />
-    <None Remove="Resources\cursor_crossing.png" />
-    <None Remove="Resources\cursor_edit.png" />
-    <None Remove="Resources\sprites.png" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CitiesHarmony.API" Version="1.0.4" />
@@ -107,16 +105,24 @@
     <Reference Include="System.Data.DataSetExtensions" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\cursor.png" />
-    <EmbeddedResource Include="Resources\cursor_crossing.png" />
-    <EmbeddedResource Include="Resources\cursor_edit.png" />
-    <EmbeddedResource Include="Resources\sprites.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="DecompiledSources\NetNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="KianCommons\KianCommons\Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Resources\cursor.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\cursor_crossing.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\cursor_edit.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\sprites.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Target Name="DeployToModDirectory" AfterTargets="Build">
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">

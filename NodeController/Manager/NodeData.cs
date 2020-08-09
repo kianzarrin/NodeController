@@ -167,7 +167,7 @@ namespace NodeController {
             if (SegmentCount == 2) {
                 float hw0 = 0;
                 Vector2 dir0 = default;
-                foreach (ushort segmentID in NetUtil.GetSegmentsCoroutine(NodeID)) {
+                foreach (ushort segmentID in NetUtil.IterateNodeSegments(NodeID)) {
                     int nPedLanes = segmentID.ToSegment().Info.CountPedestrianLanes();
                     if (hw0 == 0) {
                         segmentID1 = segmentID;
@@ -186,7 +186,7 @@ namespace NodeController {
                 }
             }
 
-            foreach (ushort segmetnID in NetUtil.GetSegmentsCoroutine(NodeID))
+            foreach (ushort segmetnID in NetUtil.IterateNodeSegments(NodeID))
                 HasPedestrianLanes |= segmetnID.ToSegment().Info.m_hasPedestrianLanes;
 
             Refresh();

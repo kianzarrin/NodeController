@@ -38,15 +38,15 @@ namespace NodeController.Tool {
             UISegmentEndControllerPanel.Create();
 
             CursorCrossing = ScriptableObject.CreateInstance<CursorInfo>();
-            CursorCrossing.m_texture = TextureUtil.GetTextureFromAssemblyManifest("cursor_crossing.png");
+            CursorCrossing.m_texture = TextureUtil.GetTextureFromFile("cursor_crossing.png");
             CursorCrossing.m_hotspot = new Vector2(5f, 0f);
 
             CursorEdit = ScriptableObject.CreateInstance<CursorInfo>();
-            CursorEdit.m_texture = TextureUtil.GetTextureFromAssemblyManifest("cursor_edit.png");
+            CursorEdit.m_texture = TextureUtil.GetTextureFromFile("cursor_edit.png");
             CursorEdit.m_hotspot = new Vector2(5f, 0f);
 
             CursorNormal = ScriptableObject.CreateInstance<CursorInfo>();
-            CursorNormal.m_texture = TextureUtil.GetTextureFromAssemblyManifest("cursor.png");
+            CursorNormal.m_texture = TextureUtil.GetTextureFromFile("cursor.png");
             CursorNormal.m_hotspot = new Vector2(5f, 0f);
 
             base.Awake();
@@ -97,7 +97,7 @@ namespace NodeController.Tool {
         }
 
         protected override void OnDisable() {
-            Log.Debug("NodeControllerTool.OnDisable" + Environment.StackTrace);
+            Log.Debug("NodeControllerTool.OnDisable" /*+ Environment.StackTrace*/);
             base.OnDisable();
             Button?.Deactivate();
             NCPanel?.Close();
@@ -355,7 +355,7 @@ namespace NodeController.Tool {
             }
             ushort segmentID0 = 0, segmentID1 = 0;
             int count = 0;
-            foreach (ushort segmentID in NetUtil.GetSegmentsCoroutine(HoveredNodeId)) {
+            foreach (ushort segmentID in NetUtil.IterateNodeSegments(HoveredNodeId)) {
                 if (segmentID == 0)
                     continue;
                 if (count == 0) segmentID0 = segmentID;
