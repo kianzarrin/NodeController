@@ -278,6 +278,7 @@ namespace NodeController {
             if (SegmentCount > 2 || IsCSUR)
                 return newNodeType == NodeTypeT.Custom;
 
+            // segmentCount ==2 at this point.
             switch (newNodeType) {
                 case NodeTypeT.Crossing:
                     return PedestrianLaneCount >= 2 && HWDiff < 0.001f && IsStraight;
@@ -285,10 +286,10 @@ namespace NodeController {
                     return Info.m_forwardVehicleLaneCount > 0 && Info.m_backwardVehicleLaneCount > 0;
                 case NodeTypeT.Stretch:
                     return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle) && IsStraight;
+                case NodeTypeT.Bend:
+                    return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle);
                 case NodeTypeT.Middle:
                     return IsStraight;
-                case NodeTypeT.Bend:
-                    return DefaultFlags.IsFlagSet(NetNode.Flags.Bend) || HWDiff > 0.05f;// || !IsStraight;
                 case NodeTypeT.Custom:
                     return true;
                 default:
