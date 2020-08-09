@@ -3,7 +3,7 @@ namespace NodeController.Patches.HideCrosswalksMod {
     using NodeController;
     using KianCommons.Patches;
     using HarmonyLib;
-
+    using KianCommons;
 
     [HarmonyPatch]
     public static class ShouldHideCrossing {
@@ -12,8 +12,9 @@ namespace NodeController.Patches.HideCrosswalksMod {
                 GetMethod(nameof(HideCrosswalks.Patches.CalculateMaterialCommons.ShouldHideCrossing));
         }
 
-        public static bool Prefix(ushort nodeID, ref bool __result) {
-            var data = NodeManager.Instance.buffer[nodeID];
+        public static bool Prefix(ushort nodeID, ushort segmentID, ref bool __result) {
+            var data = SegmentEndManager.Instance.GetAt(
+                segmentID: segmentID, nodeID: nodeID);
             return PrefixUtils.HandleTernaryBool(
                 data?.ShouldHideCrossingTexture(),
                 ref __result);

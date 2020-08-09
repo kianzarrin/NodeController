@@ -3,12 +3,18 @@ namespace NodeController {
     using UnityEngine;
     using KianCommons;
     using CSURUtil = Util.CSURUtil;
+    using CSUtil.Commons;
+    using Log = KianCommons.Log;
 
     [Serializable]
     public class SegmentEndData {
         // intrinsic
         public ushort NodeID;
         public ushort SegmentID;
+
+        public override string ToString() {
+            return GetType().Name + $"(segment:{SegmentID} node:{NodeID})";
+        }
 
         // defaults
         public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(NodeID);
@@ -90,5 +96,15 @@ namespace NodeController {
             if (NodeData == null) return true;
             return NodeData.NodeType == NodeTypeT.Custom;
         }
+
+        #region External Mods
+        public TernaryBool ShouldHideCrossingTexture() {
+            if (NodeData !=null && NodeData.NodeType == NodeTypeT.Stretch)
+                return TernaryBool.False; // always ignore.
+            if (NoMarkings)
+                return TernaryBool.True; // always hide
+            return TernaryBool.Undefined; // default.
+        }
+        #endregion
     }
 }

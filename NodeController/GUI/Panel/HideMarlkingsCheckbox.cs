@@ -33,17 +33,22 @@ namespace NodeController.GUI {
             tooltip = "Removes defuse texture for all segment ends";
 
             eventCheckChanged += (component, value) => {
-                if (refreshing_)
-                    return;
-                Apply();
+                if (VERBOSE) Log.Debug($"UIHideMarkingsCheckbox.eventCheckChanged called refreshing_={refreshing_}");
+                if (!refreshing_)
+                    Apply();
             };
-            root_ = GetRootContainer() as UIPanel;
+
+
         }
 
         public override void Start() {
             base.Start();
             width = parent.width;
+            root_ = GetRootContainer() as UIPanel;
         }
+
+        // protection against unncessary apply/refresh/infinite recursion.
+        bool refreshing_ = false;
 
         public void Apply() {
             if (VERBOSE) Log.Debug("UIHideMarkingsCheckbox.Apply called()\n" + Environment.StackTrace);
@@ -51,11 +56,9 @@ namespace NodeController.GUI {
                 ApplyNode();
             else if (root_ == UISegmentEndControllerPanel.Instance)
                 ApplySegmentEnd();
+            else
+                throw new Exception("Unreachable code. root_="+ root_);
         }
-
-        // protection against unncessary apply/refresh/infinite recursion.
-        bool refreshing_ = false;
-
 
         public void ApplyNode() {
             NodeData data = UINodeControllerPanel.Instance.NodeData;
@@ -73,12 +76,27 @@ namespace NodeController.GUI {
             if (data == null)
                 return;
             data.NoMarkings = this.isChecked;
+            Log.Debug($"UIHideMarkingsCheckbox.ApplySegmentEnd(): {data}" +
+                $"isChecked={isChecked} " +
+                $"data.NoMarkings is set to {data.NoMarkings}");
             data.Refresh();
         }
 
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
+            if (root_ == UINodeControllerPanel.Instance)
+                RefreshNode();
+            else if (root_ == UISegmentEndControllerPanel.Instance)
+                RefreshSegmentEnd();
+
+            parent.isVisible = isVisible = this.isEnabled;
+            Invalidate();
+            refreshing_ = false;
+        }
+
+
+        public void RefreshNode() {
             NodeData data = UINodeControllerPanel.Instance.NodeData;
             if (data == null) {
                 Disable();
@@ -86,11 +104,23 @@ namespace NodeController.GUI {
             }
 
             this.isChecked = data.ClearMarkings;
+            isEnabled = data.ShowClearMarkingsToggle();
 
-            parent.isVisible = isVisible = this.isEnabled = data.ShowClearMarkingsToggle();
-            parent.Invalidate();
-            Invalidate();
-            refreshing_ = false;
+            if (data.HasUniformNoMarkings()) {
+                checkedBoxObject.color = Color.white;
+            } else {
+                checkedBoxObject.color = Color.grey;
+            }
+        }
+
+        public void RefreshSegmentEnd() {
+            SegmentEndData data = UISegmentEndControllerPanel.Instance.SegmentEndData;
+            if (data == null) {
+                Disable();
+                return;
+            }
+            isChecked = data.NoMarkings;
+            isEnabled = data.ShowClearMarkingsToggle();
         }
     }
 }

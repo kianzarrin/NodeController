@@ -29,26 +29,23 @@ namespace NodeController {
         public NodeData[] buffer = new NodeData[NetManager.MAX_NODE_COUNT];
 
         #region data tranfer
+        [Obsolete]
         public static byte[] CopyNodeData(ushort nodeID) =>
-            Instance.CopyNodeDataImp(nodeID);
+            SerializationUtil.Serialize(Instance.buffer[nodeID]);
 
+        [Obsolete]
+        /// <param name="nodeID">target nodeID</param>
         public static void PasteNodeData(ushort nodeID, byte[] data) =>
             Instance.PasteNodeDataImp(nodeID, data);
 
-
-        private byte[] CopyNodeDataImp(ushort nodeID) {
-            var nodeData = buffer[nodeID];
-            if (nodeData == null) {
-                Log.Debug($"node:{nodeID} has no custom data");
-                return null;
-            }
-            return SerializationUtil.Serialize(nodeData);
-        }
-
+        [Obsolete]
+        /// <param name="nodeID">target nodeID</param>
         private void PasteNodeDataImp(ushort nodeID, byte[] data) {
             if (data == null) {
                 ResetNodeToDefault(nodeID);
             } else {
+                foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID))
+                    SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: nodeID);
                 buffer[nodeID] = SerializationUtil.Deserialize(data) as NodeData;
                 buffer[nodeID].NodeID = nodeID;
                 RefreshData(nodeID);

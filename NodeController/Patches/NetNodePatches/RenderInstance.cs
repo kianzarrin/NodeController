@@ -21,7 +21,6 @@ namespace NodeController.Patches.NetNodePatches {
             return ret;
         }
 
-        //static bool Prefix(ushort nodeID){}
         public static IEnumerable<CodeInstruction> Transpiler(ILGenerator il, IEnumerable<CodeInstruction> instructions) {
             try {
                 var codes = TranspilerUtils.ToCodeList(instructions);

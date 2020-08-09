@@ -1,0 +1,9 @@
+- corner offset for every segment. DONE
+  - MoveIT BC support
+- UnitedUI support.
+- lod support
+- bend node
+- unflatten junctions
+- corner offset to increase chances of train track connection.
+- fix the orientation of asym road
+- support for asymetric textures (not now)

@@ -58,11 +58,12 @@ namespace NodeController.GUI {
 
             AddPanel().name = "Space";
 
-            //{
-            //    var panel = AddPanel();
-            //    var checkBox = panel.AddUIComponent<UIHideMarkingsCheckbox>();
-            //    Controls.Add(checkBox);
-            //}
+            {
+                var panel = AddPanel();
+                var checkBox = panel.AddUIComponent<UIHideMarkingsCheckbox>();
+                Controls.Add(checkBox);
+            }
+
 
             {
                 var panel = AddPanel();

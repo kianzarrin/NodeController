@@ -1,5 +1,6 @@
 namespace NodeController {
     using System;
+    using System.Collections.Generic;
     using KianCommons;
 
     [Serializable]
@@ -62,7 +63,6 @@ namespace NodeController {
             }
             return ref data;
         }
-
 
         #region data tranfer
         public static byte[] CopySegmentEndData(ushort segmentID, bool startNode) =>

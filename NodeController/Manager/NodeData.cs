@@ -1,12 +1,12 @@
 namespace NodeController {
     using ColossalFramework;
     using ColossalFramework.Math;
+    using KianCommons;
     using System;
+    using System.Runtime.Serialization;
     using TrafficManager.API.Traffic.Enums;
     using UnityEngine;
-    using KianCommons;
     using TernaryBool = CSUtil.Commons.TernaryBool;
-    using CSURUtil = Util.CSURUtil;
 
     public enum NodeTypeT {
         Middle,
@@ -18,7 +18,25 @@ namespace NodeController {
     }
 
     [Serializable]
-    public class NodeData {
+    public class NodeData : ISerializable {
+        #region serialization
+        public NodeData() { } // so that the code compiles
+
+        //serialization
+        public void GetObjectData(SerializationInfo info, StreamingContext context) =>
+            SerializationUtil.GetObjectFields(info, this);
+
+        // deserialization
+        public NodeData(SerializationInfo info, StreamingContext context) {
+            SerializationUtil.SetObjectFields(info, this);
+
+            // corner offset and clear markings
+            SerializationUtil.SetObjectProperties(info, this);
+        }
+
+        #endregion
+
+
         // intrinsic
         public ushort NodeID;
 
@@ -37,14 +55,14 @@ namespace NodeController {
         public int PedestrianLaneCount;
         public bool IsStraight;
         ushort segmentID1, segmentID2;
-        
+
 
         // Configurable
         public NodeTypeT NodeType;
         public float CornerOffset {
             get {
                 float ret = 0;
-                for(int i = 0; i < 8; ++i) {
+                for (int i = 0; i < 8; ++i) {
                     ushort segmentID = Node.GetSegment(i);
                     if (segmentID == 0) continue;
                     var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
@@ -55,7 +73,6 @@ namespace NodeController {
                 return ret;
             }
             set {
-                Log.Debug("CornerOffset.set() called for node:{NodeID}" + Environment.StackTrace);
                 for (int i = 0; i < 8; ++i) {
                     ushort segmentID = Node.GetSegment(i);
                     if (segmentID == 0) continue;
@@ -66,7 +83,7 @@ namespace NodeController {
         }
 
         public bool HasUniformCornerOffset() {
-            float cornerOffset0 =-1;
+            float cornerOffset0 = -1;
             for (int i = 0; i < 8; ++i) {
                 ushort segmentID = Node.GetSegment(i);
                 if (segmentID == 0) continue;
@@ -79,9 +96,44 @@ namespace NodeController {
             return true;
         }
 
-        
+        // same as no markings.
+        public bool ClearMarkings {
+            get {
+                for (int i = 0; i < 8; ++i) {
+                    ushort segmentID = Node.GetSegment(i);
+                    if (segmentID == 0) continue;
+                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                    if (segEnd.NoMarkings)
+                        return true;
+                }
+                return false;
+            }
+            set {
+                Log.Debug($"ClearMarkings.set() called for node:{NodeID}" /*+ Environment.StackTrace*/);
+                for (int i = 0; i < 8; ++i) {
+                    ushort segmentID = Node.GetSegment(i);
+                    if (segmentID == 0) continue;
+                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                    segEnd.NoMarkings = value;
+                }
+            }
+        }
+
+        public bool HasUniformNoMarkings() {
+            bool? noMarkings0 = null;
+            for (int i = 0; i < 8; ++i) {
+                ushort segmentID = Node.GetSegment(i);
+                if (segmentID == 0) continue;
+                var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                if (noMarkings0 == null)
+                    noMarkings0 = segEnd.NoMarkings;
+                else if (noMarkings0 != segEnd.NoMarkings)
+                    return false;
+            }
+            return true;
+        }
+
         public bool FlatJunctions;
-        public bool ClearMarkings;
         public bool FirstTimeTrafficLight; // turn on traffic light when inserting pedestrian node for the first time.
 
         public ref NetNode Node => ref NodeID.ToNode();
@@ -142,9 +194,8 @@ namespace NodeController {
 
         public bool IsDefault() {
             bool ret = NodeType == DefaultNodeType;
-            ret &= ClearMarkings == false;
             ret &= FlatJunctions == DefaultFlatJunctions;
-            for (int i = 0; i < 8 && ret==true; ++i) {
+            for (int i = 0; i < 8 && ret == true; ++i) {
                 ushort segmentID = Node.GetSegment(i);
                 if (segmentID == 0) continue;
                 var segEnd = SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: NodeID);
@@ -155,7 +206,6 @@ namespace NodeController {
 
         public void ResetToDefault() {
             NodeType = DefaultNodeType;
-            ClearMarkings = false;
             FlatJunctions = DefaultFlatJunctions;
             NetManager.instance.UpdateNode(NodeID);
         }
@@ -170,7 +220,7 @@ namespace NodeController {
                 else if (NodeType == NodeTypeT.Crossing)
                     CornerOffset = 0f;
             }
-            if(!CanModifyFlatJunctions()) {
+            if (!CanModifyFlatJunctions()) {
                 FlatJunctions = DefaultFlatJunctions;
             }
             Log.Debug($"NodeData.Refresh() Updating node:{NodeID}");
@@ -209,7 +259,7 @@ namespace NodeController {
         public static bool IsSupported(ushort nodeID) {
             var flags = nodeID.ToNode().m_flags;
             if (!flags.CheckFlags(
-                required:  NetNode.Flags.Created,
+                required: NetNode.Flags.Created,
                 forbidden: NetNode.Flags.LevelCrossing | NetNode.Flags.End |
                            NetNode.Flags.Outside | NetNode.Flags.Deleted)) {
                 return false;
@@ -269,14 +319,6 @@ namespace NodeController {
         }
 
         #region External Mods
-        public TernaryBool ShouldHideCrossingTexture() {
-            if (NodeType == NodeTypeT.Stretch)
-                return TernaryBool.False; // always ignore.
-            if (ClearMarkings)
-                return TernaryBool.True; // always hide
-            return TernaryBool.Undefined; // default.
-        }
-
         // undefined -> don't touch prev value
         // true -> force true
         // false -> force false.
@@ -368,7 +410,7 @@ namespace NodeController {
                 case NodeTypeT.Middle:
                 case NodeTypeT.Bend:
                     reason = ToggleTrafficLightError.NoJunction;
-                    return TernaryBool.False; 
+                    return TernaryBool.False;
                 case NodeTypeT.Custom:
                     return TernaryBool.Undefined; // default off
                 default:
