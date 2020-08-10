@@ -27,29 +27,44 @@ namespace NodeController.Tool {
 
         private object m_cacheLock = new object();
 
-        private CursorInfo CursorCrossing;
-        private CursorInfo CursorEdit;
-        private CursorInfo CursorNormal;
-
+        private CursorInfo CursorInsert, CursorInsertCrossing,
+            CursorEdit, CursorSearching, CursorError;
 
         protected override void Awake() {
+            Log.Debug("NodeControllerTool.Awake() called");
+            base.Awake();
+
             NodeControllerButton.CreateButton();
             NCPanel = UINodeControllerPanel.Create();
             UISegmentEndControllerPanel.Create();
 
-            CursorCrossing = ScriptableObject.CreateInstance<CursorInfo>();
-            CursorCrossing.m_texture = TextureUtil.GetTextureFromFile("cursor_crossing.png");
-            CursorCrossing.m_hotspot = new Vector2(5f, 0f);
+            // A)modify node: green pen
+            // B)insert middle (highway) green node
+            // C)insert pedestrian : green pedestrian
+            // D)searching(mouse is not hovering over road) grey geerbox
+            // E)fail insert red geerbox
+            // F)fail modify (end node) red geerbox.
+            // G)inside panel: normal
 
             CursorEdit = ScriptableObject.CreateInstance<CursorInfo>();
-            CursorEdit.m_texture = TextureUtil.GetTextureFromFile("cursor_edit.png");
+            CursorEdit.m_texture = TextureUtil.GetTextureFromFile("cursor_edit.png"); // green pen
             CursorEdit.m_hotspot = new Vector2(5f, 0f);
 
-            CursorNormal = ScriptableObject.CreateInstance<CursorInfo>();
-            CursorNormal.m_texture = TextureUtil.GetTextureFromFile("cursor.png");
-            CursorNormal.m_hotspot = new Vector2(5f, 0f);
+            CursorInsert = ScriptableObject.CreateInstance<CursorInfo>();
+            CursorInsert.m_texture = TextureUtil.GetTextureFromFile("cursor_insert.png"); // green T node
+            CursorInsert.m_hotspot = new Vector2(5f, 0f);
 
-            base.Awake();
+            CursorInsertCrossing = ScriptableObject.CreateInstance<CursorInfo>();
+            CursorInsertCrossing.m_texture = TextureUtil.GetTextureFromFile("cursor_insert_crossing.png"); // green crossing.
+            CursorInsertCrossing.m_hotspot = new Vector2(5f, 0f);
+
+            CursorError = ScriptableObject.CreateInstance<CursorInfo>();
+            CursorError.m_texture = TextureUtil.GetTextureFromFile("cursor_error.png"); // red gear
+            CursorError.m_hotspot = new Vector2(5f, 0f);
+
+            CursorSearching = ScriptableObject.CreateInstance<CursorInfo>();
+            CursorSearching.m_texture = TextureUtil.GetTextureFromFile("cursor_searching.png"); // grey gear
+            CursorSearching.m_hotspot = new Vector2(5f, 0f);
         }
 
         public static NodeControllerTool Create() {
@@ -138,30 +153,58 @@ namespace NodeController.Tool {
         }
 
         CursorInfo GetCursor() {
+            // A)modify node: green pen
+            // B)insert middle (highway) green node
+            // C)insert pedestrian : green pedestrian
+            // D)searching(mouse is not hovering over road) grey geerbox
+            // E)fail insert red geerbox
+            // F)fail modify (end node) red geerbox.
+            // G)inside panel: normal
+
+            if (!m_mouseRayValid) // G
+                return null;
+
+            bool fail = false;
+            bool insert = false;
+            bool searching = false;
+            bool edit = false;
+            bool crossing = false;
+
             if (IsHoverValid && m_prefab != null) {
                 NetTool.ControlPoint controlPoint = m_cachedControlPoint;
                 ushort nodeID = controlPoint.m_node;
-                if (nodeID != 0) {
-                    bool fail = !NodeData.IsSupported(nodeID);
-                    if (fail) return CursorNormal;
-                    return CursorEdit;
-                } else if (controlPoint.m_segment != 0) {
-                    if (AltIsPressed)
-                        return CursorNormal; //nothing happens.
+                edit = nodeID != 0;
+                insert = controlPoint.m_segment != 0;
+                if (edit) {
+                    fail = !NodeData.IsSupported(nodeID);
+                } else if (AltIsPressed) {
+                    searching = true;
+                } else if (insert) {
                     bool isRoad = m_prefab.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(m_prefab);
                     ToolErrors error = m_cachedErrors;
                     error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
-                    bool fail = error != ToolErrors.None || !isRoad;
-                    if (fail)
-                        return CursorNormal;
-                    if (m_prefab.CountPedestrianLanes() >= 2)
-                        return CursorCrossing; // add crossing node
-                    return CursorNormal; // add middle node.
+                    fail = error != ToolErrors.None || !isRoad;
+                    crossing = m_prefab.CountPedestrianLanes() >= 2;
                 }
-            }
-            if (m_mouseRayValid)
-                return CursorNormal;
-            return null;
+            } else
+                searching = true;
+
+            if (searching)
+                return CursorSearching;
+
+            if (fail)
+                return CursorError;
+
+            if (insert && crossing)
+                return CursorInsertCrossing;
+
+            if (insert && !crossing)
+                return CursorInsert;
+
+            if (edit)
+                return CursorEdit;
+
+            return null; // race condition
         }
 
         protected override void OnToolUpdate() {

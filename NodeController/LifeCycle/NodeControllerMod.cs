@@ -16,6 +16,7 @@ namespace NodeController.LifeCycle
         [UsedImplicitly]
         public void OnEnabled()
         {
+            KianCommons.UI.TextureUtil.EmbededResources = false;
             HarmonyHelper.EnsureHarmonyInstalled();   
             if (HelpersExtensions.InGame)
                 LifeCycle.Load();
