@@ -64,37 +64,6 @@ namespace NodeController {
             return ref data;
         }
 
-        #region data tranfer
-        public static byte[] CopySegmentEndData(ushort segmentID, bool startNode) =>
-            Instance.CopySegmentEndDataImp(segmentID, startNode);
-
-        public static void PasteSegmentEndData(ushort segmentID, bool startNode, byte[] data) =>
-            Instance.PasteSegmentEndDataImp(segmentID, startNode, data);
-
-
-        private byte[] CopySegmentEndDataImp(ushort segmentID, bool startNode) {
-            var nodeData = GetAt(segmentID, startNode);
-            if (nodeData == null) {
-                Log.Debug($"node:{segmentID} startNode:{startNode} has no custom data");
-                return null;
-            }
-            return SerializationUtil.Serialize(nodeData);
-        }
-
-        private void PasteSegmentEndDataImp(ushort segmentID, bool startNode, byte[] data) {
-            if (data == null) {
-                ResetSegmentEndToDefault(segmentID, startNode);
-            } else {
-                var segEnd = SerializationUtil.Deserialize(data) as SegmentEndData;
-                SetAt(segmentID, startNode, segEnd);
-                segEnd.SegmentID = segmentID;
-                segEnd.NodeID = NetUtil.GetSegmentNode(segmentID, startNode);
-                RefreshData(segmentID, startNode);
-            }
-        }
-        #endregion
-
-
         /// <summary>
         /// releases data for <paramref name="nodeID"/> if uncessary. Calls update node.
         /// </summary>

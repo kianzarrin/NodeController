@@ -7,7 +7,7 @@ namespace NodeController
     public static class HarmonyExtension
     {
         public static string AssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-        public static string HARMONY_ID = "CS.Kian." + AssemblyName; 
+        public static string HARMONY_ID = "CS.Kian.NodeController";
 
         public static void InstallHarmony()
         {

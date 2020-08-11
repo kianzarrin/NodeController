@@ -5,6 +5,7 @@ namespace NodeController {
     using CSURUtil = Util.CSURUtil;
     using CSUtil.Commons;
     using Log = KianCommons.Log;
+    using TrafficManager.Traffic.Impl;
 
     [Serializable]
     public class SegmentEndData {
@@ -15,6 +16,12 @@ namespace NodeController {
         public override string ToString() {
             return GetType().Name + $"(segment:{SegmentID} node:{NodeID})";
         }
+
+        /// <summary>clone</summary>
+        public SegmentEndData(SegmentEndData template) =>
+            HelpersExtensions.CopyProperties(this, template);
+
+        public SegmentEndData Clone() => new SegmentEndData(this);
 
         // defaults
         public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(NodeID);

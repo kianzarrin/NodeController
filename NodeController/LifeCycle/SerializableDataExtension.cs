@@ -46,8 +46,6 @@ namespace NodeController.LifeCycle
         public static int LoadingVersion;
         public override void OnLoadData()
         {
-
-
             byte[] data = serializableDataManager.LoadData(DATA_ID);
             if (data != null) {
                 LoadingVersion = 2;
@@ -59,8 +57,6 @@ namespace NodeController.LifeCycle
                     ?? serializableDataManager.LoadData(DATA_ID0);
                 NodeManager.Deserialize(data);
             }
-
-
         }
 
         public override void OnSaveData()

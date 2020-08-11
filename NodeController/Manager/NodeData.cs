@@ -30,9 +30,18 @@ namespace NodeController {
         public NodeData(SerializationInfo info, StreamingContext context) {
             SerializationUtil.SetObjectFields(info, this);
 
+            if (NodeManager.TargetNodeID != 0)// backward compatibility.
+                NodeID = NodeManager.TargetNodeID;
+
             // corner offset and clear markings
             SerializationUtil.SetObjectProperties(info, this);
         }
+
+        public NodeData(NodeData template) {
+            HelpersExtensions.CopyProperties(this, template);
+        }
+
+        public NodeData Clone() => new NodeData(this);
 
         #endregion
 
@@ -96,7 +105,7 @@ namespace NodeController {
             return true;
         }
 
-        // same as no markings.
+        // same as no markings. can't rename for the sake of backward compatibility.
         public bool ClearMarkings {
             get {
                 for (int i = 0; i < 8; ++i) {

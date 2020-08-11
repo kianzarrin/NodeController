@@ -28,27 +28,34 @@ namespace NodeController {
 
         public NodeData[] buffer = new NodeData[NetManager.MAX_NODE_COUNT];
 
-        #region data tranfer
-        [Obsolete]
-        public static byte[] CopyNodeData(ushort nodeID) =>
-            SerializationUtil.Serialize(Instance.buffer[nodeID]);
+        #region MoveIT backward compatiblity.
 
-        [Obsolete]
+        [Obsolete("delete when moveit is updated")]
+        public static byte[] CopyNodeData(ushort nodeID) =>
+            SerializationUtil.Serialize(Instance.buffer[nodeID])
+            .LogRet($"NodeManager.CopyNodeData({nodeID}) ->");
+
+        public static ushort TargetNodeID = 0; 
+
+        [Obsolete("kept here for backward compatibility with MoveIT")]
         /// <param name="nodeID">target nodeID</param>
         public static void PasteNodeData(ushort nodeID, byte[] data) =>
             Instance.PasteNodeDataImp(nodeID, data);
 
-        [Obsolete]
+        [Obsolete("kept here for backward compatibility with MoveIT")]
         /// <param name="nodeID">target nodeID</param>
         private void PasteNodeDataImp(ushort nodeID, byte[] data) {
+            Log.Debug($"NodeManager.PasteNodeDataImp(nodeID={nodeID})");
             if (data == null) {
                 ResetNodeToDefault(nodeID);
             } else {
                 foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID))
                     SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: nodeID);
+                TargetNodeID = nodeID; // must be done before deserialization.
                 buffer[nodeID] = SerializationUtil.Deserialize(data) as NodeData;
                 buffer[nodeID].NodeID = nodeID;
                 RefreshData(nodeID);
+                TargetNodeID = 0;
             }
         }
         #endregion
