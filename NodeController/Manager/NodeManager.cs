@@ -45,9 +45,10 @@ namespace NodeController {
         [Obsolete("kept here for backward compatibility with MoveIT")]
         /// <param name="nodeID">target nodeID</param>
         private void PasteNodeDataImp(ushort nodeID, byte[] data) {
-            Log.Debug($"NodeManager.PasteNodeDataImp(nodeID={nodeID})");
+            Log.Debug($"NodeManager.PasteNodeDataImp(nodeID={nodeID}, data={data})");
             if (data == null) {
-                ResetNodeToDefault(nodeID);
+                // for backward compatibality reasons its not a good idea to do this:
+                // ResetNodeToDefault(nodeID); 
             } else {
                 foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID))
                     SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: nodeID);

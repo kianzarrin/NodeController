@@ -17,7 +17,7 @@ namespace NodeController.LifeCycle {
     public class MoveItIntegrationFactory : IMoveItIntegrationFactory {
         public string Name => throw new NotImplementedException();
         public string Description => throw new NotImplementedException();
-        public IMoveItIntegration GetInstance() =>new MoveItIntegration();
+        public IMoveItIntegration GetInstance() => new MoveItIntegration();
     }
 
     public class MoveItIntegration : IMoveItIntegration {
@@ -44,7 +44,7 @@ namespace NodeController.LifeCycle {
 
         public object CopyNode(ushort sourceNodeID) {
             return NodeManager.Instance.buffer[sourceNodeID]?.Clone()
-                .LogRet("MoveItIntegration.CopyNode({ sourceNodeID}) -> ");
+                .LogRet($"MoveItIntegration.CopyNode({sourceNodeID}) -> ");
         }
 
         public object CopySegment(ushort sourceSegmentID) {
@@ -65,7 +65,11 @@ namespace NodeController.LifeCycle {
             } else {
                 nodeMan.buffer[targetNodeID] = (NodeData)record;
                 nodeMan.buffer[targetNodeID].NodeID = targetNodeID;
-                nodeMan.RefreshData(targetNodeID);
+
+                // Do not call refresh here as it might restart node to 0 even though corner offsets from
+                // segments may come in later.
+                // after cloning is complete, everything will be updated.
+                //nodeMan.RefreshData(targetNodeID);
             }
         }
 
@@ -82,14 +86,12 @@ namespace NodeController.LifeCycle {
                     data.Start.NodeID = targetSegmentID.ToSegment().m_startNode;
                 }
                 segEndMan.SetAt(targetSegmentID, true, data.Start);
-                segEndMan.RefreshData(targetSegmentID, true);
 
                 if (data.End != null) {
                     data.End.SegmentID = targetSegmentID;
                     data.End.NodeID = targetSegmentID.ToSegment().m_endNode;
                 }
                 segEndMan.SetAt(targetSegmentID, false, data.End);
-                segEndMan.RefreshData(targetSegmentID, false);
             }
         }
     }

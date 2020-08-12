@@ -1,12 +1,14 @@
 namespace NodeController {
     using ColossalFramework;
     using ColossalFramework.Math;
+    using CSUtil.Commons;
     using KianCommons;
     using System;
     using System.Runtime.Serialization;
     using TrafficManager.API.Traffic.Enums;
     using UnityEngine;
     using TernaryBool = CSUtil.Commons.TernaryBool;
+    using Log = KianCommons.Log;
 
     public enum NodeTypeT {
         Middle,
@@ -19,6 +21,7 @@ namespace NodeController {
 
     [Serializable]
     public class NodeData : ISerializable {
+        public override string ToString() => $"NodeData(id:{NodeID} type:{NodeType})";
         #region serialization
         public NodeData() { } // so that the code compiles
 

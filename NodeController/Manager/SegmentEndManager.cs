@@ -31,7 +31,7 @@ namespace NodeController {
 
         public ref SegmentEndData GetAt(ushort segmentID, ushort nodeID) {
             bool startNode = NetUtil.IsStartNode(segmentId: segmentID, nodeId: nodeID);
-            return ref GetOrCreate(segmentID, startNode);
+            return ref GetAt(segmentID, startNode);
         }
         public ref SegmentEndData GetAt(ushort segmentID, bool startNode) {
             if (startNode)

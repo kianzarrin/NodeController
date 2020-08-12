@@ -9,6 +9,7 @@ namespace NodeController.LifeCycle
     {
         public static void Load()
         {
+            HelpersExtensions.VERBOSE = false;
             Log.Info("LifeCycle.Load() called");
             PluginUtil.Init();
             HarmonyExtension.InstallHarmony();
