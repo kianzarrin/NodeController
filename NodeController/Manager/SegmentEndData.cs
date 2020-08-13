@@ -40,6 +40,8 @@ namespace NodeController {
         public bool NoJunctionProps; // excluding TL
         public bool NoTLProps;
 
+        public float HLeft, HRight;
+
         // shortcuts
         public ref NetSegment Segment => ref SegmentID.ToSegment();
         public ref NetNode Node => ref NodeID.ToNode();
@@ -66,6 +68,8 @@ namespace NodeController {
             ret &= NoJunctionTexture == false;
             ret &= NoJunctionProps == false;
             ret &= NoTLProps == false;
+            ret &= Mathf.Abs(HLeft) < 0.5f;
+            ret &= Mathf.Abs(HRight) < 0.5f;
             return ret;
         }
 

@@ -1,6 +1,7 @@
 namespace NodeController.GUI {
     using ColossalFramework.UI;
     using KianCommons;
+    using UnityEngine.UI;
 
     public class UISegmentEndControllerPanel: UIPanelBase {
         #region Instanciation
@@ -44,6 +45,38 @@ namespace NodeController.GUI {
 
             name = "UISegmentEndControllerPanel";
             Caption = "Segment End Controller";
+
+            {
+                var panel = AddPanel();
+
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Corner smoothness";
+                label.tooltip = "Adjusts Corner offset for smooth junction transition.";
+
+                var slider_ = panel.AddUIComponent<UIOffsetSlider>();
+                Controls.Add(slider_);
+            }
+
+            {
+                var panel = AddPanel();
+
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Left corner height";
+
+                var slider_ = panel.AddUIComponent<ConrnerHeightSlider>();
+                slider_.bLeftSide = true;
+                Controls.Add(slider_);
+            }
+            {
+                var panel = AddPanel();
+
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Right corner height";
+
+                var slider_ = panel.AddUIComponent<ConrnerHeightSlider>();
+                slider_.bLeftSide = false;
+                Controls.Add(slider_);
+            }
 
             {
                 var panel = AddPanel();
