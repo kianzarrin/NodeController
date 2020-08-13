@@ -16,6 +16,9 @@ namespace NodeController.Tool {
             SavedInputKey.Encode(KeyCode.N, true, false, false),
             true);
 
+        public static readonly SavedBool SnapToMiddleNode = new SavedBool(
+            "SnapToMiddleNode", Settings.FileName, def:false, true);
+
         NodeControllerButton Button => NodeControllerButton.Instace;
         UINodeControllerPanel NCPanel;
 
@@ -410,6 +413,9 @@ namespace NodeController.Tool {
                 count != 2 ||
                 segmentID0.ToSegment().Info != segmentID1.ToSegment().Info ||
                 !HoveredNodeId.ToNode().m_flags.IsFlagSet(NetNode.Flags.Moveable);
+
+            snapNode |= SnapToMiddleNode;
+
             if (snapNode) {
                 Vector3 diff = raycastOutput.m_hitPos - HoveredNodeId.ToNode().m_position;
                 const float distance = 2 * NetUtil.MPU;

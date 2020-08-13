@@ -18,6 +18,12 @@ namespace NodeController.GUI {
             UIPanel panel = group.self as UIPanel;
             var keymappings = panel.gameObject.AddComponent<KeymappingsPanel>();
             keymappings.AddKeymapping("Activation Shortcut", NodeControllerTool.ActivationShortcut);
+
+            UICheckBox snapToggle = group.AddCheckbox(
+                "Snap to middle node",
+                NodeControllerTool.SnapToMiddleNode.value,
+                val => NodeControllerTool.SnapToMiddleNode.value = val) as UICheckBox;
+            //snapToggle.tooltip = "?";
         }
     }
 }
