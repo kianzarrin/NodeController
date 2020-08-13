@@ -1,4 +1,5 @@
-- MoveIT BC support
+- MoveIT BC support DONE
+- snap options.
 - UnitedUI support. no real code change. just add the texture for the buttons.
 - lod support
 - unflatten junctions
