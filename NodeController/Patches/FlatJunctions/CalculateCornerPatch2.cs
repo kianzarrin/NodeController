@@ -9,6 +9,7 @@ namespace NodeController.Patches {
     using static KianCommons.Patches.TranspilerUtils;
     using NodeController.Util;
     using UnityEngine;
+    using ColossalFramework.Math;
 
     [UsedImplicitly]
     [HarmonyPatch]
@@ -23,21 +24,26 @@ namespace NodeController.Patches {
                     throw new System.Exception("CalculateCornerPatch Could not find target method.");
         }
 
+        public static void FixCornerPos(Vector3 nodePos, Vector3 cornerDir, ref Vector3 cornerPos) {
+            float d = VectorUtils.DotXZ(cornerPos - nodePos, cornerDir);  
+            cornerPos.y = nodePos.y + d * cornerDir.y;
+        }
+
         /// <param name="segmentID">segment to calculate corner</param>
         /// <param name="start">true for start node</param>
         /// <param name="leftSide">going away from the node</param>
         public static void Postfix(
             ushort segmentID, bool heightOffset, bool start, bool leftSide,
             ref Vector3 cornerPos, ref Vector3 cornerDirection) {
-            var data = SegmentEndManager.Instance.GetAt(segmentID, start);
-            if (data == null) return;
+            SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
+            bool flatJunctions = data?.FlatJunctions ?? segmentID.ToSegment().Info.m_flatJunctions;
+            if (!flatJunctions) {
+                ushort nodeID = segmentID.ToSegment().GetNode(start);
+                FixCornerPos(nodeID.ToNode().m_position, cornerDirection, ref cornerPos);
+            }
 
-            leftSide = !leftSide; // left side now mean left when going toward the node.
-            float deltaH = leftSide ? data.HLeft : data.HRight;
-            cornerPos.y += deltaH;
+            // manual adjustments:
+            data?.ModifyCorner(ref cornerPos, ref cornerDirection, leftSide);
         }
-
-
-
     }
 }

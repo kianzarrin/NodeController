@@ -39,29 +39,31 @@ namespace NodeController.GUI {
 
         }
 
+        IDataControllerUI root_;
         public override void Start() {
             base.Start();
             width = parent.width;
+            root_ = GetRootContainer() as IDataControllerUI;
         }
 
         public void Apply() {
-            if (VERBOSE) Log.Debug("UIFlatJunctionsCheckbox.Apply called()\n" + Environment.StackTrace);
-            NodeData data = UINodeControllerPanel.Instance.NodeData;
+            Log.Debug("UIFlatJunctionsCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
+            var data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
             if (data == null)
                 return;
             data.FlatJunctions = this.isChecked;
             Assert(!refreshing_, "!refreshing_");
             data.Refresh();
-            UINodeControllerPanel.Instance.Refresh();
+            root_.Refresh();
         }
 
         // protection against unncessary apply/refresh/infinite recursion.
         bool refreshing_ = false;
 
         public void Refresh() {
-            if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
+            Log.Debug("Refresh called()\n"/* + Environment.StackTrace*/);
             refreshing_ = true;
-            NodeData data = UINodeControllerPanel.Instance.NodeData;
+            var data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
             if (data == null) {
                 Disable();
                 return;

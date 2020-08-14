@@ -52,27 +52,27 @@ namespace NodeController.GUI {
 
         public void Apply() {
             if (VERBOSE) Log.Debug("UIHideMarkingsCheckbox.Apply called()\n" + Environment.StackTrace);
-            if (root_ == UINodeControllerPanel.Instance)
+            if (root_ is UINodeControllerPanel)
                 ApplyNode();
-            else if (root_ == UISegmentEndControllerPanel.Instance)
+            else if (root_ is UISegmentEndControllerPanel)
                 ApplySegmentEnd();
             else
                 throw new Exception("Unreachable code. root_="+ root_);
         }
 
         public void ApplyNode() {
-            NodeData data = UINodeControllerPanel.Instance.NodeData;
+            NodeData data = (root_ as UINodeControllerPanel).NodeData;
             if (data == null)
                 return;
             data.ClearMarkings = this.isChecked;
             Assert(!refreshing_, "!refreshing_");
             data.Refresh();
-            UINodeControllerPanel.Instance.Refresh();
+            (root_ as IDataControllerUI).Refresh();
 
         }
 
         public void ApplySegmentEnd() {
-            SegmentEndData data = UISegmentEndControllerPanel.Instance.SegmentEndData;
+            SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
             if (data == null)
                 return;
             data.NoMarkings = this.isChecked;
@@ -85,9 +85,9 @@ namespace NodeController.GUI {
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
-            if (root_ == UINodeControllerPanel.Instance)
+            if (root_ is UINodeControllerPanel)
                 RefreshNode();
-            else if (root_ == UISegmentEndControllerPanel.Instance)
+            else if (root_ is UISegmentEndControllerPanel)
                 RefreshSegmentEnd();
 
             parent.isVisible = isVisible = this.isEnabled;
@@ -97,7 +97,7 @@ namespace NodeController.GUI {
 
 
         public void RefreshNode() {
-            NodeData data = UINodeControllerPanel.Instance.NodeData;
+            NodeData data = (root_ as UINodeControllerPanel).NodeData;
             if (data == null) {
                 Disable();
                 return;
@@ -114,7 +114,7 @@ namespace NodeController.GUI {
         }
 
         public void RefreshSegmentEnd() {
-            SegmentEndData data = UISegmentEndControllerPanel.Instance.SegmentEndData;
+            SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
             if (data == null) {
                 Disable();
                 return;

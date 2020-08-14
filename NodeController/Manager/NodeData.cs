@@ -53,7 +53,6 @@ namespace NodeController {
         public ushort NodeID;
 
         // defaults
-        public bool DefaultFlatJunctions => NodeID.ToNode().Info.m_flatJunctions;
         public NetNode.Flags DefaultFlags;
         public NodeTypeT DefaultNodeType;
 
@@ -145,7 +144,6 @@ namespace NodeController {
             return true;
         }
 
-        public bool FlatJunctions;
         public bool FirstTimeTrafficLight; // turn on traffic light when inserting pedestrian node for the first time.
 
         public ref NetNode Node => ref NodeID.ToNode();
@@ -154,7 +152,6 @@ namespace NodeController {
             NodeID = nodeID;
             Calculate();
             NodeType = DefaultNodeType;
-            FlatJunctions = DefaultFlatJunctions;
             FirstTimeTrafficLight = NodeType == NodeTypeT.Crossing;
         }
 
@@ -206,7 +203,6 @@ namespace NodeController {
 
         public bool IsDefault() {
             bool ret = NodeType == DefaultNodeType;
-            ret &= FlatJunctions == DefaultFlatJunctions;
             for (int i = 0; i < 8 && ret == true; ++i) {
                 ushort segmentID = Node.GetSegment(i);
                 if (segmentID == 0) continue;
@@ -218,7 +214,6 @@ namespace NodeController {
 
         public void ResetToDefault() {
             NodeType = DefaultNodeType;
-            FlatJunctions = DefaultFlatJunctions;
             NetManager.instance.UpdateNode(NodeID);
         }
 
@@ -232,9 +227,7 @@ namespace NodeController {
                 else if (NodeType == NodeTypeT.Crossing)
                     CornerOffset = 0f;
             }
-            if (!CanModifyFlatJunctions()) {
-                FlatJunctions = DefaultFlatJunctions;
-            }
+
             Log.Debug($"NodeData.Refresh() Updating node:{NodeID}");
             if (HelpersExtensions.VERBOSE)
                 Log.Debug(Environment.StackTrace);
@@ -253,7 +246,7 @@ namespace NodeController {
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
-        public bool CanModifyFlatJunctions() => false;//!NeedMiddleFlag();
+        public bool CanModifyFlatJunctions() => !NeedMiddleFlag();
         public bool ShowClearMarkingsToggle() => NodeType == NodeTypeT.Custom && !IsCSUR;
         public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
 

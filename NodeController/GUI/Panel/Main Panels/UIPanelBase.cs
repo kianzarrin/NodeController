@@ -98,6 +98,8 @@ namespace NodeController.GUI {
             RefreshSizeRecursive();
             Invalidate();
             autoLayout = false;
+
+            // calcualte captions position:
             float spriteEndX = sprite_.relativePosition.x + sprite_.width;
             float x = spriteEndX + 0.5f * (dragHandle_.width - spriteEndX - lblCaption_.width);
             lblCaption_.relativePosition = new Vector2(x, 14);

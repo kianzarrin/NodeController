@@ -11,8 +11,8 @@ namespace NodeController.Patches {
 
 
     static class FlatJunctionsCommons {
-        static bool GetFlatJunctions(bool flatJunctions0, ushort nodeID) {
-            var data = NodeManager.Instance.buffer[nodeID];
+        internal static bool GetFlatJunctions(bool flatJunctions0, ushort segmentID, ushort nodeID) {
+            var data = SegmentEndManager.Instance.GetAt(segmentID,nodeID);
             return data?.FlatJunctions ?? flatJunctions0;
         }
 
@@ -30,8 +30,11 @@ namespace NodeController.Patches {
             AssertNotNull(targetMethod, "targetMethod");
             //Log.Debug("targetMethod=" + targetMethod);
             CodeInstruction ldarg_nodeID =
-                GetLDArg(targetMethod, "startNodeID") // CalculateCorner
+                GetLDArg(targetMethod, "startNodeID", throwOnError:false) // CalculateCorner
                 ?? GetLDArg(targetMethod, "nodeID"); // FindDirection
+            CodeInstruction ldarg_segmentID =
+                GetLDArg(targetMethod, "ignoreSegmentID", throwOnError: false) // CalculateCorner
+                ?? GetLDArg(targetMethod, "segmentID"); // FindDirection
             AssertNotNull(ldarg_nodeID, "ldarg_nodeID");
 
             CodeInstruction call_GetFlatJunctions = new CodeInstruction(OpCodes.Call, mGetFlatJunctions);
@@ -45,6 +48,7 @@ namespace NodeController.Patches {
                     instruction.opcode == OpCodes.Ldfld && instruction.operand == f_flatJunctions;
                 if (is_ldfld_flatJunctions) {
                     n++;
+                    yield return ldarg_segmentID;
                     yield return ldarg_nodeID;
                     yield return call_GetFlatJunctions;
                     //Log.Debug("new instructions are:\n"+ instruction + "\n" + ldarg_nodeID + "\n" + call_GetFlatJunctions);

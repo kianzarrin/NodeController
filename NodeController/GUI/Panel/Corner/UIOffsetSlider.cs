@@ -63,9 +63,9 @@ namespace NodeController.GUI {
 
         public void Apply() {
             if (refreshing_) return;
-            if (root_ == UINodeControllerPanel.Instance) 
+            if (root_ is UINodeControllerPanel ncpanel) 
                 ApplyNode();
-            else if( root_ == UISegmentEndControllerPanel.Instance)
+            else if( root_ is UISegmentEndControllerPanel secpanel)
                 ApplySegmentEnd();
 
             tooltip = value.ToString();
@@ -75,14 +75,14 @@ namespace NodeController.GUI {
         }
 
         public void ApplyNode() {
-            NodeData data = UINodeControllerPanel.Instance.NodeData;
+            NodeData data = (root_ as UINodeControllerPanel).NodeData;
             if (data == null)
                 return;
             data.CornerOffset = value;
             data.Refresh();
         }
         public void ApplySegmentEnd() {
-            SegmentEndData data = UISegmentEndControllerPanel.Instance.SegmentEndData;
+            SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
             if (data == null)
                 return;
             data.CornerOffset = value;
@@ -92,9 +92,9 @@ namespace NodeController.GUI {
         bool refreshing_ = false;
         public void Refresh() {
             refreshing_ = true;
-            if (root_ == UINodeControllerPanel.Instance)
+            if (root_ is UINodeControllerPanel ncpanel)
                 RefreshNode();
-            else if (root_ == UISegmentEndControllerPanel.Instance)
+            else if (root_ is UISegmentEndControllerPanel secpanel)
                 RefreshSegmentEnd();
 
             parent.isVisible = isEnabled;
@@ -107,7 +107,7 @@ namespace NodeController.GUI {
         }
 
         public void RefreshNode() {
-            NodeData data = UINodeControllerPanel.Instance.NodeData;
+            NodeData data = (root_ as UINodeControllerPanel).NodeData;
             if (data == null) {
                 Disable();
                 return;
@@ -125,7 +125,7 @@ namespace NodeController.GUI {
         }
 
         public void RefreshSegmentEnd() {
-            SegmentEndData data = UISegmentEndControllerPanel.Instance.SegmentEndData;
+            SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
             if (data == null) {
                 Disable();
                 return;

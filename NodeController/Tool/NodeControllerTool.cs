@@ -21,6 +21,7 @@ namespace NodeController.Tool {
 
         NodeControllerButton Button => NodeControllerButton.Instace;
         UINodeControllerPanel NCPanel;
+        UISegmentEndControllerPanel SECPanel;
 
         NetTool.ControlPoint m_controlPoint;
         NetTool.ControlPoint m_cachedControlPoint;
@@ -39,7 +40,7 @@ namespace NodeController.Tool {
 
             NodeControllerButton.CreateButton();
             NCPanel = UINodeControllerPanel.Create();
-            UISegmentEndControllerPanel.Create();
+            SECPanel = UISegmentEndControllerPanel.Create();
 
             // A)modify node: green pen
             // B)insert middle (highway) green node
@@ -97,8 +98,8 @@ namespace NodeController.Tool {
             Button?.Hide();
             Destroy(Button);
             NCPanel?.Hide();
-            UISegmentEndControllerPanel.Instance?.Hide();
-            Destroy(UISegmentEndControllerPanel.Instance);
+            SECPanel?.Hide();
+            Destroy(SECPanel);
             Destroy(NCPanel);
             base.OnDestroy();
         }
@@ -119,6 +120,7 @@ namespace NodeController.Tool {
             base.OnDisable();
             Button?.Deactivate();
             NCPanel?.Close();
+            SECPanel?.Close();
             SelectedNodeID = 0;
             SelectedSegmentID = 0;
         }
@@ -343,7 +345,7 @@ namespace NodeController.Tool {
                 if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)) {
                     SelectedSegmentID = HoveredSegmentId;
                     SelectedNodeID = HoveredNodeId;
-                    UISegmentEndControllerPanel.Instance.
+                    SECPanel.
                         ShowSegmentEnd(segmentID: SelectedSegmentID, nodeID: SelectedNodeID);
                 }
                 return;
@@ -383,7 +385,7 @@ namespace NodeController.Tool {
                 DisableTool();
             } else {
                 NCPanel.Close();
-                UISegmentEndControllerPanel.Instance.Close();
+                SECPanel.Close();
                 SelectedSegmentID = SelectedNodeID = 0;
             }
         }

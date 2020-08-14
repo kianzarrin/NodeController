@@ -43,13 +43,13 @@ namespace NodeController.GUI {
 
         public void Apply() {
             if (VERBOSE) Log.Debug("UIResetButton.Apply called()\n" + Environment.StackTrace);
-            if (root_ == UINodeControllerPanel.Instance)
-                UINodeControllerPanel.Instance.NodeData?.ResetToDefault(); 
-            else if (root_ == UISegmentEndControllerPanel.Instance)
-                UISegmentEndControllerPanel.Instance.SegmentEndData?.ResetToDefault();
+            if (root_ is UINodeControllerPanel ncpanel)
+                ncpanel.NodeData?.ResetToDefault(); 
+            else if (root_ is UISegmentEndControllerPanel secpanel)
+                secpanel.SegmentEndData?.ResetToDefault();
 
             Assert(!refreshing_, "!refreshing_");
-            UINodeControllerPanel.Instance.Refresh();
+            (root_ as IDataControllerUI).Refresh();
         }
 
         // protection against unncessary apply/refresh/infinite recursion.
@@ -58,18 +58,31 @@ namespace NodeController.GUI {
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
-            NodeData data = UINodeControllerPanel.Instance.NodeData;
-            if (data == null) {
-                Disable();
-                return;
-            }
+            if (root_ is UINodeControllerPanel ncpanel)
+                RefreshNode();
+            else if (root_ is UISegmentEndControllerPanel secpanel)
+                RefreshSegmentEnd();
 
             parent.isVisible = isVisible = true;
-            isEnabled = !data.IsDefault();
             parent.Invalidate();
             Invalidate();
             refreshing_ = false;
         }
+        public void RefreshNode() {
+            NodeData data = (root_ as UINodeControllerPanel).NodeData;
+            if (data == null)
+                Disable();
+            else
+                isEnabled = !data.IsDefault();
+        }
+        public void RefreshSegmentEnd() {
+            SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
+            if (data == null)
+                Disable();
+            else
+                isEnabled = !data.IsDefault();
+        }
+
     }
 }
 

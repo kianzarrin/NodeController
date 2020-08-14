@@ -69,12 +69,6 @@ namespace NodeController.GUI {
                 var checkBox = panel.AddUIComponent<UIHideMarkingsCheckbox>();
                 Controls.Add(checkBox);
             }
-            //{
-            //    var panel = AddPanel();
-            //    var checkBox = panel.AddUIComponent<UIFlatJunctionsCheckbox>();
-            //    Controls.Add(checkBox);
-            //}
-
             {
                 var panel = AddPanel();
                 var button = panel.AddUIComponent<UIResetButton>();
@@ -85,8 +79,8 @@ namespace NodeController.GUI {
 
         public void ShowNode(ushort nodeID) {
             UISegmentEndControllerPanel.Instance.Close();
-            NodeManager.Instance.RefreshData(NodeID);
             NodeID = nodeID;
+            NodeManager.Instance.RefreshData(NodeID);
             Show();
             Refresh();
         }

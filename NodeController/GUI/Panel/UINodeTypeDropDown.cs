@@ -68,8 +68,11 @@ namespace NodeController.GUI {
             }
         }
 
+        UIPanel root_;
         public override void Start() {
             base.Start();
+            root_ = GetRootContainer() as UIPanel;
+
         }
 
         public NodeTypeT SelectedItem {
@@ -86,12 +89,12 @@ namespace NodeController.GUI {
 
         public void Apply() {
             if(VERBOSE)Log.Debug("UINodeTypeDropDown.Apply called()\n" + Environment.StackTrace);
-            NodeData data = UINodeControllerPanel.Instance.NodeData;
+            NodeData data = (root_ as UINodeControllerPanel).NodeData;
             if (data == null) return;
             data.NodeType = SelectedItem;
             Assert(!refreshing_, "!refreshing_");
             data.Refresh();
-            UINodeControllerPanel.Instance.Refresh();
+            (root_ as IDataControllerUI).Refresh();
         }
 
         // protection against unncessary apply/refresh/infinite recursion.
@@ -99,7 +102,7 @@ namespace NodeController.GUI {
 
         public void Repopulate() {
             if (VERBOSE) Log.Debug("UINodeTypeDropDown.Repopulate called()" + Environment.StackTrace);
-            NodeData data = UINodeControllerPanel.Instance.NodeData;
+            NodeData data = (root_ as UINodeControllerPanel).NodeData;
             items = null;
             foreach (NodeTypeT nodeType in Enum.GetValues(typeof(NodeTypeT))) {
                 if (data.CanChangeTo(nodeType)) {
@@ -111,7 +114,7 @@ namespace NodeController.GUI {
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
-            NodeData data = UINodeControllerPanel.Instance.NodeData;
+            NodeData data = (root_ as UINodeControllerPanel).NodeData;
             if (data == null) {
                 Disable();
                 return;
