@@ -60,7 +60,7 @@ namespace NodeController.GUI {
             }
         }
 
-        protected UIAutoSizePanel AddPanel() {
+        protected virtual UIAutoSizePanel AddPanel() {
             int pad_horizontal = 10;
             int pad_vertical = 5;
             UIAutoSizePanel panel = AddUIComponent<UIAutoSizePanel>();

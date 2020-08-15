@@ -1,9 +1,7 @@
 namespace NodeController.Tool {
     using ColossalFramework.UI;
     using UnityEngine;
-    using System;
     using KianCommons;
-    using static KianCommons.HelpersExtensions;
 
     public abstract class KianToolBase : ToolBase
     {
@@ -165,6 +163,36 @@ namespace NodeController.Tool {
                 }
             }
             return minSegId;
+        }
+
+        private static float prev_H = 0f;
+        private static float prev_H_Fixed;
+
+        /// <summary>Maximum error of HitPos field.</summary>
+        internal const float MAX_HIT_ERROR = 2.5f;
+
+        /// <summary>
+        /// Calculates accurate vertical element of raycast hit position.
+        /// </summary>
+        internal float GetAccurateHitHeight() {
+            // cache result.
+            float current_hitH = raycastOutput.m_hitPos.y;
+            if (KianCommons.Math.MathUtil.EqualAprox(current_hitH, prev_H,1e-12f)) {
+                return prev_H_Fixed;
+            }
+            prev_H = current_hitH;
+
+            if (HoveredSegmentId.ToSegment().GetClosestLanePosition(
+                raycastOutput.m_hitPos,
+                NetInfo.LaneType.All,
+                VehicleInfo.VehicleType.All,
+                out Vector3 pos,
+                out uint laneId,
+                out int laneIndex,
+                out float laneOffset)) {
+                return prev_H_Fixed = pos.y;
+            }
+            return prev_H_Fixed = current_hitH + 0.5f;
         }
 
         #endregion

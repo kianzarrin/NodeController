@@ -4,12 +4,11 @@ namespace NodeController.GUI {
     using UnityEngine;
     using static KianCommons.HelpersExtensions;
     using KianCommons;
-    using KianCommons.UI;
 
     public class UIResetButton : UIButton, IDataControllerUI {
         public static UIResetButton Instance { get; private set; }
 
-        UIPanel root_;
+        UIPanelBase root_;
         public override void Awake() {
             base.Awake();
             Instance = this;
@@ -31,7 +30,10 @@ namespace NodeController.GUI {
         public override void Start() {
             base.Start();
             width = parent.width;
-            root_ = GetRootContainer() as UIPanel;
+            root_ = GetRootContainer() as UIPanelBase;
+            if (root_ is UINodeControllerPanel ncpanel)
+                tooltip += "including segment ends.";
+
         }
 
         protected override void OnClick(UIMouseEventParameter p) {
@@ -49,7 +51,7 @@ namespace NodeController.GUI {
                 secpanel.SegmentEndData?.ResetToDefault();
 
             Assert(!refreshing_, "!refreshing_");
-            (root_ as IDataControllerUI).Refresh();
+            root_.Refresh();
         }
 
         // protection against unncessary apply/refresh/infinite recursion.

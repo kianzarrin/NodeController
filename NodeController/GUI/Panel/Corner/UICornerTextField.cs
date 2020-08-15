@@ -23,7 +23,7 @@ namespace NodeController.GUI {
         public override void Awake() {
             base.Awake();
             atlas = TextureUtil.GetAtlas("Ingame");
-            size = new Vector2(50, 20); // overwrite this to fit desired size.
+            size = UISegmentEndControllerPanel.CELL_SIZE;
             padding = new RectOffset(4, 4, 3, 3);
             builtinKeyNavigation = true;
             isInteractive = true;
@@ -39,6 +39,7 @@ namespace NodeController.GUI {
             textScale = 0.9f;
             useDropShadow = true;
             text = "0";
+            tooltip = "mousewheal => increment.\n" + "shift + mousewheal => large increment.";
         }
 
         public override void Start() {
@@ -56,7 +57,8 @@ namespace NodeController.GUI {
 
         protected override void OnMouseWheel(UIMouseEventParameter p) {
             base.OnMouseWheel(p);
-            Value += p.wheelDelta;
+            float ratio = HelpersExtensions.ShiftIsPressed ? 1f: 0.2f;
+            Value += p.wheelDelta*ratio;
         }
 
         public bool TryGetValue(out float value) {

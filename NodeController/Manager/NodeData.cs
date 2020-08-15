@@ -9,6 +9,7 @@ namespace NodeController {
     using UnityEngine;
     using TernaryBool = CSUtil.Commons.TernaryBool;
     using Log = KianCommons.Log;
+    using System.Collections.Generic;
 
     public enum NodeTypeT {
         Middle,
@@ -201,19 +202,28 @@ namespace NodeController {
             Refresh();
         }
 
-        public bool IsDefault() {
-            bool ret = NodeType == DefaultNodeType;
-            for (int i = 0; i < 8 && ret == true; ++i) {
+        public IEnumerable<SegmentEndData> IterateSegmentEndDatas() {
+            for (int i = 0; i < 8; ++i) {
                 ushort segmentID = Node.GetSegment(i);
                 if (segmentID == 0) continue;
-                var segEnd = SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: NodeID);
-                ret &= segEnd == null || segEnd.IsDefault();
+                yield return SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: NodeID);
+            }
+        }
+
+        public bool IsDefault() {
+            bool ret = NodeType == DefaultNodeType;
+            foreach(var segEnd in IterateSegmentEndDatas()) { 
+                bool isDefault = segEnd == null || segEnd.IsDefault();
+                if (!isDefault)
+                    return false;
             }
             return ret;
         }
 
         public void ResetToDefault() {
             NodeType = DefaultNodeType;
+            foreach (var segEnd in IterateSegmentEndDatas())
+                segEnd?.ResetToDefault();
             NetManager.instance.UpdateNode(NodeID);
         }
 

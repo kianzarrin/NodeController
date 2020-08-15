@@ -79,7 +79,7 @@
     </Reference>
     <Reference Include="MoveItIntegration">
       <HintPath>..\libs\MoveItIntegration.dll</HintPath>
-      <Private>false</Private>
+      <Private>true</Private>
     </Reference>
     <Reference Include="TMPE.API">
       <HintPath>..\libs\TMPE.API.dll</HintPath>

@@ -13,6 +13,7 @@ namespace NodeController {
         // intrinsic
         public ushort NodeID;
         public ushort SegmentID;
+        public bool IsStartNode => NetUtil.IsStartNode(segmentId: SegmentID, nodeId: NodeID);
 
         public override string ToString() {
             return GetType().Name + $"(segment:{SegmentID} node:{NodeID})";
@@ -33,6 +34,7 @@ namespace NodeController {
         public bool HasPedestrianLanes;
         public float CurveRaduis0;
         public int PedestrianLaneCount;
+        public Vector3 CachedLeftCornerPos, CachedLeftCornerDir, CachedRightCornerPos, CachedRightCornerDir;// left and right is when you go away form junction
 
         // Configurable
         public float CornerOffset;
@@ -42,7 +44,7 @@ namespace NodeController {
         public bool NoJunctionTexture;
         public bool NoJunctionProps; // excluding TL
         public bool NoTLProps;
-        public Vector3 LeftCornerPos, LeftCornerDir, RightCornerPos, RightCornerDir;
+        public Vector3 DeltaLeftCornerPos, DeltaLeftCornerDir, DeltaRightCornerPos, DeltaRightCornerDir; // left and right is when you go away form junction
 
 
         // shortcuts
@@ -59,9 +61,18 @@ namespace NodeController {
             FlatJunctions = DefaultFlatJunctions;
         }
 
+
         public void Calculate() {
             DefaultFlags = Segment.m_flags;
             PedestrianLaneCount = Info.CountPedestrianLanes();
+
+            // left and right is when you go away form junction
+            // both in SegmentEndData Cahced* and NetSegment.CalculateCorner() 
+            Segment.CalculateCorner(SegmentID, true, IsStartNode, leftSide: true,
+                cornerPos: out CachedLeftCornerPos, cornerDirection: out CachedLeftCornerDir, out _);
+            Segment.CalculateCorner(SegmentID, true, IsStartNode, leftSide: false,
+                cornerPos: out CachedRightCornerPos, cornerDirection: out CachedRightCornerDir, out _);
+
             Refresh();
         }
 
@@ -73,10 +84,10 @@ namespace NodeController {
             ret &= NoJunctionTexture == false;
             ret &= NoJunctionProps == false;
             ret &= NoTLProps == false;
-            ret &= RightCornerPos == Vector3.zero;
-            ret &= RightCornerDir == Vector3.zero;
-            ret &= LeftCornerPos == Vector3.zero;
-            ret &= LeftCornerDir == Vector3.zero;
+            ret &= DeltaRightCornerPos == Vector3.zero;
+            ret &= DeltaRightCornerDir == Vector3.zero;
+            ret &= DeltaLeftCornerPos == Vector3.zero;
+            ret &= DeltaLeftCornerDir == Vector3.zero;
 
             return ret;
         }
@@ -89,7 +100,7 @@ namespace NodeController {
             NoJunctionTexture = false;
             NoJunctionProps = false;
             NoTLProps = false;
-            RightCornerDir = RightCornerDir = LeftCornerPos = LeftCornerDir = default;
+            DeltaRightCornerDir = DeltaRightCornerDir = DeltaLeftCornerPos = DeltaRightCornerPos = default;
             NetManager.instance.UpdateNode(NodeID);
         }
 
@@ -133,11 +144,11 @@ namespace NodeController {
             Vector3 deltaDir;
 
             if (leftSide) {
-                deltaPos = TransformCoordinates(LeftCornerPos, leftwardDir, Vector3.up, forwardDir);
-                deltaDir = TransformCoordinates(LeftCornerDir, leftwardDir, Vector3.up, forwardDir);
+                deltaPos = TransformCoordinates(DeltaLeftCornerPos, leftwardDir, Vector3.up, forwardDir);
+                deltaDir = TransformCoordinates(DeltaLeftCornerDir, leftwardDir, Vector3.up, forwardDir);
             } else {
-                deltaPos = TransformCoordinates(RightCornerPos, rightwardDir, Vector3.up, forwardDir);
-                deltaDir = TransformCoordinates(RightCornerDir, rightwardDir, Vector3.up, forwardDir);
+                deltaPos = TransformCoordinates(DeltaRightCornerPos, rightwardDir, Vector3.up, forwardDir);
+                deltaDir = TransformCoordinates(DeltaRightCornerDir, rightwardDir, Vector3.up, forwardDir);
             }
             cornerPos += deltaPos;
             cornerDir += deltaDir;

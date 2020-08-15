@@ -24,7 +24,7 @@ namespace NodeController.GUI {
         public ushort SegmentID { get; private set; }
         public ushort NodeID { get; private set; }
         public bool StartNode => NetUtil.IsStartNode(segmentId: SegmentID, nodeId: NodeID);
-        static Vector2 CELL_SIZE = new Vector2(50, 20);
+        public static Vector2 CELL_SIZE = new Vector2(100, 20);
 
         public SegmentEndData SegmentEndData {
             get {
@@ -64,8 +64,12 @@ namespace NodeController.GUI {
                 var checkBox = panel.AddUIComponent<UIFlatJunctionsCheckbox>();
                 Controls.Add(checkBox);
             }
-
-            MakeCornerTable(this);
+            {
+                var panel = AddPanel();
+                panel.padding = new RectOffset(10, 10, 5, 5);
+                panel.AutoSize2 = true;
+                MakeCornerTable(panel);
+            }
 
             AddPanel().name = "Space";
 
@@ -81,70 +85,21 @@ namespace NodeController.GUI {
                 var button = panel.AddUIComponent<UIResetButton>();
                 Controls.Add(button);
             }
+
+            AutoSize2 = true;
         }
 
         public void MakeCornerTable(UIPanel container) {
             {
-                var label = container.AddUIComponent<UILabel>();
-                label.text = "Right corner";
-
-                UIAutoSizePanel table = AddUIComponent<UIAutoSizePanel>();
-                table.name = "table_right";
-                table.autoLayoutDirection = LayoutDirection.Vertical;
-                table.AutoSize2 = true;
-
-                // header :  axis: outward, vertical, backward
-                var row1 = AddTableRow(table);
-                AddTableLable(row1, "axis:");
-                AddTableLable(row1, "outward");
-                AddTableLable(row1, "vertical");
-                AddTableLable(row1, "backward");
-
-                var row2 = AddTableRow(table);
-                AddTableLable(row2, "pos:");
-
-                var posx = row2.AddUIComponent<UICornerTextField>();
-                posx.GetData = () => SegmentEndData.RightCornerPos.x;
-                posx.SetData = val => SegmentEndData.RightCornerPos.x = val;
-                Controls.Add(posx);
-
-                var posy = row2.AddUIComponent<UICornerTextField>();
-                posy.GetData = () => SegmentEndData.RightCornerPos.y;
-                posy.SetData = val => SegmentEndData.RightCornerPos.y = val;
-                Controls.Add(posy);
-
-                var posz = row2.AddUIComponent<UICornerTextField>();
-                posz.GetData = () => SegmentEndData.RightCornerPos.z;
-                posz.SetData = val => SegmentEndData.RightCornerPos.z = val;
-                Controls.Add(posz);
-
-                var row3 = AddTableRow(table);
-                AddTableLable(row3, "dir:");
-                var dirx = row3.AddUIComponent<UICornerTextField>();
-                dirx.GetData = () => SegmentEndData.RightCornerDir.x;
-                dirx.SetData = val => SegmentEndData.RightCornerDir.x = val;
-                Controls.Add(dirx);
-
-                var diry = row3.AddUIComponent<UICornerTextField>();
-                diry.GetData = () => SegmentEndData.RightCornerDir.y;
-                diry.SetData = val => SegmentEndData.RightCornerDir.y = val;
-                Controls.Add(diry);
-
-                var dirz = row3.AddUIComponent<UICornerTextField>();
-                dirz.GetData = () => SegmentEndData.RightCornerDir.z;
-                dirz.SetData = val => SegmentEndData.RightCornerDir.z = val;
-                Controls.Add(dirz);
-            }
-
-            {
-                var label = container.AddUIComponent<UILabel>();
-                label.text = "Left corner";
-
-                UIAutoSizePanel table = AddUIComponent<UIAutoSizePanel>();
+                UIAutoSizePanel table = container.AddUIComponent<UIAutoSizePanel>();
                 table.name = "table_left";
                 table.autoLayoutDirection = LayoutDirection.Vertical;
                 table.AutoSize2 = true;
 
+                var label = table.AddUIComponent<UILabel>();
+                label.text = "Left corner";
+
+
                 // header :  axis: outward, vertical, backward
                 var row1 = AddTableRow(table);
                 AddTableLable(row1, "axis:");
@@ -156,35 +111,87 @@ namespace NodeController.GUI {
                 AddTableLable(row2, "pos:");
 
                 var posx = row2.AddUIComponent<UICornerTextField>();
-                posx.GetData = () => SegmentEndData.LeftCornerPos.x;
-                posx.SetData = val => SegmentEndData.LeftCornerPos.x = val;
+                posx.GetData = () => SegmentEndData.DeltaRightCornerPos.x;
+                posx.SetData = val => SegmentEndData.DeltaRightCornerPos.x = val;
                 Controls.Add(posx);
 
                 var posy = row2.AddUIComponent<UICornerTextField>();
-                posy.GetData = () => SegmentEndData.LeftCornerPos.y;
-                posy.SetData = val => SegmentEndData.LeftCornerPos.y = val;
+                posy.GetData = () => SegmentEndData.DeltaRightCornerPos.y;
+                posy.SetData = val => SegmentEndData.DeltaRightCornerPos.y = val;
                 Controls.Add(posy);
 
                 var posz = row2.AddUIComponent<UICornerTextField>();
-                posz.GetData = () => SegmentEndData.LeftCornerPos.z;
-                posz.SetData = val => SegmentEndData.LeftCornerPos.z = val;
+                posz.GetData = () => SegmentEndData.DeltaRightCornerPos.z;
+                posz.SetData = val => SegmentEndData.DeltaRightCornerPos.z = val;
                 Controls.Add(posz);
 
                 var row3 = AddTableRow(table);
                 AddTableLable(row3, "dir:");
                 var dirx = row3.AddUIComponent<UICornerTextField>();
-                dirx.GetData = () => SegmentEndData.LeftCornerDir.x;
-                dirx.SetData = val => SegmentEndData.LeftCornerDir.x = val;
+                dirx.GetData = () => SegmentEndData.DeltaRightCornerDir.x;
+                dirx.SetData = val => SegmentEndData.DeltaRightCornerDir.x = val;
                 Controls.Add(dirx);
 
                 var diry = row3.AddUIComponent<UICornerTextField>();
-                diry.GetData = () => SegmentEndData.LeftCornerDir.y;
-                diry.SetData = val => SegmentEndData.LeftCornerDir.y = val;
+                diry.GetData = () => SegmentEndData.DeltaRightCornerDir.y;
+                diry.SetData = val => SegmentEndData.DeltaRightCornerDir.y = val;
                 Controls.Add(diry);
 
                 var dirz = row3.AddUIComponent<UICornerTextField>();
-                dirz.GetData = () => SegmentEndData.LeftCornerDir.z;
-                dirz.SetData = val => SegmentEndData.LeftCornerDir.z = val;
+                dirz.GetData = () => SegmentEndData.DeltaRightCornerDir.z;
+                dirz.SetData = val => SegmentEndData.DeltaRightCornerDir.z = val;
+                Controls.Add(dirz);
+            }
+
+            {
+                UIAutoSizePanel table = container.AddUIComponent<UIAutoSizePanel>();
+                table.name = "table_right";
+                table.autoLayoutDirection = LayoutDirection.Vertical;
+                table.AutoSize2 = true;
+
+                var label = table.AddUIComponent<UILabel>();
+                label.text = "Right corner";
+
+                // header :  axis: outward, vertical, backward
+                var row1 = AddTableRow(table);
+                AddTableLable(row1, "axis:");
+                AddTableLable(row1, "outward");
+                AddTableLable(row1, "vertical");
+                AddTableLable(row1, "backward");
+
+                var row2 = AddTableRow(table);
+                AddTableLable(row2, "pos:");
+
+                var posx = row2.AddUIComponent<UICornerTextField>();
+                posx.GetData = () => SegmentEndData.DeltaLeftCornerPos.x;
+                posx.SetData = val => SegmentEndData.DeltaLeftCornerPos.x = val;
+                Controls.Add(posx);
+
+                var posy = row2.AddUIComponent<UICornerTextField>();
+                posy.GetData = () => SegmentEndData.DeltaLeftCornerPos.y;
+                posy.SetData = val => SegmentEndData.DeltaLeftCornerPos.y = val;
+                Controls.Add(posy);
+
+                var posz = row2.AddUIComponent<UICornerTextField>();
+                posz.GetData = () => SegmentEndData.DeltaLeftCornerPos.z;
+                posz.SetData = val => SegmentEndData.DeltaLeftCornerPos.z = val;
+                Controls.Add(posz);
+
+                var row3 = AddTableRow(table);
+                AddTableLable(row3, "dir:");
+                var dirx = row3.AddUIComponent<UICornerTextField>();
+                dirx.GetData = () => SegmentEndData.DeltaLeftCornerDir.x;
+                dirx.SetData = val => SegmentEndData.DeltaLeftCornerDir.x = val;
+                Controls.Add(dirx);
+
+                var diry = row3.AddUIComponent<UICornerTextField>();
+                diry.GetData = () => SegmentEndData.DeltaLeftCornerDir.y;
+                diry.SetData = val => SegmentEndData.DeltaLeftCornerDir.y = val;
+                Controls.Add(diry);
+
+                var dirz = row3.AddUIComponent<UICornerTextField>();
+                dirz.GetData = () => SegmentEndData.DeltaLeftCornerDir.z;
+                dirz.SetData = val => SegmentEndData.DeltaLeftCornerDir.z = val;
                 Controls.Add(dirz);
             }
         }
