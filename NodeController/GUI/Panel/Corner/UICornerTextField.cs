@@ -110,9 +110,8 @@ namespace NodeController.GUI {
         }
 
         public void Refresh() {
-            Log.Debug($"UICornerTextField.Refresh()called");
+            if(VERBOSE)Log.Debug($"UICornerTextField.Refresh()called");
             refreshing_ = true;
-            resetButton_?.Refresh();
 
             if (root_ is UINodeControllerPanel ncpanel)
                 RefreshNode();
@@ -123,6 +122,8 @@ namespace NodeController.GUI {
             Container.isVisible = isEnabled;
             Container.Invalidate();
             Invalidate();
+
+            resetButton_?.Refresh();
             refreshing_ = false;
         }
 
@@ -140,5 +141,10 @@ namespace NodeController.GUI {
             isEnabled = data.CanModifyOffset();
         }
 
+        public void RefreshValueOnly() {
+            refreshing_ = true;
+            Value = GetData();
+            refreshing_ = false;
+        }
     }
 }

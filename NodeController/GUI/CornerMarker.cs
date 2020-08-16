@@ -1,23 +1,12 @@
 using NodeController.Tool;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
+using KianCommons;
 
 namespace NodeController.GUI {
     class CornerMarker {
-        public ushort SegmentID;
-        public ushort NodeID;
-        public bool Left; // going away from the junction.
-
-        public NodeData NodeData => NodeManager.Instance.buffer[NodeID];
-        public SegmentEndData SegmentEndData => SegmentEndManager.Instance.GetAt(segmentID: SegmentID, nodeID: NodeID);
-        public Vector3 Pos => Left ? SegmentEndData.CachedLeftCornerPos : SegmentEndData.CachedRightCornerPos;
-
         internal Vector3 TerrainPosition; // projected on terrain
         internal Vector3 Position; // original height.
-        internal static float Radius = 1f;
+        internal static float Radius = 2.5f;
 
         /// <summary>
         ///  Intersects mouse ray with marker bounds.

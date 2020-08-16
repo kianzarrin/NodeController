@@ -35,6 +35,7 @@ namespace NodeController {
         public float CurveRaduis0;
         public int PedestrianLaneCount;
         public Vector3 CachedLeftCornerPos, CachedLeftCornerDir, CachedRightCornerPos, CachedRightCornerDir;// left and right is when you go away form junction
+        public Vector3 LeftCornerDir0, RightCornerDir0, LeftCornerPos0,RightCornerPos0;
 
         // Configurable
         public float CornerOffset;
@@ -135,9 +136,18 @@ namespace NodeController {
         }
 
         /// <param name="leftSide">left side going away from the junction</param>
-        public void ModifyCorner(ref Vector3 cornerPos, ref Vector3 cornerDir, bool leftSide) {
-            Vector3 leftwardDir = Vector3.Cross(Vector3.up, cornerDir).normalized; // going away from the junction
-            Vector3 rightwardDir = -leftwardDir;
+        public void ApplyCornerAdjustments(ref Vector3 cornerPos, ref Vector3 cornerDir, bool leftSide) {
+            if (leftSide) {
+                LeftCornerDir0 = cornerDir;
+                LeftCornerPos0 = cornerPos;
+            } else {
+                RightCornerDir0 = cornerDir;
+                RightCornerPos0 = cornerPos;
+            }
+
+
+            Vector3 rightwardDir = Vector3.Cross(Vector3.up, cornerDir).normalized; // going away from the junction
+            Vector3 leftwardDir = -rightwardDir;
             Vector3 forwardDir = new Vector3(cornerDir.x, 0, cornerDir.z).normalized; // going away from the junction
 
             Vector3 deltaPos;
@@ -159,6 +169,38 @@ namespace NodeController {
         /// </summary>
         public static Vector3 TransformCoordinates(Vector3 v, Vector3 x, Vector3 y, Vector3 z) 
             => v.x * x + v.y * y + v.z * z;
+
+        /// <returns>if position was changed</returns>
+        public bool MoveLeftCornerToAbsolutePos(Vector3 pos) {
+            Vector3 rightwardDir = Vector3.Cross(Vector3.up, LeftCornerDir0).normalized; // going away from the junction
+            Vector3 leftwardDir = -rightwardDir;
+            Vector3 forwardDir = new Vector3(LeftCornerDir0.x, 0, LeftCornerDir0.z).normalized; // going away from the junction
+            bool ret = CachedLeftCornerPos != pos;
+            CachedLeftCornerPos = pos;
+            DeltaLeftCornerPos = ReverseTransformCoordinats(pos-LeftCornerPos0, leftwardDir, Vector3.up, forwardDir);
+            Refresh();
+            return ret;
+        }
+
+        /// <bool>if position was changed</returns>
+        public bool MoveRightCornerToAbsolutePos(Vector3 pos) {
+            Vector3 rightwardDir = Vector3.Cross(Vector3.up, RightCornerDir0).normalized; // going away from the junction
+            Vector3 leftwardDir = -rightwardDir;
+            Vector3 forwardDir = new Vector3(RightCornerDir0.x, 0, RightCornerDir0.z).normalized; // going away from the junction
+            bool ret = CachedRightCornerPos != pos;
+            CachedRightCornerPos = pos;
+            DeltaRightCornerPos = ReverseTransformCoordinats(pos-RightCornerPos0, rightwardDir, Vector3.up, forwardDir);
+            Refresh();
+            return ret;
+        }
+
+        public static Vector3 ReverseTransformCoordinats(Vector3 v, Vector3 x, Vector3 y, Vector3 z) {
+            Vector3 ret = default;
+            ret.x = Vector3.Dot(v, x);
+            ret.y = Vector3.Dot(v, y);
+            ret.z = Vector3.Dot(v, z);
+            return ret;
+        }
 
         #region External Mods
         public TernaryBool ShouldHideCrossingTexture() {

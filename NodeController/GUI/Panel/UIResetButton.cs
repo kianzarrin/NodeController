@@ -66,7 +66,6 @@ namespace NodeController.GUI {
                 RefreshSegmentEnd();
 
             parent.isVisible = isVisible = true;
-            parent.Invalidate();
             Invalidate();
             refreshing_ = false;
         }

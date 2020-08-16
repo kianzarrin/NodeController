@@ -43,7 +43,7 @@ namespace NodeController.Patches {
             }
 
             // manual adjustments:
-            data?.ModifyCorner(ref cornerPos, ref cornerDirection, leftSide);
+            data?.ApplyCornerAdjustments(ref cornerPos, ref cornerDirection, leftSide);
         }
     }
 }

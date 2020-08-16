@@ -71,6 +71,8 @@ namespace NodeController.Tool {
         public ushort HoveredSegmentId { get; private set; } = 0;
         protected bool IsHoverValid { get;private set; }
 
+
+        // simulation thread
         protected bool DetermineHoveredElements()
         {
             HoveredSegmentId = 0;
@@ -195,6 +197,23 @@ namespace NodeController.Tool {
             return prev_H_Fixed = current_hitH + 0.5f;
         }
 
+        internal Vector3 RaycastMouseLocation() {
+            RaycastInput input = new RaycastInput(m_mouseRay, Camera.main.farClipPlane) {
+                m_ignoreTerrain = false
+            };
+            RayCast(input, out RaycastOutput output);
+
+            return output.m_hitPos;
+        }
+
+        internal Vector3 RaycastMouseLocation(float y) {
+            RaycastInput input = new RaycastInput(m_mouseRay, Camera.main.farClipPlane) {
+                m_ignoreTerrain = false
+            };
+            RayCast(input, out RaycastOutput output);
+            var pos = output.m_hitPos;
+            return new Vector3(pos.x, y, pos.z);
+        }
         #endregion
     }
 }

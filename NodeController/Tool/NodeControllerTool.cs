@@ -1,13 +1,12 @@
 namespace NodeController.Tool {
-    using System;
-    using UnityEngine;
     using ColossalFramework;
-    using System.Threading;
-    using static KianCommons.UI.RenderUtil;
-    using KianCommons.UI;
     using KianCommons;
-    using static KianCommons.HelpersExtensions;
+    using KianCommons.UI;
     using NodeController.GUI;
+    using System.Threading;
+    using UnityEngine;
+    using static KianCommons.HelpersExtensions;
+    using static KianCommons.UI.RenderUtil;
 
     public sealed class NodeControllerTool : KianToolBase {
         public static readonly SavedInputKey ActivationShortcut = new SavedInputKey(
@@ -17,7 +16,7 @@ namespace NodeController.Tool {
             true);
 
         public static readonly SavedBool SnapToMiddleNode = new SavedBool(
-            "SnapToMiddleNode", Settings.FileName, def:false, true);
+            "SnapToMiddleNode", Settings.FileName, def: false, true);
 
         NodeControllerButton Button => NodeControllerButton.Instace;
         UINodeControllerPanel NCPanel;
@@ -33,6 +32,8 @@ namespace NodeController.Tool {
 
         private CursorInfo CursorInsert, CursorInsertCrossing,
             CursorEdit, CursorSearching, CursorError;
+
+        ref SegmentEndData SelectedSegmentEndData => ref SegmentEndManager.Instance.GetAt(segmentID: SelectedSegmentID, nodeID: SelectedNodeID);
 
         protected override void Awake() {
             Log.Debug("NodeControllerTool.Awake() called");
@@ -127,6 +128,25 @@ namespace NodeController.Tool {
 
         override public void SimulationStep() {
             base.SimulationStep();
+            if (CornerFocusMode) {
+                SegmentEndData segEnd = SelectedSegmentEndData;
+                if (SelectedSegmentEndData == null) return;
+                bool positionChanged = false;
+                if (leftCornerSelected_) {
+                    var pos = RaycastMouseLocation(segEnd.CachedLeftCornerPos.y);
+                    positionChanged = segEnd.MoveLeftCornerToAbsolutePos(pos);
+                } else if (rightCornerSelected_) {
+                    var pos = RaycastMouseLocation(segEnd.CachedRightCornerPos.y);
+                    positionChanged = segEnd.MoveRightCornerToAbsolutePos(pos);
+                }
+                if (positionChanged) {
+                    SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
+                        SECPanel.RefreshTableValuesOnly();
+                    });
+                }
+                return;
+            }
+
 
             ServiceTypeGuide optionsNotUsed = Singleton<NetManager>.instance.m_optionsNotUsed;
             if (optionsNotUsed != null && !optionsNotUsed.m_disabled) {
@@ -260,8 +280,37 @@ namespace NodeController.Tool {
             return nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Junction);
         }
 
+        CornerMarker GetCornerMarker(bool left) {
+            var segEnd = SelectedSegmentEndData;
+            if (segEnd == null) return null;
+            var pos = left? segEnd.CachedLeftCornerPos: segEnd.CachedRightCornerPos;
+            float terrainY = Singleton<TerrainManager>.instance.SampleDetailHeightSmooth(pos);
+            var ret = new CornerMarker {
+                Position = pos,
+                TerrainPosition = new Vector3(pos.x, terrainY, pos.z),
+            };
+            return ret;
+        }
+
+
+        bool leftCornerSelected_ = false, leftCornerHovered_ = false;
+        bool rightCornerSelected_ = false, rightCornerHovered_ = false;
+        bool CornerFocusMode =>
+            SelectedSegmentID != 0 &&
+            (leftCornerHovered_ | rightCornerHovered_ | leftCornerSelected_ | rightCornerSelected_);
+
+
+
         public override void RenderOverlay(RenderManager.CameraInfo cameraInfo) {
             base.RenderOverlay(cameraInfo);
+
+            if (SelectedSegmentID != 0) {
+                GetCornerMarker(left: true)?.RenderOverlay(cameraInfo, Color.red, leftCornerHovered_, leftCornerSelected_);
+                GetCornerMarker(left: false)?.RenderOverlay(cameraInfo, Color.red, rightCornerHovered_, rightCornerSelected_);
+            }
+            if (CornerFocusMode)
+                return;
+
 
             if (SelectedSegmentID != 0 && SelectedNodeID != 0) {
                 DrawCutSegmentEnd(
@@ -285,8 +334,8 @@ namespace NodeController.Tool {
             if (!m_mouseRayValid || handleHovered_)
                 return;
 
-            if(AltIsPressed) {
-                if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)){  
+            if (AltIsPressed) {
+                if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)) {
                     DrawCutSegmentEnd(
                         cameraInfo,
                         HoveredSegmentId,
@@ -314,9 +363,35 @@ namespace NodeController.Tool {
         }
 
         protected override void OnToolGUI(Event e) {
-            base.OnToolGUI(e);
+            base.OnToolGUI(e); // calls on click events on mosue up
+            CornersGUI(e);
+            if (CornerFocusMode) return;
             DrawSigns();
         }
+
+        void CornersGUI(Event e) {
+            bool mouseDown = e.type == EventType.mouseDown && e.button == 0;
+            bool mouseUp = e.type == EventType.mouseUp && e.button == 0;
+
+            if (e.type == EventType.mouseDown && e.button == 0) {
+                leftCornerSelected_ = leftCornerHovered_ = GetCornerMarker(left: true).IntersectRay();
+            } else if (mouseUp) {
+                leftCornerSelected_ = false;
+                leftCornerHovered_ = GetCornerMarker(left: true).IntersectRay();
+            } else {
+                leftCornerHovered_ = leftCornerSelected_ || GetCornerMarker(left: true).IntersectRay();
+            }
+            if (mouseDown) {
+                rightCornerSelected_ = rightCornerHovered_ = GetCornerMarker(left: false).IntersectRay();
+            } else if (mouseUp) {
+                rightCornerSelected_ = false;
+                rightCornerHovered_ = GetCornerMarker(left: false).IntersectRay();
+            } else {
+                rightCornerHovered_ = rightCornerSelected_ || GetCornerMarker(left: false).IntersectRay();
+            }
+        }
+
+
 
         bool handleHovered_;
         private void DrawSigns() {
@@ -338,7 +413,7 @@ namespace NodeController.Tool {
         }
 
         protected override void OnPrimaryMouseClicked() {
-            if (!IsHoverValid || handleHovered_)
+            if (!IsHoverValid || handleHovered_ || CornerFocusMode)
                 return;
             Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
             if (AltIsPressed) {

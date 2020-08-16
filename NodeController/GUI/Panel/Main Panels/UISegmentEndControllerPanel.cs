@@ -2,9 +2,11 @@ namespace NodeController.GUI {
     using ColossalFramework.UI;
     using KianCommons;
     using KianCommons.UI;
+    using System.Linq;
     using UnityEngine;
 
     public class UISegmentEndControllerPanel : UIPanelBase {
+        UIResetButton reset_;
         #region Instanciation
         public static UISegmentEndControllerPanel Instance { get; private set; }
 
@@ -82,8 +84,8 @@ namespace NodeController.GUI {
 
             {
                 var panel = AddPanel();
-                var button = panel.AddUIComponent<UIResetButton>();
-                Controls.Add(button);
+                reset_ = panel.AddUIComponent<UIResetButton>();
+                Controls.Add(reset_);
             }
 
             AutoSize2 = true;
@@ -229,5 +231,12 @@ namespace NodeController.GUI {
             Hide();
         }
 
+        public void RefreshTableValuesOnly() {
+            foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>()) {
+                if (control is UICornerTextField cornerTextField)
+                    cornerTextField?.RefreshValueOnly();
+            }
+            reset_?.Refresh();
+        }
     }
 }
