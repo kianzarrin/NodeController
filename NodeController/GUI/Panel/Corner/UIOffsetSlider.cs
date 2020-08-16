@@ -68,8 +68,6 @@ namespace NodeController.GUI {
             else if( root_ is UISegmentEndControllerPanel secpanel)
                 ApplySegmentEnd();
 
-            tooltip = value.ToString();
-            RefreshTooltip();
             resetButton_?.Refresh();
             Refresh();
         }
@@ -92,6 +90,10 @@ namespace NodeController.GUI {
         bool refreshing_ = false;
         public void Refresh() {
             refreshing_ = true;
+
+            tooltip = value.ToString();
+            RefreshTooltip();
+
             if (root_ is UINodeControllerPanel ncpanel)
                 RefreshNode();
             else if (root_ is UISegmentEndControllerPanel secpanel)
