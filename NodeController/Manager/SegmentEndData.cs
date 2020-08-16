@@ -7,6 +7,8 @@ namespace NodeController {
     using Log = KianCommons.Log;
     using TrafficManager.Traffic.Impl;
     using System.Drawing.Drawing2D;
+    using System.Runtime.Serialization;
+    using KianCommons.Math;
 
     [Serializable]
     public class SegmentEndData {
@@ -34,8 +36,8 @@ namespace NodeController {
         public bool HasPedestrianLanes;
         public float CurveRaduis0;
         public int PedestrianLaneCount;
-        public Vector3 CachedLeftCornerPos, CachedLeftCornerDir, CachedRightCornerPos, CachedRightCornerDir;// left and right is when you go away form junction
-        public Vector3 LeftCornerDir0, RightCornerDir0, LeftCornerPos0,RightCornerPos0;
+        public Vector3Serializable CachedLeftCornerPos, CachedLeftCornerDir, CachedRightCornerPos, CachedRightCornerDir;// left and right is when you go away form junction
+        public Vector3Serializable LeftCornerDir0, RightCornerDir0, LeftCornerPos0,RightCornerPos0;
 
         // Configurable
         public float CornerOffset;
@@ -45,7 +47,7 @@ namespace NodeController {
         public bool NoJunctionTexture;
         public bool NoJunctionProps; // excluding TL
         public bool NoTLProps;
-        public Vector3 DeltaLeftCornerPos, DeltaLeftCornerDir, DeltaRightCornerPos, DeltaRightCornerDir; // left and right is when you go away form junction
+        public Vector3Serializable DeltaLeftCornerPos, DeltaLeftCornerDir, DeltaRightCornerPos, DeltaRightCornerDir; // left and right is when you go away form junction
 
 
         // shortcuts
@@ -68,11 +70,17 @@ namespace NodeController {
             PedestrianLaneCount = Info.CountPedestrianLanes();
 
             // left and right is when you go away form junction
-            // both in SegmentEndData Cahced* and NetSegment.CalculateCorner() 
+            // both in SegmentEndData Cahced* and NetSegment.CalculateCorner()
+            
             Segment.CalculateCorner(SegmentID, true, IsStartNode, leftSide: true,
-                cornerPos: out CachedLeftCornerPos, cornerDirection: out CachedLeftCornerDir, out _);
+                cornerPos: out var lpos, cornerDirection: out var ldir, out _);
             Segment.CalculateCorner(SegmentID, true, IsStartNode, leftSide: false,
-                cornerPos: out CachedRightCornerPos, cornerDirection: out CachedRightCornerDir, out _);
+                cornerPos: out var rpos, cornerDirection: out var rdir, out _);
+
+            CachedLeftCornerPos = lpos;
+            CachedRightCornerPos = rpos;
+            CachedLeftCornerDir = ldir;
+            CachedRightCornerDir = rdir;
 
             Refresh();
         }

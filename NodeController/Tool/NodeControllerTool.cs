@@ -372,22 +372,26 @@ namespace NodeController.Tool {
         void CornersGUI(Event e) {
             bool mouseDown = e.type == EventType.mouseDown && e.button == 0;
             bool mouseUp = e.type == EventType.mouseUp && e.button == 0;
+            if (SelectedSegmentID == 0) {
+                leftCornerHovered_ = rightCornerHovered_ = leftCornerSelected_ = rightCornerSelected_ = false;
+                return;
+            }
 
             if (e.type == EventType.mouseDown && e.button == 0) {
-                leftCornerSelected_ = leftCornerHovered_ = GetCornerMarker(left: true).IntersectRay();
+                leftCornerSelected_ = leftCornerHovered_ = GetCornerMarker(left: true)?.IntersectRay() ?? false;
             } else if (mouseUp) {
                 leftCornerSelected_ = false;
                 leftCornerHovered_ = GetCornerMarker(left: true).IntersectRay();
             } else {
-                leftCornerHovered_ = leftCornerSelected_ || GetCornerMarker(left: true).IntersectRay();
+                leftCornerHovered_ = leftCornerSelected_ || (GetCornerMarker(left: true)?.IntersectRay() ?? false);
             }
             if (mouseDown) {
-                rightCornerSelected_ = rightCornerHovered_ = GetCornerMarker(left: false).IntersectRay();
+                rightCornerSelected_ = rightCornerHovered_ = GetCornerMarker(left: false)?.IntersectRay()??false;
             } else if (mouseUp) {
                 rightCornerSelected_ = false;
                 rightCornerHovered_ = GetCornerMarker(left: false).IntersectRay();
             } else {
-                rightCornerHovered_ = rightCornerSelected_ || GetCornerMarker(left: false).IntersectRay();
+                rightCornerHovered_ = rightCornerSelected_ || (GetCornerMarker(left: false)?.IntersectRay()??false);
             }
         }
 
