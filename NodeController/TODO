@@ -1,8 +1,14 @@
-- MoveIT BC support DONE
-- snap options. DONE
-- UnitedUI support. no real code change. just add the texture for the buttons. DONE
-- unflatten junctions
-- lod support
+- sava Vector3
+
+- IMT MoveIT NC to be compatible. (update IMT)
+- UnitedUI support.
+ - bug: its possible for two buttons to be active at the same time.
+
+- lock corners while dragging or using mousewheal
+- big hint box to give instrions and shortcuts.
 - corner offset to increase chances of train track connection.
+
+- lod support
+
 - fix the orientation of asym road
 - support for asymetric textures (not now)
