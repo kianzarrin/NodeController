@@ -2,9 +2,10 @@
  - bug: its possible for two buttons to be active at the same time.
 
 
-- !!!!fix uturn crossing node types.!!!
 
-
+- assertion fails in hide crossings : Exception: Assertion failed: isJunction | segmentID:27322 nodeID:32742
+   - its not a spam. only a few times. its probabely race condition. I also get blue textures for a moment when I am moving corner offset.
+   - this happened since when I introduce end node. so maybe I am setting the flags wrong.
 - lock corners while dragging or using mousewheal
 - big hint box to give instrions and shortcuts.
 - corner offset to increase chances of train track connection.

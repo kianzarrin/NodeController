@@ -314,6 +314,7 @@ namespace NodeController.Tool {
             if (CornerFocusMode)
                 return;
 
+            Color selectedColor = new Color32(225, 225, 225, 225);
 
             if (SelectedSegmentID != 0 && SelectedNodeID != 0) {
                 DrawCutSegmentEnd(
@@ -321,13 +322,13 @@ namespace NodeController.Tool {
                     SelectedSegmentID,
                     0.5f,
                     NetUtil.IsStartNode(segmentId: SelectedSegmentID, nodeId: SelectedNodeID),
-                    Color.white,
+                    selectedColor,
                     alpha: true);
                 ushort nodeID = SelectedSegmentID.ToSegment().GetOtherNode(SelectedNodeID);
                 if (nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle))
                     DrawNodeCircle(cameraInfo, Color.gray, nodeID, true);
             } else if (SelectedNodeID != 0) {
-                DrawNodeCircle(cameraInfo, Color.white, SelectedNodeID, false);
+                DrawNodeCircle(cameraInfo, selectedColor, SelectedNodeID, false);
                 foreach (var segmentID in NetUtil.IterateNodeSegments(SelectedNodeID)) {
                     ushort nodeID = segmentID.ToSegment().GetOtherNode(SelectedNodeID);
                     if (nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle))

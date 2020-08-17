@@ -254,7 +254,7 @@ namespace NodeController {
 
         public bool IsCSUR => NetUtil.IsCSUR(Info);
         public NetInfo Info => NodeID.ToNode().Info;
-        public bool EndNode() => NodeType != NodeTypeT.End;
+        public bool EndNode() => NodeType == NodeTypeT.End;
         public bool NeedMiddleFlag() => NodeType == NodeTypeT.Middle;
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
