@@ -1,5 +1,3 @@
-- lod support
-
 - UnitedUI support.
  - bug: its possible for two buttons to be active at the same time.
 
@@ -7,6 +5,7 @@
 - big hint box to give instrions and shortcuts.
 - corner offset to increase chances of train track connection.
 
-
 - fix the orientation of asym road
-- support for asymetric textures (not now)
+- support for asymetric textures
+
+- lod support (not now)

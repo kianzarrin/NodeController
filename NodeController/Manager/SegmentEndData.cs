@@ -109,7 +109,7 @@ namespace NodeController {
             NoJunctionTexture = false;
             NoJunctionProps = false;
             NoTLProps = false;
-            DeltaRightCornerDir = DeltaRightCornerDir = DeltaLeftCornerPos = DeltaRightCornerPos = default;
+            DeltaRightCornerDir = DeltaRightCornerDir = DeltaLeftCornerPos = DeltaLeftCornerDir = default;
             NetManager.instance.UpdateNode(NodeID);
         }
 
