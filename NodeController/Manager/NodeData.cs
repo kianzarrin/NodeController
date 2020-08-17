@@ -18,6 +18,7 @@ namespace NodeController {
         Crossing, // change dataMatrix.w to render crossings in the middle.
         UTurn, // set offset to 5.
         Custom,
+        End,
     }
 
     [Serializable]
@@ -171,6 +172,8 @@ namespace NodeController {
                 DefaultNodeType = NodeTypeT.Bend;
             else if (DefaultFlags.IsFlagSet(NetNode.Flags.Junction))
                 DefaultNodeType = NodeTypeT.Custom;
+            else if (DefaultFlags.IsFlagSet(NetNode.Flags.End))
+                NodeType = DefaultNodeType = NodeTypeT.End;
             else
                 throw new NotImplementedException("unsupported node flags: " + DefaultFlags);
 
@@ -251,9 +254,10 @@ namespace NodeController {
 
         public bool IsCSUR => NetUtil.IsCSUR(Info);
         public NetInfo Info => NodeID.ToNode().Info;
+        public bool EndNode() => NodeType != NodeTypeT.End;
         public bool NeedMiddleFlag() => NodeType == NodeTypeT.Middle;
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
-        public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag();
+        public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Bend || NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
         public bool CanModifyFlatJunctions() => !NeedMiddleFlag();
@@ -275,21 +279,22 @@ namespace NodeController {
             var flags = nodeID.ToNode().m_flags;
             if (!flags.CheckFlags(
                 required: NetNode.Flags.Created,
-                forbidden: NetNode.Flags.LevelCrossing | NetNode.Flags.End |
+                forbidden: NetNode.Flags.LevelCrossing /*| NetNode.Flags.End*/ |
                            NetNode.Flags.Outside | NetNode.Flags.Deleted)) {
                 return false;
             }
 
             int n = nodeID.ToNode().CountSegments();
-            if (n > 2)
+            if (n != 2)
                 return true;
             var info = nodeID.ToNode().Info;
-            if (n == 2)
-                return info.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(info)!;
-            return false;
+            return info.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(info)!;
         }
 
         public bool CanChangeTo(NodeTypeT newNodeType) {
+            if (SegmentCount == 1)
+                return newNodeType == NodeTypeT.End;
+
             if (SegmentCount > 2 || IsCSUR)
                 return newNodeType == NodeTypeT.Custom;
 
@@ -307,6 +312,8 @@ namespace NodeController {
                     return IsStraight;
                 case NodeTypeT.Custom:
                     return true;
+                case NodeTypeT.End:
+                    return false;
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -330,6 +337,8 @@ namespace NodeController {
                     return "U-Turn: node with enough space for U-Turn.";
                 case NodeTypeT.Custom:
                     return "Custom: transition size and traffic rules are configrable.";
+                case NodeTypeT.End:
+                    return "when there is only one segment at the node.";
             }
             return null;
         }
@@ -350,7 +359,9 @@ namespace NodeController {
                 case NodeTypeT.Bend:
                     return TernaryBool.False; // always default
                 case NodeTypeT.Custom:
-                    return TernaryBool.Undefined; // default 
+                    return TernaryBool.Undefined; // default
+                case NodeTypeT.End:
+                    return TernaryBool.False;
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -358,7 +369,6 @@ namespace NodeController {
 
         public TernaryBool GetDefaultUturnAllowed() {
             switch (NodeType) {
-
                 case NodeTypeT.Crossing:
                     return TernaryBool.False; // always off
                 case NodeTypeT.UTurn:
@@ -370,6 +380,8 @@ namespace NodeController {
                     return TernaryBool.Undefined; // don't care
                 case NodeTypeT.Custom:
                     return TernaryBool.Undefined; // default
+                case NodeTypeT.End:
+                    return TernaryBool.Undefined;
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -391,6 +403,8 @@ namespace NodeController {
                         return TernaryBool.False; // TODO move to TMPE.
                     }
                     return TernaryBool.Undefined; // default off
+                case NodeTypeT.End:
+                    return TernaryBool.False;
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -411,6 +425,8 @@ namespace NodeController {
                     if (SegmentCount == 2)
                         return TernaryBool.False; // default off
                     return TernaryBool.Undefined; // don't care
+                case NodeTypeT.End:
+                    return TernaryBool.Undefined;
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -429,6 +445,8 @@ namespace NodeController {
                     return TernaryBool.False;
                 case NodeTypeT.Custom:
                     return TernaryBool.Undefined; // default off
+                case NodeTypeT.End:
+                    return TernaryBool.Undefined;
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -453,6 +471,8 @@ namespace NodeController {
                         return TernaryBool.False; // always on.
                     }
                     return TernaryBool.Undefined; // default on.
+                case NodeTypeT.End:
+                    return TernaryBool.False;
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -478,6 +498,8 @@ namespace NodeController {
                 //    return TernaryBool.True; // always on.
                 //}
                 //return TernaryBool.Undefined;
+                case NodeTypeT.End:
+                    return TernaryBool.Undefined;
                 default:
                     throw new Exception("Unreachable code");
             }

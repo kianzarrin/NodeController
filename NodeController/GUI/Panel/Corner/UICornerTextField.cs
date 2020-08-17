@@ -92,6 +92,7 @@ namespace NodeController.GUI {
                 SetData(value);
                 SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
                 data?.Refresh();
+                resetButton_?.Refresh();
             }
         }
 

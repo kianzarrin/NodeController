@@ -259,11 +259,11 @@ namespace NodeController.Tool {
             ForceInfoMode(InfoManager.InfoMode.None, InfoManager.SubInfoMode.None);
         }
 
-        public Color GetColor(bool error) {
+        public Color GetColor(bool error, bool newNode=false) {
             if (error)
                 return base.GetToolColor(false, true);
-            Color c = base.GetToolColor(false, false);
-            Color ret = Color.yellow;
+            Color ret = newNode?Color.green:Color.yellow;
+            //Color ret = Color.yellow;
             ret.a = base.GetToolColor(false, false).a;
             return ret;
         }
@@ -355,7 +355,7 @@ namespace NodeController.Tool {
                     ToolErrors error = m_cachedErrors;
                     error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
                     bool fail = error != ToolErrors.None || !isRoad;
-                    Color color = GetColor(fail);
+                    Color color = GetColor(fail, true);
                     RenderStripOnSegment(cameraInfo, controlPoint.m_segment, controlPoint.m_position, 1.5f, color);
                 }
                 DrawOverlayCircle(cameraInfo, Color.red, raycastOutput.m_hitPos, 1, true);

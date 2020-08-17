@@ -108,7 +108,7 @@ namespace NodeController {
             NoJunctionTexture = false;
             NoJunctionProps = false;
             NoTLProps = false;
-            DeltaRightCornerDir = DeltaRightCornerDir = DeltaLeftCornerPos = DeltaLeftCornerDir = default;
+            DeltaRightCornerPos = DeltaRightCornerDir = DeltaLeftCornerPos = DeltaLeftCornerDir = default;
             NetManager.instance.UpdateNode(NodeID);
         }
 
@@ -134,7 +134,7 @@ namespace NodeController {
         public bool IsCSUR => NetUtil.IsCSUR(Info);
         public NetInfo Info => Segment.Info;
         public bool CanModifyOffset() => NodeData?.CanModifyOffset() ?? false;
-        public bool CanModifyCorners() => true;
+        public bool CanModifyCorners() => CanModifyOffset() || NodeData.NodeType == NodeTypeT.End;
         public bool CanModifyFlatJunctions() => NodeData?.CanModifyFlatJunctions()??false;
 
         public bool ShowClearMarkingsToggle() {

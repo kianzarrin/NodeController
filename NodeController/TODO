@@ -2,8 +2,6 @@
  - bug: its possible for two buttons to be active at the same time.
 
 
-- segment end on middle nodes.
-- support end nodes.
 - flat junctions influences minor incomming segments.
 - lock corners while dragging or using mousewheal
 - big hint box to give instrions and shortcuts.
@@ -31,7 +29,7 @@ o Alt+CLick on a segment end to select it (NEW!!!) (does not work with middle no
    - Corner smoothness (AKA corner offset): bigger intersection but better traffic flow. this can also be used to resolve road glitches at sharp angels or super wide roads.
    - flat junctions: to give slope to your junctions (more detaisl bellow) (see screenshots)
    - modify corner positions to align road heights, zebra crossings, highway entry/exit , ... (see screenshots)
-   - modify corner directions (advanced feature): to create custom junction slopes change the vertical element of corner position/direction.
+   - modify corner directions (advanced feature): you can stretch out end nodes (kind of a cul-de-sac) by increasing horizontal direction. Also to create custom junction slopes change vertical position/direction.
 o Hold control to hide TMPE markings.
 
 [H1]Flag junctions[H1]
