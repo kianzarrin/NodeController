@@ -361,7 +361,7 @@ namespace NodeController {
                 case NodeTypeT.Custom:
                     return TernaryBool.Undefined; // default
                 case NodeTypeT.End:
-                    return TernaryBool.False;
+                    return TernaryBool.Undefined;
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -404,7 +404,7 @@ namespace NodeController {
                     }
                     return TernaryBool.Undefined; // default off
                 case NodeTypeT.End:
-                    return TernaryBool.False;
+                    return TernaryBool.Undefined;
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -472,7 +472,7 @@ namespace NodeController {
                     }
                     return TernaryBool.Undefined; // default on.
                 case NodeTypeT.End:
-                    return TernaryBool.False;
+                    return TernaryBool.Undefined;
                 default:
                     throw new Exception("Unreachable code");
             }

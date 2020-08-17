@@ -53,6 +53,7 @@ namespace NodeController {
         public ref NetSegment Segment => ref SegmentID.ToSegment();
         public ref NetNode Node => ref NodeID.ToNode();
         public NodeData NodeData => NodeManager.Instance.buffer[NodeID];
+        public ref NodeTypeT NodeType => ref NodeData.NodeType;
 
         public SegmentEndData(ushort segmentID, ushort nodeID) {
             NodeID = nodeID;
@@ -134,7 +135,7 @@ namespace NodeController {
         public bool IsCSUR => NetUtil.IsCSUR(Info);
         public NetInfo Info => Segment.Info;
         public bool CanModifyOffset() => NodeData?.CanModifyOffset() ?? false;
-        public bool CanModifyCorners() => CanModifyOffset() || NodeData.NodeType == NodeTypeT.End;
+        public bool CanModifyCorners() => CanModifyOffset() || NodeType == NodeTypeT.End || NodeType == NodeTypeT.Middle;
         public bool CanModifyFlatJunctions() => NodeData?.CanModifyFlatJunctions()??false;
 
         public bool ShowClearMarkingsToggle() {

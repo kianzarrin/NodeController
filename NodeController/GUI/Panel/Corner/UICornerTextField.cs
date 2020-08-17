@@ -60,10 +60,11 @@ namespace NodeController.GUI {
             // change width to match parent?
         }
 
+        public float MouseWheelRatio = 1; // set to 0.1 for dir vectors.
         protected override void OnMouseWheel(UIMouseEventParameter p) {
             base.OnMouseWheel(p);
             float ratio = HelpersExtensions.ShiftIsPressed ? 1f: 0.2f;
-            Value += p.wheelDelta*ratio;
+            Value += p.wheelDelta*ratio * MouseWheelRatio;
         }
 
         public bool TryGetValue(out float value) {

@@ -24,6 +24,13 @@ namespace NodeController.GUI {
                 NodeControllerTool.SnapToMiddleNode.value,
                 val => NodeControllerTool.SnapToMiddleNode.value = val) as UICheckBox;
             //snapToggle.tooltip = "?";
+
+            UICheckBox TMPE_Overlay = group.AddCheckbox(
+                "Hide TMPE overlay on the selected node",
+                NodeControllerTool.Hide_TMPE_Overlay.value,
+                val => NodeControllerTool.Hide_TMPE_Overlay.value = val) as UICheckBox;
+            TMPE_Overlay.tooltip = "Holding control hides all TMPE overlay.\n" +
+                "but if this is checked, you don't have to (excluding Corssings/Uturn)";
         }
     }
 }

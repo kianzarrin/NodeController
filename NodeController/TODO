@@ -2,7 +2,9 @@
  - bug: its possible for two buttons to be active at the same time.
 
 
-- flat junctions influences minor incomming segments.
+- !!!!fix uturn crossing node types.!!!
+
+
 - lock corners while dragging or using mousewheal
 - big hint box to give instrions and shortcuts.
 - corner offset to increase chances of train track connection.
@@ -34,5 +36,5 @@ o Hold control to hide TMPE markings.
 
 [H1]Flag junctions[H1]
 Vanilla CS automatically flattens out the junctions even if it is unset in asset editor.
-with NC you can give slope to junctions: select the two main roads and uncheck flat junctions. This will automatically embank (twist sideways) minor segments ends. 
-Advanced tip: use move it mod to move the node at the other end of the embanked segment closer to junction. this will limit the lenght of embankment.
+with this mod you can give slope to junctions: select the two main roads and uncheck flat junctions. This will automatically embank (twist sideways) minor segments ends.
+Advanced tip: don't forget to use move it mod on the other node of embanked segments. you should modify its height (depending on the angle), and bring it closer to junction (to limit the lenght of embankment).

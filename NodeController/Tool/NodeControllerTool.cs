@@ -18,6 +18,9 @@ namespace NodeController.Tool {
         public static readonly SavedBool SnapToMiddleNode = new SavedBool(
             "SnapToMiddleNode", Settings.FileName, def: false, true);
 
+        public static readonly SavedBool Hide_TMPE_Overlay = new SavedBool(
+            "Hide_TMPE_Overlay", Settings.FileName, def: false, true);
+
         NodeControllerButton Button => NodeControllerButton.Instace;
         UINodeControllerPanel NCPanel;
         UISegmentEndControllerPanel SECPanel;
@@ -358,7 +361,7 @@ namespace NodeController.Tool {
                     Color color = GetColor(fail, true);
                     RenderStripOnSegment(cameraInfo, controlPoint.m_segment, controlPoint.m_position, 1.5f, color);
                 }
-                DrawOverlayCircle(cameraInfo, Color.red, raycastOutput.m_hitPos, 1, true);
+                //DrawOverlayCircle(cameraInfo, Color.red, raycastOutput.m_hitPos, 1, true);
             }
         }
 
@@ -405,15 +408,23 @@ namespace NodeController.Tool {
                 TrafficRulesOverlay overlay =
                     new TrafficRulesOverlay(handleClick: false);
                 foreach (NodeData nodeData in NodeManager.Instance.buffer) {
-                    if (nodeData == null) continue;
+                    if (nodeData == null ) continue;
                     overlay.DrawSignHandles(
                         nodeData.NodeID, 0, camPos: ref camPos, out _);
                 }
             } else {
-                TrafficRulesOverlay overlay =
-                    new TrafficRulesOverlay(handleClick: true);
-                handleHovered_ = overlay.DrawSignHandles(
-                    SelectedNodeID, SelectedSegmentID, camPos: ref camPos, out _);
+                bool draw = true;
+                if (Hide_TMPE_Overlay) {
+                    NodeData nodeData = NodeManager.Instance.buffer[SelectedNodeID];
+                    draw = nodeData.NodeType == NodeTypeT.Crossing
+                        || nodeData.NodeType == NodeTypeT.UTurn;
+                }
+                if (draw) {
+                    TrafficRulesOverlay overlay =
+                        new TrafficRulesOverlay(handleClick: true);
+                    handleHovered_ = overlay.DrawSignHandles(
+                        SelectedNodeID, SelectedSegmentID, camPos: ref camPos, out _);
+                }
             }
         }
 

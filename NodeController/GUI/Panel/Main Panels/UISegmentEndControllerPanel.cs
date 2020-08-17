@@ -106,8 +106,8 @@ namespace NodeController.GUI {
                 var row1 = AddTableRow(table);
                 AddTableLable(row1, "axis:");
                 AddTableLable(row1, "outward");
-                AddTableLable(row1, "vertical");
                 AddTableLable(row1, "backward");
+                AddTableLable(row1, "vertical");
 
                 var row2 = AddTableRow(table);
                 AddTableLable(row2, "pos:");
@@ -117,32 +117,35 @@ namespace NodeController.GUI {
                 posx.SetData = val => SegmentEndData.DeltaRightCornerPos.x = val;
                 Controls.Add(posx);
 
-                var posy = row2.AddUIComponent<UICornerTextField>();
-                posy.GetData = () => SegmentEndData.DeltaRightCornerPos.y;
-                posy.SetData = val => SegmentEndData.DeltaRightCornerPos.y = val;
-                Controls.Add(posy);
-
                 var posz = row2.AddUIComponent<UICornerTextField>();
                 posz.GetData = () => SegmentEndData.DeltaRightCornerPos.z;
                 posz.SetData = val => SegmentEndData.DeltaRightCornerPos.z = val;
                 Controls.Add(posz);
+
+                var posy = row2.AddUIComponent<UICornerTextField>();
+                posy.GetData = () => SegmentEndData.DeltaRightCornerPos.y;
+                posy.SetData = val => SegmentEndData.DeltaRightCornerPos.y = val;
+                Controls.Add(posy);
 
                 var row3 = AddTableRow(table);
                 AddTableLable(row3, "dir:");
                 var dirx = row3.AddUIComponent<UICornerTextField>();
                 dirx.GetData = () => SegmentEndData.DeltaRightCornerDir.x;
                 dirx.SetData = val => SegmentEndData.DeltaRightCornerDir.x = val;
+                dirx.MouseWheelRatio = 0.1f;
                 Controls.Add(dirx);
-
-                var diry = row3.AddUIComponent<UICornerTextField>();
-                diry.GetData = () => SegmentEndData.DeltaRightCornerDir.y;
-                diry.SetData = val => SegmentEndData.DeltaRightCornerDir.y = val;
-                Controls.Add(diry);
 
                 var dirz = row3.AddUIComponent<UICornerTextField>();
                 dirz.GetData = () => SegmentEndData.DeltaRightCornerDir.z;
                 dirz.SetData = val => SegmentEndData.DeltaRightCornerDir.z = val;
+                dirz.MouseWheelRatio = 0.1f;
                 Controls.Add(dirz);
+
+                var diry = row3.AddUIComponent<UICornerTextField>();
+                diry.GetData = () => SegmentEndData.DeltaRightCornerDir.y;
+                diry.SetData = val => SegmentEndData.DeltaRightCornerDir.y = val;
+                diry.MouseWheelRatio = 0.1f;
+                Controls.Add(diry);
             }
 
             {
@@ -158,8 +161,8 @@ namespace NodeController.GUI {
                 var row1 = AddTableRow(table);
                 AddTableLable(row1, "axis:");
                 AddTableLable(row1, "outward");
-                AddTableLable(row1, "vertical");
                 AddTableLable(row1, "backward");
+                AddTableLable(row1, "vertical");
 
                 var row2 = AddTableRow(table);
                 AddTableLable(row2, "pos:");
@@ -169,32 +172,35 @@ namespace NodeController.GUI {
                 posx.SetData = val => SegmentEndData.DeltaLeftCornerPos.x = val;
                 Controls.Add(posx);
 
-                var posy = row2.AddUIComponent<UICornerTextField>();
-                posy.GetData = () => SegmentEndData.DeltaLeftCornerPos.y;
-                posy.SetData = val => SegmentEndData.DeltaLeftCornerPos.y = val;
-                Controls.Add(posy);
-
                 var posz = row2.AddUIComponent<UICornerTextField>();
                 posz.GetData = () => SegmentEndData.DeltaLeftCornerPos.z;
                 posz.SetData = val => SegmentEndData.DeltaLeftCornerPos.z = val;
                 Controls.Add(posz);
+
+                var posy = row2.AddUIComponent<UICornerTextField>();
+                posy.GetData = () => SegmentEndData.DeltaLeftCornerPos.y;
+                posy.SetData = val => SegmentEndData.DeltaLeftCornerPos.y = val;
+                Controls.Add(posy);
 
                 var row3 = AddTableRow(table);
                 AddTableLable(row3, "dir:");
                 var dirx = row3.AddUIComponent<UICornerTextField>();
                 dirx.GetData = () => SegmentEndData.DeltaLeftCornerDir.x;
                 dirx.SetData = val => SegmentEndData.DeltaLeftCornerDir.x = val;
+                dirx.MouseWheelRatio = 0.1f;
                 Controls.Add(dirx);
-
-                var diry = row3.AddUIComponent<UICornerTextField>();
-                diry.GetData = () => SegmentEndData.DeltaLeftCornerDir.y;
-                diry.SetData = val => SegmentEndData.DeltaLeftCornerDir.y = val;
-                Controls.Add(diry);
 
                 var dirz = row3.AddUIComponent<UICornerTextField>();
                 dirz.GetData = () => SegmentEndData.DeltaLeftCornerDir.z;
                 dirz.SetData = val => SegmentEndData.DeltaLeftCornerDir.z = val;
+                dirz.MouseWheelRatio = 0.1f;
                 Controls.Add(dirz);
+
+                var diry = row3.AddUIComponent<UICornerTextField>();
+                diry.GetData = () => SegmentEndData.DeltaLeftCornerDir.y;
+                diry.SetData = val => SegmentEndData.DeltaLeftCornerDir.y = val;
+                diry.MouseWheelRatio = 0.1f;
+                Controls.Add(diry);
             }
         }
 
