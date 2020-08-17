@@ -9,10 +9,9 @@ namespace NodeController.GUI {
 
     public class UICornerTextField : UITextField, IDataControllerUI {
         UIResetButton resetButton_;
-        UIPanel root_;
+        UIPanelBase root_;
         bool started_ = false;
         bool refreshing_ = false;
-        NumberStyles numberStyle_ = NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign | NumberStyles.AllowTrailingSign;
 
         public delegate float GetDataFunc();
         public delegate void SetDataFunc(float data);
@@ -40,12 +39,18 @@ namespace NodeController.GUI {
             useDropShadow = true;
             text = "0";
             tooltip = "mousewheal => increment.\n" + "shift + mousewheal => large increment.";
+
+            submitOnFocusLost = true;
+            selectOnFocus = true;
+            numericalOnly = true;
+            allowFloats = true;
+            allowNegative = true;
         }
 
         public override void Start() {
             base.Start();
             Container = Container ?? parent;
-            root_ = GetRootContainer() as UIPanel;
+            root_ = GetRootContainer() as UIPanelBase;
             resetButton_ = root_.GetComponentInChildren<UIResetButton>();
             started_ = true;
         }
@@ -67,25 +72,33 @@ namespace NodeController.GUI {
                 return true;
             }
 
-            return float.TryParse(text, numberStyle_, CultureInfo.InvariantCulture.NumberFormat, out value);
+            return float.TryParse(text, out value);
         }
 
         public float Value {
             set => text = value.ToString();
-            get => float.Parse(text, CultureInfo.InvariantCulture.NumberFormat);
+            get => float.Parse(text);
         }
 
-        private string _prevText = "";
 
         protected override void OnTextChanged() {
             Log.Debug($"UICornerTextField.OnTextChanged() called");
             base.OnTextChanged();
+            if (refreshing_ || !started_) return;
+            if (TryGetValue(out float value)) {
+                // fast apply-refresh.
+                // don't update text ... let user type the whole numbrer.
+                // deep refresh is for OnSubmit()
+                SetData(value);
+                SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
+                data?.Refresh();
+            }
+        }
+
+        protected override void OnSubmit() {
+            base.OnSubmit(); // called when focus is lost. deep refresh
             if (TryGetValue(out _)) {
-                _prevText = text;
                 Apply();
-            } else {
-                text = _prevText;
-                Unfocus();
             }
         }
 
@@ -102,7 +115,6 @@ namespace NodeController.GUI {
                 Log.Debug($"UICornerTextField.Apply : calling SetData()  ");
                 SetData(value);
             } else {
-                // Value = GetData(); 
                 throw new Exception("Unreachable code. this path is handled in OnTextChanged().");
             }
 
@@ -141,7 +153,7 @@ namespace NodeController.GUI {
             isEnabled = data.CanModifyOffset();
         }
 
-        public void RefreshValueOnly() {
+        public void RefreshUIValueOnly() {
             refreshing_ = true;
             Value = GetData();
             refreshing_ = false;

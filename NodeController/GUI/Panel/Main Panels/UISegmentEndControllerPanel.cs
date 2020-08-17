@@ -234,7 +234,7 @@ namespace NodeController.GUI {
         public void RefreshTableValuesOnly() {
             foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>()) {
                 if (control is UICornerTextField cornerTextField)
-                    cornerTextField?.RefreshValueOnly();
+                    cornerTextField?.RefreshUIValueOnly();
             }
             reset_?.Refresh();
         }
