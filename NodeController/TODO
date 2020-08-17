@@ -1,11 +1,40 @@
 - UnitedUI support.
  - bug: its possible for two buttons to be active at the same time.
 
+
+- segment end on middle nodes.
+- support end nodes.
+- flat junctions influences minor incomming segments.
 - lock corners while dragging or using mousewheal
 - big hint box to give instrions and shortcuts.
 - corner offset to increase chances of train track connection.
+- transfer data by patching Split Segment
 
 - fix the orientation of asym road
 - support for asymetric textures
 
 - lod support (not now)
+
+
+NEW HOT FEATURE! modify corners
+
+instructions:
+o Click on a road to insert crossing.
+o Click on a node to change node type (see screenshots):
+   - middle (no node)
+   - crossing
+   - u-turn
+   - bend/stretch : paint segment texture on node
+   - custom.
+o Alt+CLick on a segment end to select it (NEW!!!) (does not work with middle node.)
+   - hide markings (even if TMPE allows pedestrian crossings)
+   - Corner smoothness (AKA corner offset): bigger intersection but better traffic flow. this can also be used to resolve road glitches at sharp angels or super wide roads.
+   - flat junctions: to give slope to your junctions (more detaisl bellow) (see screenshots)
+   - modify corner positions to align road heights, zebra crossings, highway entry/exit , ... (see screenshots)
+   - modify corner directions (advanced feature): to create custom junction slopes change the vertical element of corner position/direction.
+o Hold control to hide TMPE markings.
+
+[H1]Flag junctions[H1]
+Vanilla CS automatically flattens out the junctions even if it is unset in asset editor.
+with NC you can give slope to junctions: select the two main roads and uncheck flat junctions. This will automatically embank (twist sideways) minor segments ends. 
+Advanced tip: use move it mod to move the node at the other end of the embanked segment closer to junction. this will limit the lenght of embankment.

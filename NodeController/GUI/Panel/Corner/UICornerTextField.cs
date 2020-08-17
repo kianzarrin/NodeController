@@ -150,7 +150,7 @@ namespace NodeController.GUI {
                 return;
             }
             data.Refresh();
-            isEnabled = data.CanModifyOffset();
+            isEnabled = data.CanModifyCorners();
         }
 
         public void RefreshUIValueOnly() {

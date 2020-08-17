@@ -277,7 +277,7 @@ namespace NodeController.Tool {
                 return false;
             if (!NodeData.IsSupported(nodeID))
                 return false;
-            return nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Junction);
+            return true;// nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Junction);
         }
 
         CornerMarker GetCornerMarker(bool left) {

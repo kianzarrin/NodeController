@@ -134,6 +134,7 @@ namespace NodeController {
         public bool IsCSUR => NetUtil.IsCSUR(Info);
         public NetInfo Info => Segment.Info;
         public bool CanModifyOffset() => NodeData?.CanModifyOffset() ?? false;
+        public bool CanModifyCorners() => true;
         public bool CanModifyFlatJunctions() => NodeData?.CanModifyFlatJunctions()??false;
 
         public bool ShowClearMarkingsToggle() {
