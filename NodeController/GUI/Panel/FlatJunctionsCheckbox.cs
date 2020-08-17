@@ -29,7 +29,8 @@ namespace NodeController.GUI {
             label.text = "Flat junctions";
             label.textScale = 0.9f;
             label.relativePosition = new Vector2(sprite.width+5f, (height- label.height)/2+1);
-            tooltip = "If turned off, junctions could have slope. Useful for highway intersections.";
+            tooltip = "If turned off, junctions could have slope. Useful for highway intersections.\n" +
+                "the two bigger segments should have flat junctions turned off. minor roads joining a tilted junction might need some manual sideway twisting.";
 
             eventCheckChanged += (component, value) => {
                 if (refreshing_)

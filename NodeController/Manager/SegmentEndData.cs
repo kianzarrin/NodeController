@@ -49,7 +49,6 @@ namespace NodeController {
         public bool NoTLProps;
         public Vector3Serializable DeltaLeftCornerPos, DeltaLeftCornerDir, DeltaRightCornerPos, DeltaRightCornerDir; // left and right is when you go away form junction
 
-
         // shortcuts
         public ref NetSegment Segment => ref SegmentID.ToSegment();
         public ref NetNode Node => ref NodeID.ToNode();

@@ -366,7 +366,8 @@ namespace NodeController.Tool {
             base.OnToolGUI(e); // calls on click events on mosue up
             CornersGUI(e);
             if (CornerFocusMode) return;
-            DrawSigns();
+            if(!ControlIsPressed)
+                DrawSigns();
         }
 
         void CornersGUI(Event e) {

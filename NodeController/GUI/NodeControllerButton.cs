@@ -42,7 +42,7 @@ namespace NodeController.GUI {
 
             name = "NodeControllerButton";
             playAudioEvents = true;
-            tooltip = "Node Controller";
+            tooltip = "Node Controller\nALT+CLICK: Select segment ends.";
 
             var builtinTabstrip = UIUtils.Instance.FindComponent<UITabstrip>("ToolMode", GetContainingPanel(), UIUtils.FindOptions.None);
             AssertNotNull(builtinTabstrip, "builtinTabstrip");
