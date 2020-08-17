@@ -26,50 +26,48 @@ namespace NodeController.Patches {
                     throw new System.Exception("CalculateCornerPatch Could not find target method.");
         }
 
-        public static void FixCornerPos(Vector3 nodePos, Vector3 cornerDir, ref Vector3 cornerPos) {
-            float d = DotXZ(cornerPos - nodePos, NormalizeXZ(cornerDir));  
-            cornerPos.y = nodePos.y + d * cornerDir.y;
+        public static void FixCornerPos(Vector3 nodePos, Vector3 segmentEndDir, ref Vector3 cornerPos) {
+            // NetSegment.FindDirection() calculates segmentEndDir such that lenxz = 1 regardless of y
+            float d = DotXZ(cornerPos - nodePos, segmentEndDir);  
+            cornerPos.y = nodePos.y + d * segmentEndDir.y;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="nodePos"></param>
-        /// <param name="cornerDir"></param>
-        /// <param name="cornerPos"></param>
-        /// <param name="leftSide">going away from the junction</param>
-        public static void FixCornerPosMinor(Vector3 nodePos, Vector3 neighbourEndDir,
-            ref Vector3 cornerDir, ref Vector3 cornerPos) {
-            Vector3 nighbourEndDirXZ = NormalizeXZ(neighbourEndDir);
-            float d = DotXZ(cornerPos - nodePos, nighbourEndDirXZ);
+        public static void FixCornerPosMinor(Vector3 nodePos, Vector3 neighbourEndDir, ref Vector3 cornerDir, ref Vector3 cornerPos) {
+            float d = DotXZ(cornerPos - nodePos, neighbourEndDir);
             cornerPos.y = nodePos.y + d * neighbourEndDir.y;
 
-            Vector3 dirXZ = NormalizeXZ(cornerDir);
-            float acos = DotXZ(nighbourEndDirXZ, dirXZ);
+            float acos = DotXZ(cornerDir, neighbourEndDir);
             cornerDir.y = neighbourEndDir.y * acos;
+
         }
+
         /// <param name="segmentID">segment to calculate corner</param>
         /// <param name="start">true for start node</param>
         /// <param name="leftSide">going away from the node</param>
         public static void Postfix(
-            ushort segmentID, bool heightOffset, bool start, bool leftSide,
-            ref Vector3 cornerPos, ref Vector3 cornerDirection) {
+            ushort segmentID, bool start, bool leftSide,
+            ref Vector3 cornerPos, ref Vector3 cornerDirection)
+        {
             SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
             bool flatJunctions = data?.FlatJunctions ?? segmentID.ToSegment().Info.m_flatJunctions;
             ushort nodeID = segmentID.ToSegment().GetNode(start);
             if (!flatJunctions) {
-                FixCornerPos(nodeID.ToNode().m_position, cornerDirection, ref cornerPos);
+                FixCornerPos(
+                    nodeID.ToNode().m_position,
+                    segmentID.ToSegment().GetDirection(nodeID),
+                    ref cornerPos);
             } else {
                 // left segment going away from the node is right segment going toward the node.
                 ushort neighbourSegmentID = leftSide
                     ? segmentID.ToSegment().GetRightSegment(nodeID)
-                    : segmentID.ToSegment().GetLeftSegment(nodeID);
-                var neighbourData = SegmentEndManager.Instance.GetAt(neighbourSegmentID, start);
+                    : segmentID.ToSegment().GetLeftSegment (nodeID);
+                var neighbourData = SegmentEndManager.Instance.GetAt(neighbourSegmentID, nodeID);
+
                 bool neighbourFlatJunctions = neighbourData?.FlatJunctions ?? neighbourSegmentID.ToSegment().Info.m_flatJunctions;
-                if (neighbourFlatJunctions) {
+                if (!neighbourFlatJunctions) {
                     FixCornerPosMinor(
-                        nodeID.ToNode().m_position,
-                        neighbourSegmentID.ToSegment().GetDirection(nodeID),
+                        nodePos: nodeID.ToNode().m_position,
+                        neighbourEndDir: neighbourSegmentID.ToSegment().GetDirection(nodeID),
                         cornerDir: ref cornerDirection,
                         cornerPos: ref cornerPos);
                 }
