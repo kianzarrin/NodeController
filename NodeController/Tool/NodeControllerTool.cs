@@ -285,7 +285,7 @@ namespace NodeController.Tool {
 
         CornerMarker GetCornerMarker(bool left) {
             var segEnd = SelectedSegmentEndData;
-            if (segEnd == null) return null;
+            if (segEnd == null || !segEnd.CanModifyCorners() ) return null;
             var pos = left? segEnd.CachedLeftCornerPos: segEnd.CachedRightCornerPos;
             float terrainY = Singleton<TerrainManager>.instance.SampleDetailHeightSmooth(pos);
             var ret = new CornerMarker {
@@ -307,7 +307,7 @@ namespace NodeController.Tool {
         public override void RenderOverlay(RenderManager.CameraInfo cameraInfo) {
             base.RenderOverlay(cameraInfo);
 
-            if (SelectedSegmentID != 0) {
+            if ( SelectedSegmentID != 0) {
                 GetCornerMarker(left: true)?.RenderOverlay(cameraInfo, Color.red, leftCornerHovered_, leftCornerSelected_);
                 GetCornerMarker(left: false)?.RenderOverlay(cameraInfo, Color.red, rightCornerHovered_, rightCornerSelected_);
             }

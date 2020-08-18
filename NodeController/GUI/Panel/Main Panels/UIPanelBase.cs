@@ -90,7 +90,7 @@ namespace NodeController.GUI {
                 control.Apply();
         }
 
-        public void Refresh() {
+        public virtual void Refresh() {
             autoLayout = true;
             foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>())
                 control.Refresh();

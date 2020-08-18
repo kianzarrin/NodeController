@@ -91,9 +91,10 @@ namespace NodeController.GUI {
             AutoSize2 = true;
         }
 
+        UIAutoSizePanel tableLeft_, tableRight_;
         public void MakeCornerTable(UIPanel container) {
             {
-                UIAutoSizePanel table = container.AddUIComponent<UIAutoSizePanel>();
+                UIAutoSizePanel table = tableLeft_ = container.AddUIComponent<UIAutoSizePanel>();
                 table.name = "table_left";
                 table.autoLayoutDirection = LayoutDirection.Vertical;
                 table.AutoSize2 = true;
@@ -149,7 +150,7 @@ namespace NodeController.GUI {
             }
 
             {
-                UIAutoSizePanel table = container.AddUIComponent<UIAutoSizePanel>();
+                UIAutoSizePanel table = tableRight_ = container.AddUIComponent<UIAutoSizePanel>();
                 table.name = "table_right";
                 table.autoLayoutDirection = LayoutDirection.Vertical;
                 table.AutoSize2 = true;
@@ -243,6 +244,12 @@ namespace NodeController.GUI {
                     cornerTextField?.RefreshUIValueOnly();
             }
             reset_?.Refresh();
+        }
+
+        public override void Refresh() {
+            tableLeft_.isVisible = tableRight_.isVisible =
+                SegmentEndData?.CanModifyCorners() ?? false;
+            base.Refresh();
         }
     }
 }
