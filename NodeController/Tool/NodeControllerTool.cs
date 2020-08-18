@@ -129,24 +129,28 @@ namespace NodeController.Tool {
             SelectedSegmentID = 0;
         }
 
+        void CornerUI() {
+            SegmentEndData segEnd = SelectedSegmentEndData;
+            if (SelectedSegmentEndData == null) return;
+            bool positionChanged = false;
+            if (leftCornerSelected_) {
+                var pos = RaycastMouseLocation(segEnd.CachedLeftCornerPos.y);
+                positionChanged = segEnd.MoveLeftCornerToAbsolutePos(pos);
+            } else if (rightCornerSelected_) {
+                var pos = RaycastMouseLocation(segEnd.CachedRightCornerPos.y);
+                positionChanged = segEnd.MoveRightCornerToAbsolutePos(pos);
+            }
+            if (positionChanged) {
+                SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
+                    SECPanel.RefreshTableValuesOnly();
+                });
+            }
+        }
+
         override public void SimulationStep() {
             base.SimulationStep();
             if (CornerFocusMode) {
-                SegmentEndData segEnd = SelectedSegmentEndData;
-                if (SelectedSegmentEndData == null) return;
-                bool positionChanged = false;
-                if (leftCornerSelected_) {
-                    var pos = RaycastMouseLocation(segEnd.CachedLeftCornerPos.y);
-                    positionChanged = segEnd.MoveLeftCornerToAbsolutePos(pos);
-                } else if (rightCornerSelected_) {
-                    var pos = RaycastMouseLocation(segEnd.CachedRightCornerPos.y);
-                    positionChanged = segEnd.MoveRightCornerToAbsolutePos(pos);
-                }
-                if (positionChanged) {
-                    SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
-                        SECPanel.RefreshTableValuesOnly();
-                    });
-                }
+                CornerUI(); 
                 return;
             }
 
@@ -265,8 +269,9 @@ namespace NodeController.Tool {
         public Color GetColor(bool error, bool newNode=false) {
             if (error)
                 return base.GetToolColor(false, true);
-            Color ret = newNode?Color.green:Color.yellow;
-            //Color ret = Color.yellow;
+            Color ret = newNode ? Color.green : Color.yellow;
+            //ret *= 0.7f; // not too bright.
+
             ret.a = base.GetToolColor(false, false).a;
             return ret;
         }
@@ -286,6 +291,11 @@ namespace NodeController.Tool {
         CornerMarker GetCornerMarker(bool left) {
             var segEnd = SelectedSegmentEndData;
             if (segEnd == null || !segEnd.CanModifyCorners() ) return null;
+
+            // avoid race condition
+            if (segEnd.NodeData.DefaultFlags.IsFlagSet(NetNode.Flags.Junction) != segEnd.NodeData.NeedJunctionFlag() )
+                return null;
+
             var pos = left? segEnd.CachedLeftCornerPos: segEnd.CachedRightCornerPos;
             float terrainY = Singleton<TerrainManager>.instance.SampleDetailHeightSmooth(pos);
             var ret = new CornerMarker {
@@ -368,13 +378,16 @@ namespace NodeController.Tool {
 
         protected override void OnToolGUI(Event e) {
             base.OnToolGUI(e); // calls on click events on mosue up
-            CornersGUI(e);
-            if (CornerFocusMode) return;
+            CalculateConrerSelectionMod(e);
+            if (CornerFocusMode) {
+                // CornerUI(); should i do this here or in simulation step?
+                return;
+            }
             if(!ControlIsPressed)
                 DrawSigns();
         }
 
-        void CornersGUI(Event e) {
+        void CalculateConrerSelectionMod(Event e) {
             bool mouseDown = e.type == EventType.mouseDown && e.button == 0;
             bool mouseUp = e.type == EventType.mouseUp && e.button == 0;
             if (SelectedSegmentID == 0) {
