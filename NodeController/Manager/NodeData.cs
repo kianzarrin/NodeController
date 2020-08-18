@@ -422,7 +422,10 @@ namespace NodeController {
                 case NodeTypeT.Bend:
                     return TernaryBool.False; // always off
                 case NodeTypeT.Custom:
-                    if (SegmentCount == 2)
+                    var netAI1 = segmentID1.ToSegment().Info.m_netAI;
+                    var netAI2 = segmentID2.ToSegment().Info.m_netAI;
+                    bool sameAIType = netAI1.GetType() == netAI2.GetType(); 
+                    if (SegmentCount == 2 && !sameAIType) // eg: at bridge/tunnel entrances.
                         return TernaryBool.False; // default off
                     return TernaryBool.Undefined; // don't care
                 case NodeTypeT.End:

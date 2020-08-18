@@ -413,8 +413,6 @@ namespace NodeController.Tool {
             }
         }
 
-
-
         bool handleHovered_;
         private void DrawSigns() {
             Vector3 camPos = Singleton<SimulationManager>.instance.m_simulationView.m_position;
@@ -427,12 +425,8 @@ namespace NodeController.Tool {
                         nodeData.NodeID, 0, camPos: ref camPos, out _);
                 }
             } else {
-                bool draw = true;
-                if (Hide_TMPE_Overlay) {
-                    NodeData nodeData = NodeManager.Instance.buffer[SelectedNodeID];
-                    draw = nodeData.NodeType == NodeTypeT.Crossing
-                        || nodeData.NodeType == NodeTypeT.UTurn;
-                }
+                NodeData nodeData = NodeManager.Instance.buffer[SelectedNodeID];
+                bool draw = !Hide_TMPE_Overlay || (nodeData !=null && nodeData.SegmentCount <= 2);
                 if (draw) {
                     TrafficRulesOverlay overlay =
                         new TrafficRulesOverlay(handleClick: true);
