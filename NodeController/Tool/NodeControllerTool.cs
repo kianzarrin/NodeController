@@ -34,7 +34,7 @@ namespace NodeController.Tool {
         private object m_cacheLock = new object();
 
         private CursorInfo CursorInsert, CursorInsertCrossing,
-            CursorEdit, CursorSearching, CursorError;
+            CursorEdit, CursorSearching, CursorError, CursorMoveCorner;
 
         ref SegmentEndData SelectedSegmentEndData => ref SegmentEndManager.Instance.GetAt(segmentID: SelectedSegmentID, nodeID: SelectedNodeID);
 
@@ -73,6 +73,10 @@ namespace NodeController.Tool {
             CursorSearching = ScriptableObject.CreateInstance<CursorInfo>();
             CursorSearching.m_texture = TextureUtil.GetTextureFromFile("cursor_searching.png"); // grey gear
             CursorSearching.m_hotspot = new Vector2(5f, 0f);
+
+            //CursorMoveCorner = ScriptableObject.CreateInstance<CursorInfo>();
+            //CursorMoveCorner.m_texture = TextureUtil.GetTextureFromFile("cursor_move.png"); // 
+            //CursorMoveCorner.m_hotspot = new Vector2(5f, 0f);
         }
 
         public static NodeControllerTool Create() {
@@ -193,8 +197,11 @@ namespace NodeController.Tool {
             // F)fail modify (end node) red geerbox.
             // G)inside panel: normal
 
-            if (!m_mouseRayValid) // G
+            if (!m_mouseRayValid || handleHovered_) // G
                 return null;
+
+            if (CornerFocusMode)
+                return CursorMoveCorner;
 
             bool fail = false;
             bool insert = false;
@@ -378,7 +385,7 @@ namespace NodeController.Tool {
 
         protected override void OnToolGUI(Event e) {
             base.OnToolGUI(e); // calls on click events on mosue up
-            CalculateConrerSelectionMod(e);
+            CalculateConrerSelectionMode(e);
             if (CornerFocusMode) {
                 // CornerUI(); should i do this here or in simulation step?
                 return;
@@ -387,7 +394,7 @@ namespace NodeController.Tool {
                 DrawSigns();
         }
 
-        void CalculateConrerSelectionMod(Event e) {
+        void CalculateConrerSelectionMode(Event e) {
             bool mouseDown = e.type == EventType.mouseDown && e.button == 0;
             bool mouseUp = e.type == EventType.mouseUp && e.button == 0;
             if (SelectedSegmentID == 0) {

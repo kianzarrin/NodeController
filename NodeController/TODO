@@ -1,7 +1,6 @@
-- UnitedUI support.
- - bug: its possible for two buttons to be active at the same time.
-
-
+- release segment ends when segment is deleted. (DONE note tested)
+- respond to esc key. (DONE not tested)
+- transfrer data with split segment.
 
 - assertion fails in hide crossings : Exception: Assertion failed: isJunction | segmentID:27322 nodeID:32742
    - its not a spam. only a few times. its probabely race condition. I also get blue textures for a moment when I am moving corner offset.
@@ -39,3 +38,14 @@ o Hold control to hide TMPE markings.
 Vanilla CS automatically flattens out the junctions even if it is unset in asset editor.
 with this mod you can give slope to junctions: select the two main roads and uncheck flat junctions. This will automatically embank (twist sideways) minor segments ends.
 Advanced tip: don't forget to use move it mod on the other node of embanked segments. you should modify its height (depending on the angle), and bring it closer to junction (to limit the lenght of embankment).
+
+Incompatible mods:
+- [TMPE V11.0](https://steamcommunity.com/sharedfiles/filedetails/?id=1637663252) - use TMPE 11.5 instead: [TMPE LABS](https://steamcommunity.com/sharedfiles/filedetails/?id=1806963141)
+- [IMT 1.2.1](https://steamcommunity.com/sharedfiles/filedetails/?id=2140418403)  use IMT 1.3 instead: [IMT BETA] https://steamcommunity.com/sharedfiles/filedetails/?id=2159934925)
+
+Compatible mods:
+[IMT](https://steamcommunity.com/sharedfiles/filedetails/?id=2159934925) V1.3 or above.
+[MoveIT](https://steamcommunity.com/sharedfiles/filedetails/?id=1619685021) (workshop or latest beta)
+
+[TMPE](https://steamcommunity.com/sharedfiles/filedetails/?id=1806963141) V11.5 or above
+
