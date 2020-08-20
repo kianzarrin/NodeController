@@ -8,27 +8,19 @@ namespace NodeController.Patches._NetTool {
     [HarmonyPatch(typeof(global::NetTool), "MoveMiddleNode")]
     public static class MoveMiddleNodePatch {
         internal static MoveItSegmentData SegmentData { get; private set; }
-        internal static NodeData NodeData { get; private set; }
-        internal static bool CopyData { get; private set; }
+        internal static bool CopyData => SegmentData != null;
 
         public static void Prefix(ref ushort node) // TODO remove ref when in lates harmony.
         {
             if (!InSimulationThread()) return;
             ushort nodeID = node;
             ushort segmentID = NetUtil.GetFirstSegment(nodeID);
-
             SegmentData = MoveItIntegration.CopySegment(segmentID);
-            NodeData = MoveItIntegration.CopyNode(nodeID);
-            CopyData = true;
         }
 
         public static void Postfix() {
             if (!InSimulationThread()) return;
-            if (CopyData) {
-                NodeData = null;
-                SegmentData = null;
-                CopyData = false;
-            }
+            SegmentData = null;
         }
     }
 }

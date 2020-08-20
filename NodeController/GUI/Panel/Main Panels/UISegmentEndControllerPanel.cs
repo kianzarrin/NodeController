@@ -233,6 +233,7 @@ namespace NodeController.GUI {
         }
 
         public void Close() {
+            Log.Debug("UISegmentEndControllerPanel.Close() was called");
             SegmentEndManager.Instance.RefreshData(SegmentID, StartNode);
             SegmentID = NodeID = 0;
             Hide();

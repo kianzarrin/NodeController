@@ -19,7 +19,7 @@ namespace NodeController.Patches._NetManager
             if (MoveMiddleNodePatch.CopyData) {
                 MoveItIntegration.PasteSegment(segment, MoveMiddleNodePatch.SegmentData, null);
             } else if (SplitSegmentPatch.CopyData) {
-                MoveItIntegration.PasteSegment(segment, MoveMiddleNodePatch.SegmentData, null);
+                MoveItIntegration.PasteSegment(segment, SplitSegmentPatch.SegmentData, null);
             }
         }
     }
