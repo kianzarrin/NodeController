@@ -180,28 +180,44 @@ namespace NodeController {
             => v.x * x + v.y * y + v.z * z;
 
         /// <returns>if position was changed</returns>
-        public bool MoveLeftCornerToAbsolutePos(Vector3 pos) {
+        public Vector3 MoveLeftCornerToAbsolutePos(Vector3 pos) {
             Vector3 rightwardDir = Vector3.Cross(Vector3.up, LeftCornerDir0).normalized; // going away from the junction
             Vector3 leftwardDir = -rightwardDir;
             Vector3 forwardDir = new Vector3(LeftCornerDir0.x, 0, LeftCornerDir0.z).normalized; // going away from the junction
-            bool ret = CachedLeftCornerPos != pos;
-            CachedLeftCornerPos = pos;
-            DeltaLeftCornerPos = ReverseTransformCoordinats(pos-LeftCornerPos0, leftwardDir, Vector3.up, forwardDir);
-            Refresh();
-            return ret;
+
+            Vector3 delta = pos - CachedLeftCornerPos;
+            bool changed = delta.sqrMagnitude > 1e-4f;
+            if (changed) {
+                CachedLeftCornerPos = pos;
+                DeltaLeftCornerPos = ReverseTransformCoordinats(pos - LeftCornerPos0, leftwardDir, Vector3.up, forwardDir);
+                Refresh();
+                return delta;
+            }
+            return Vector3.zero;
         }
 
-        /// <bool>if position was changed</returns>
-        public bool MoveRightCornerToAbsolutePos(Vector3 pos) {
+        public void MoveLeftCornerToReltativePos(Vector3 deltaPos) =>
+            MoveLeftCornerToAbsolutePos(CachedLeftCornerPos + deltaPos);
+
+        public Vector3 MoveRightCornerToAbsolutePos(Vector3 pos) {
             Vector3 rightwardDir = Vector3.Cross(Vector3.up, RightCornerDir0).normalized; // going away from the junction
             Vector3 leftwardDir = -rightwardDir;
             Vector3 forwardDir = new Vector3(RightCornerDir0.x, 0, RightCornerDir0.z).normalized; // going away from the junction
-            bool ret = CachedRightCornerPos != pos;
-            CachedRightCornerPos = pos;
-            DeltaRightCornerPos = ReverseTransformCoordinats(pos-RightCornerPos0, rightwardDir, Vector3.up, forwardDir);
-            Refresh();
-            return ret;
+
+            Vector3 delta = pos - CachedRightCornerPos;
+            bool changed = delta.sqrMagnitude > 1e-4f;
+            if (changed) {
+                CachedRightCornerPos = pos;
+                DeltaRightCornerPos = ReverseTransformCoordinats(pos - RightCornerPos0, rightwardDir, Vector3.up, forwardDir);
+                Refresh();
+                return delta;
+            }
+            return Vector3.zero;
         }
+
+        public void MoveRightCornerToReltativePos(Vector3 deltaPos) =>
+            MoveRightCornerToAbsolutePos(CachedRightCornerPos + deltaPos);
+
 
         public static Vector3 ReverseTransformCoordinats(Vector3 v, Vector3 x, Vector3 y, Vector3 z) {
             Vector3 ret = default;

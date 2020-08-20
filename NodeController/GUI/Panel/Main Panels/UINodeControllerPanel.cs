@@ -1,6 +1,7 @@
 namespace NodeController.GUI {
     using ColossalFramework.UI;
     using KianCommons;
+    using NodeController.Tool;
 
     public class UINodeControllerPanel : UIPanelBase {
         #region Instanciation
@@ -74,6 +75,7 @@ namespace NodeController.GUI {
                 var button = panel.AddUIComponent<UIResetButton>();
                 Controls.Add(button);
             }
+            Disable();
         }
 
 

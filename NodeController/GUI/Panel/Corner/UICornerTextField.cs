@@ -19,6 +19,10 @@ namespace NodeController.GUI {
         public SetDataFunc SetData;
         public UIComponent Container; // that will be set visible or invisible.
 
+        public UICornerTextField Mirror;
+        public bool LockMode => ControlIsPressed && !AltIsPressed;
+        public bool InvertLockMode => ControlIsPressed && AltIsPressed;
+
         public override void Awake() {
             base.Awake();
             atlas = TextureUtil.GetAtlas("Ingame");
@@ -61,10 +65,18 @@ namespace NodeController.GUI {
         }
 
         public float MouseWheelRatio = 1; // set to 0.1 for dir vectors.
+        public float minStep_ => MouseWheelRatio * 0.01f; // round to this.
+
         protected override void OnMouseWheel(UIMouseEventParameter p) {
             base.OnMouseWheel(p);
             float ratio = HelpersExtensions.ShiftIsPressed ? 1f: 0.2f;
-            Value += p.wheelDelta*ratio * MouseWheelRatio;
+            float delta = p.wheelDelta * ratio * MouseWheelRatio;
+
+            Value += delta;
+            if (LockMode)
+                Mirror.Value += delta;
+            else if(InvertLockMode)
+                Mirror.Value -= delta;
         }
 
         public bool TryGetValue(out float value) {
@@ -73,12 +85,14 @@ namespace NodeController.GUI {
                 return true;
             }
 
-            return float.TryParse(text, out value);
+            var ret = float.TryParse(text, out value);
+            value = value.RoundToNearest(minStep_);
+            return ret;
         }
 
         public float Value {
-            set => text = value.ToString();
-            get => float.Parse(text);
+            set => text = value.RoundToNearest(minStep_).ToString("0.######");
+            get => float.Parse(text).RoundToNearest(minStep_);
         }
 
 

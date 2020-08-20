@@ -45,6 +45,10 @@ namespace NodeController.Tool {
                 if (e.button == 0) OnPrimaryMouseClicked();
                 else if (e.button == 1) OnSecondaryMouseClicked();
             }
+            if (e.type == EventType.keyDown && e.keyCode == KeyCode.Escape) {
+                e.Use();
+                DisableTool();
+            }
         }
 
         #region hover
@@ -65,14 +69,11 @@ namespace NodeController.Tool {
             m_mouseRay = Camera.main.ScreenPointToRay(m_mousePosition);
             m_mouseRayLength = Camera.main.farClipPlane;
             m_mouseRayValid = !UIView.IsInsideUI() && Cursor.visible;
-            if (Input.GetKeyDown(KeyCode.Escape))
-                DisableTool();
         }
 
         public ushort HoveredNodeId { get; private set; } = 0;
         public ushort HoveredSegmentId { get; private set; } = 0;
         protected bool IsHoverValid { get;private set; }
-
 
         // simulation thread
         protected bool DetermineHoveredElements()

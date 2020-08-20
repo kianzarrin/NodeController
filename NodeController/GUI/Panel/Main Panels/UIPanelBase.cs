@@ -58,6 +58,7 @@ namespace NodeController.GUI {
                 sprite_.atlas = TextureUtil.GetAtlas(NodeControllerButton.AtlasName);
                 sprite_.spriteName = NodeControllerButton.NodeControllerIconActive;
             }
+            Disable();
         }
 
         protected virtual UIAutoSizePanel AddPanel() {

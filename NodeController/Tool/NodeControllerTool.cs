@@ -21,6 +21,9 @@ namespace NodeController.Tool {
         public static readonly SavedBool Hide_TMPE_Overlay = new SavedBool(
             "Hide_TMPE_Overlay", Settings.FileName, def: false, true);
 
+        public static bool LockMode => ControlIsPressed && !AltIsPressed;
+        public static bool InvertLockMode => ControlIsPressed && AltIsPressed;
+
         NodeControllerButton Button => NodeControllerButton.Instace;
         UINodeControllerPanel NCPanel;
         UISegmentEndControllerPanel SECPanel;
@@ -117,7 +120,10 @@ namespace NodeController.Tool {
             Log.Debug(Button?.ToString());
             base.OnEnable();
             Button?.Activate();
+            SECPanel?.Enable();
+            NCPanel?.Enable();
             NCPanel?.Close();
+            SECPanel?.Close();
             SelectedNodeID = 0;
             SelectedSegmentID = 0;
             handleHovered_ = false;
@@ -128,21 +134,31 @@ namespace NodeController.Tool {
             base.OnDisable();
             Button?.Deactivate();
             NCPanel?.Close();
+            NCPanel?.Disable();
             SECPanel?.Close();
+            SECPanel?.Disable();
             SelectedNodeID = 0;
             SelectedSegmentID = 0;
         }
 
-        void CornerUI() {
+        void DragCorner() {
             SegmentEndData segEnd = SelectedSegmentEndData;
             if (SelectedSegmentEndData == null) return;
             bool positionChanged = false;
             if (leftCornerSelected_) {
                 var pos = RaycastMouseLocation(segEnd.CachedLeftCornerPos.y);
-                positionChanged = segEnd.MoveLeftCornerToAbsolutePos(pos);
+                var delta = segEnd.MoveLeftCornerToAbsolutePos(pos);
+                positionChanged = delta == Vector3.zero;
+                if (positionChanged && LockMode) {
+                    segEnd.MoveLeftCornerToReltativePos(delta);
+                }
             } else if (rightCornerSelected_) {
                 var pos = RaycastMouseLocation(segEnd.CachedRightCornerPos.y);
-                positionChanged = segEnd.MoveRightCornerToAbsolutePos(pos);
+                var delta = segEnd.MoveRightCornerToAbsolutePos(pos);
+                positionChanged = delta == Vector3.zero;
+                if (positionChanged && LockMode) {
+                    segEnd.MoveRightCornerToReltativePos(delta);
+                }
             }
             if (positionChanged) {
                 SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
@@ -154,7 +170,7 @@ namespace NodeController.Tool {
         override public void SimulationStep() {
             base.SimulationStep();
             if (CornerFocusMode) {
-                CornerUI(); 
+                DragCorner(); 
                 return;
             }
 
