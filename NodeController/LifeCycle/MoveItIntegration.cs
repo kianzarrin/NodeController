@@ -67,12 +67,12 @@ namespace NodeController.LifeCycle {
             }
         }
 
-        public NodeData CopyNode(ushort sourceNodeID) {
+        public static NodeData CopyNode(ushort sourceNodeID) {
             return NodeManager.Instance.buffer[sourceNodeID]?.Clone()
                 .LogRet($"MoveItIntegration.CopyNode({sourceNodeID}) -> ");
         }
 
-        public MoveItSegmentData CopySegment(ushort sourceSegmentID) {
+        public static MoveItSegmentData CopySegment(ushort sourceSegmentID) {
             var ret = new MoveItSegmentData {
                 Start = segEndMan.GetAt(segmentID: sourceSegmentID, startNode: true)?.Clone(),
                 End = segEndMan.GetAt(segmentID: sourceSegmentID, startNode: false)?.Clone()
@@ -83,7 +83,7 @@ namespace NodeController.LifeCycle {
             return ret.LogRet($"MoveItIntegration.CopySegment({sourceSegmentID}) -> ");
         }
 
-        public void PasteNode(ushort targetNodeID, NodeData record, Dictionary<InstanceID, InstanceID> map) {
+        public static void PasteNode(ushort targetNodeID, NodeData record, Dictionary<InstanceID, InstanceID> map) {
             Log.Debug($"MoveItIntegration.PasteNode({targetNodeID}) called with record = " + record);
             if (record == null) {
                 //nodeMan.ResetNodeToDefault(nodeID); // doing this is not backward comaptible
@@ -98,7 +98,7 @@ namespace NodeController.LifeCycle {
             }
         }
 
-        public void PasteSegment(ushort targetSegmentID, MoveItSegmentData record, Dictionary<InstanceID, InstanceID> map) {
+        public static void PasteSegment(ushort targetSegmentID, MoveItSegmentData record, Dictionary<InstanceID, InstanceID> map) {
             Log.Debug($"MoveItIntegration.PasteSegment({targetSegmentID}) called with record = " + record);
             if (record == null) {
                 // doing this is not backward comatible:

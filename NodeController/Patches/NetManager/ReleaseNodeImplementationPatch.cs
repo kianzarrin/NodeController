@@ -2,10 +2,10 @@ using System;
 using System.Reflection;
 using HarmonyLib;
 
-namespace NodeController.Patches
+namespace NodeController.Patches._NetManager
 {
     [HarmonyPatch]
-    public static class NetManagerReleaseNodeImplementationPatch
+    public static class ReleaseNodeImplementationPatch
     {
         public static MethodBase TargetMethod()
         {

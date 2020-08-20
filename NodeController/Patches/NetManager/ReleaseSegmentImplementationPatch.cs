@@ -1,12 +1,13 @@
-namespace NodeController.Patches
+namespace NodeController.Patches._NetManager
 {
     using System;
     using System.Reflection;
     using HarmonyLib;
 
     [HarmonyPatch]
-    public static class NetManagerReleaseSegmentImplementationPatch
+    public static class ReleaseSegmentImplementationPatch
     {
+        //private void ReleaseSegmentImplementation(ushort segment, ref NetSegment data, bool keepNodes)
         public static MethodBase TargetMethod()
         {
             return AccessTools.DeclaredMethod(
