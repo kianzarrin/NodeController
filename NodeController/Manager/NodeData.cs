@@ -260,6 +260,7 @@ namespace NodeController {
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Bend || NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
+        public bool CanMassEditNodeCorners() => SegmentCount == 2;
         public bool CanModifyFlatJunctions() => !NeedMiddleFlag();
         public bool ShowClearMarkingsToggle() => NodeType == NodeTypeT.Custom && !IsCSUR;
         public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);

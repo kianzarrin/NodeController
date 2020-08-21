@@ -20,6 +20,9 @@ namespace NodeController.GUI {
         }
         #endregion Instanciation
 
+        public override NetworkTypeT NetworkType => NetworkTypeT.Node;
+        public override object GetData() => NodeData;
+
         public ushort NodeID { get; private set; }
 
         public NodeData NodeData {
@@ -29,7 +32,8 @@ namespace NodeController.GUI {
             }
         }
 
-        public override NetworkTypeT NetworkType => NetworkTypeT.Node;
+
+
 
         public override void Awake() {
             base.Awake();
@@ -83,6 +87,7 @@ namespace NodeController.GUI {
             UISegmentEndControllerPanel.Instance.Close();
             NodeID = nodeID;
             NodeManager.Instance.RefreshData(NodeID);
+            Enable();
             Show();
             Refresh();
         }

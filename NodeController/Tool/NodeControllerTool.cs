@@ -49,6 +49,14 @@ namespace NodeController.Tool {
             NCPanel = UINodeControllerPanel.Create();
             SECPanel = UISegmentEndControllerPanel.Create();
 
+            Log.Debug($"NodeControllerTool.Start() was called " +
+                $"this.version={this.VersionOf()} " +
+                $"NodeControllerTool.version={typeof(UISliderBase).VersionOf()} " +
+                $"NCPanel.version={NCPanel.VersionOf()} " +
+                $"UINodeControllerPanel.instance.version={UINodeControllerPanel.Instance.VersionOf()} " +
+                $"UINodeControllerPanel.version={typeof(UINodeControllerPanel).VersionOf()} ");
+
+
             // A)modify node: green pen
             // B)insert middle (highway) green node
             // C)insert pedestrian : green pedestrian
@@ -105,7 +113,9 @@ namespace NodeController.Tool {
         }
 
         protected override void OnDestroy() {
-            Log.Debug("NodeControllerTool.OnDestroy()\n" /*+ Environment.StackTrace*/);
+            Log.Debug("NodeControllerTool.OnDestroy() " +
+                $"this.version={this.VersionOf()} NodeControllerTool.version={typeof(NodeControllerTool).VersionOf()}");
+
             Button?.Hide();
             Destroy(Button);
             NCPanel?.Hide();
@@ -130,7 +140,7 @@ namespace NodeController.Tool {
         }
 
         protected override void OnDisable() {
-            Log.Debug("NodeControllerTool.OnDisable" /*+ Environment.StackTrace*/);
+            Log.Debug($"NodeControllerTool.OnDisable()");
             base.OnDisable();
             Button?.Deactivate();
             NCPanel?.Close();
@@ -148,14 +158,14 @@ namespace NodeController.Tool {
             if (leftCornerSelected_) {
                 var pos = RaycastMouseLocation(segEnd.CachedLeftCornerPos.y);
                 var delta = segEnd.MoveLeftCornerToAbsolutePos(pos);
-                positionChanged = delta == Vector3.zero;
+                positionChanged = delta.Equals(Vector3.zero);
                 if (positionChanged && LockMode) {
                     segEnd.MoveLeftCornerToReltativePos(delta);
                 }
             } else if (rightCornerSelected_) {
                 var pos = RaycastMouseLocation(segEnd.CachedRightCornerPos.y);
                 var delta = segEnd.MoveRightCornerToAbsolutePos(pos);
-                positionChanged = delta == Vector3.zero;
+                positionChanged = delta.Equals(Vector3.zero);
                 if (positionChanged && LockMode) {
                     segEnd.MoveRightCornerToReltativePos(delta);
                 }

@@ -62,6 +62,7 @@ namespace NodeController.Tool {
             IsHoverValid = DetermineHoveredElements();
         }
 
+        UIComponent PauseMenu { get; } = UIView.library.Get("PauseMenu");
         protected override void OnToolLateUpdate()
         {
             base.OnToolUpdate();
@@ -69,7 +70,13 @@ namespace NodeController.Tool {
             m_mouseRay = Camera.main.ScreenPointToRay(m_mousePosition);
             m_mouseRayLength = Camera.main.farClipPlane;
             m_mouseRayValid = !UIView.IsInsideUI() && Cursor.visible;
-        }
+
+            if (PauseMenu?.isVisible == true) {
+                DisableTool();
+                UIView.library.Hide("PauseMenu");
+                return;
+            }
+    }
 
         public ushort HoveredNodeId { get; private set; } = 0;
         public ushort HoveredSegmentId { get; private set; } = 0;

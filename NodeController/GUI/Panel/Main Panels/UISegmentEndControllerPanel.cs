@@ -37,6 +37,7 @@ namespace NodeController.GUI {
         }
 
         public override NetworkTypeT NetworkType => NetworkTypeT.Node;
+        public override object GetData() => SegmentEndData;
 
         public override void Awake() {
             base.Awake();
@@ -241,6 +242,7 @@ namespace NodeController.GUI {
             SegmentID = segmentID;
             NodeID = nodeID;
             SegmentEndManager.Instance.RefreshData(SegmentID, StartNode);
+            Enable();
             Show();
             Refresh();
         }

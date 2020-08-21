@@ -25,6 +25,8 @@ namespace NodeController.GUI {
 
         public abstract NetworkTypeT NetworkType { get; }
 
+        public abstract object GetData();
+
         public override void Awake() {
             base.Awake();
             Controls = new List<IDataControllerUI>();
