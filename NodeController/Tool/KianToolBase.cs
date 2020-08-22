@@ -1,10 +1,9 @@
 namespace NodeController.Tool {
     using ColossalFramework.UI;
-    using UnityEngine;
     using KianCommons;
+    using UnityEngine;
 
-    public abstract class KianToolBase : ToolBase
-    {
+    public abstract class KianToolBase : ToolBase {
         public bool ToolEnabled => ToolsModifierControl.toolController?.CurrentTool == this;
 
         protected override void OnDestroy() {
@@ -15,8 +14,7 @@ namespace NodeController.Tool {
         protected abstract void OnPrimaryMouseClicked();
         protected abstract void OnSecondaryMouseClicked();
 
-        public void ToggleTool()
-        {
+        public void ToggleTool() {
             Log.Debug("ToggleTool: called");
             if (!ToolEnabled)
                 EnableTool();
@@ -24,18 +22,16 @@ namespace NodeController.Tool {
                 DisableTool();
         }
 
-        public void EnableTool()
-        {
+        public void EnableTool() {
             Log.Debug("EnableTool: called");
             //WorldInfoPanel.HideAllWorldInfoPanels();
             //GameAreaInfoPanel.Hide();
             ToolsModifierControl.toolController.CurrentTool = this;
         }
 
-        public void DisableTool()
-        {
+        public void DisableTool() {
             Log.Debug("DisableTool: called");
-            if(ToolsModifierControl.toolController?.CurrentTool == this)
+            if (ToolsModifierControl.toolController?.CurrentTool == this)
                 ToolsModifierControl.SetTool<DefaultTool>();
         }
 
@@ -63,38 +59,39 @@ namespace NodeController.Tool {
         }
 
         UIComponent PauseMenu { get; } = UIView.library.Get("PauseMenu");
-        protected override void OnToolLateUpdate()
-        {
+
+        protected override void OnToolUpdate() {
+            base.OnToolUpdate();
+            // respond to escape key.
+            if (PauseMenu?.isVisible == true) {
+                UIView.library.Hide("PauseMenu");
+                DisableTool();
+                return;
+            }
+        }
+
+        protected override void OnToolLateUpdate() {
             base.OnToolUpdate();
             m_mousePosition = Input.mousePosition;
             m_mouseRay = Camera.main.ScreenPointToRay(m_mousePosition);
             m_mouseRayLength = Camera.main.farClipPlane;
             m_mouseRayValid = !UIView.IsInsideUI() && Cursor.visible;
-
-            if (PauseMenu?.isVisible == true) {
-                DisableTool();
-                UIView.library.Hide("PauseMenu");
-                return;
-            }
-    }
+        }
 
         public ushort HoveredNodeId { get; private set; } = 0;
         public ushort HoveredSegmentId { get; private set; } = 0;
-        protected bool IsHoverValid { get;private set; }
+        protected bool IsHoverValid { get; private set; }
 
         // simulation thread
-        protected bool DetermineHoveredElements()
-        {
+        protected bool DetermineHoveredElements() {
             HoveredSegmentId = 0;
             HoveredNodeId = 0;
-            if (!m_mouseRayValid)
-            {
+            if (!m_mouseRayValid) {
                 return false;
             }
 
             // find currently hovered node
-            RaycastInput nodeInput = new RaycastInput(m_mouseRay, m_mouseRayLength)
-            {
+            RaycastInput nodeInput = new RaycastInput(m_mouseRay, m_mouseRayLength) {
                 m_netService = {
                         // find road segments
                         m_itemLayers = ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels,
@@ -104,8 +101,7 @@ namespace NodeController.Tool {
                 m_ignoreNodeFlags = NetNode.Flags.None
             };
 
-            if (RayCast(nodeInput, out raycastOutput))
-            {
+            if (RayCast(nodeInput, out raycastOutput)) {
                 HoveredNodeId = raycastOutput.m_netNode;
             }
 
@@ -117,8 +113,7 @@ namespace NodeController.Tool {
             }
 
             // find currently hovered segment
-            var segmentInput = new RaycastInput(m_mouseRay, m_mouseRayLength)
-            {
+            var segmentInput = new RaycastInput(m_mouseRay, m_mouseRayLength) {
                 m_netService = {
                     // find road segments
                     m_itemLayers = ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels,
@@ -128,14 +123,12 @@ namespace NodeController.Tool {
                 m_ignoreSegmentFlags = NetSegment.Flags.None
             };
 
-            if (RayCast(segmentInput, out raycastOutput))
-            {
+            if (RayCast(segmentInput, out raycastOutput)) {
                 HoveredSegmentId = raycastOutput.m_netSegment;
             }
 
 
-            if (HoveredNodeId <= 0 && HoveredSegmentId > 0)
-            {
+            if (HoveredNodeId <= 0 && HoveredSegmentId > 0) {
                 // alternative way to get a node hit: check distance to start and end nodes
                 // of the segment
                 ushort startNodeId = HoveredSegmentId.ToSegment().m_startNode;
@@ -147,12 +140,9 @@ namespace NodeController.Tool {
                 float startDist = vStart.magnitude;
                 float endDist = vEnd.magnitude;
 
-                if (startDist < endDist && startDist < 75f)
-                {
+                if (startDist < endDist && startDist < 75f) {
                     HoveredNodeId = startNodeId;
-                }
-                else if (endDist < startDist && endDist < 75f)
-                {
+                } else if (endDist < startDist && endDist < 75f) {
                     HoveredNodeId = endNodeId;
                 }
             }
@@ -189,7 +179,7 @@ namespace NodeController.Tool {
         internal float GetAccurateHitHeight() {
             // cache result.
             float current_hitH = raycastOutput.m_hitPos.y;
-            if (KianCommons.Math.MathUtil.EqualAprox(current_hitH, prev_H,1e-12f)) {
+            if (KianCommons.Math.MathUtil.EqualAprox(current_hitH, prev_H, 1e-12f)) {
                 return prev_H_Fixed;
             }
             prev_H = current_hitH;

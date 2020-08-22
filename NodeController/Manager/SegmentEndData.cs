@@ -177,7 +177,6 @@ namespace NodeController {
             Vector3 rightwardDir = Vector3.Cross(Vector3.up, cornerDir).normalized; // going away from the junction
             Vector3 leftwardDir = -rightwardDir;
             Vector3 forwardDir = new Vector3(cornerDir.x, 0, cornerDir.z).normalized; // going away from the junction
-            float d = VectorUtils.DotXZ(cornerPos, Node.m_position);
 
             // TODO calculate slope in CalculateCorner.Posfix()
 
@@ -185,18 +184,17 @@ namespace NodeController {
 
 
             // embankment:
+            float embankmentAngle = EmbankmentAngle;
+            if (leftSide) embankmentAngle = -embankmentAngle;
+            float sinEmbankmentAngle = Mathf.Sin(EmbankmentAngle);
+            float cosEmbankmentAngle = Mathf.Cos(EmbankmentAngle);
             float hw = Info.m_halfWidth + Expansion;
-            deltaPos.x += -hw * (1 - Mathf.Cos(EmbankmentAngle)); // outward
-            float dy = hw * Mathf.Sin(EmbankmentAngle);
-            if (leftSide) dy = -dy;
-            deltaPos.y += +dy; // vertical
+            deltaPos.x += -hw * (1 - cosEmbankmentAngle); // outward
+            deltaPos.y = hw * sinEmbankmentAngle;
 
             // expansion:
-            deltaPos.x += Expansion * Mathf.Cos(EmbankmentAngle); // outward
-            deltaPos.y += Expansion * Mathf.Sin(EmbankmentAngle); // vertical
-
-
-
+            deltaPos.x += Expansion * cosEmbankmentAngle; // outward
+            deltaPos.y += Expansion * sinEmbankmentAngle; // vertical
 
             if (leftSide) {
                 cornerPos += TransformCoordinates(deltaPos, leftwardDir, Vector3.up, forwardDir);
@@ -215,10 +213,12 @@ namespace NodeController {
             }
 
             // slope:
+            float cornery0 = cornerDir.y;
             if (Slope == 100) {
                 cornerDir.x = cornerDir.z = 0;
                 cornerDir.y = 1;
             } else if (Slope == -100) {
+                cornerDir.x = cornerDir.z = 0;
                 cornerDir.y = -1;
             } else if (Slope > 100) {
                 cornerDir.y += 200 - Slope;
@@ -231,8 +231,10 @@ namespace NodeController {
             } else {
                 cornerDir.y += Slope;
             }
-            if (NodeType != NodeTypeT.Middle)
-                cornerPos.y += d * cornerDir.y;
+            if (NodeType != NodeTypeT.Middle) {
+                float d = VectorUtils.DotXZ(Node.m_position - cornerPos, cornerDir);
+                cornerPos.y += d * (cornerDir.y - cornery0);
+            }
         }
 
         /// <summary>

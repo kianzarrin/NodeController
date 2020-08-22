@@ -4,8 +4,6 @@ expansion
 slope
 
 
-
-
 - Esc key.
 
 - allow track middle node modification.
@@ -25,37 +23,55 @@ slope
 
 - lod support (not now)
 
-
-NEW HOT FEATURE! modify corners
+- Click on a road to insert crossing.
 
 instructions:
-o Click on a road to insert crossing.
 o Click on a node to change node type (see screenshots):
-   - middle (no node)
-   - crossing
-   - u-turn
-   - bend/stretch : paint segment texture on node
-   - custom.
-o Alt+CLick on a segment end to select it (NEW!!!) (does not work with middle node.)
-   - hide markings (even if TMPE allows pedestrian crossings)
-   - Corner smoothness (AKA corner offset): bigger intersection but better traffic flow. this can also be used to resolve road glitches at sharp angels or super wide roads.
-   - flat junctions: to give slope to your junctions (more detaisl bellow) (see screenshots)
-   - modify corner positions to align road heights, zebra crossings, highway entry/exit , ... (see screenshots)
-   - modify corner directions (advanced feature): you can stretch out end nodes (kind of a cul-de-sac) by increasing horizontal direction. Also to create custom junction slopes change vertical position/direction.
+o Alt+CLick on a segment end to select it and modify corners ([b]HOT NEW FEATURE!!![/b])
+    - Corner smoothness (AKA corner offset): smooth traffic flow, smooth tram tracks, align crossings, resolve road glitches.
+    - flat junctions: to give slope to your junctions (more detaisl bellow) 
+    - modify corner positions: embnakment,  align highway entry/exit, ...
+    - modify corner directions (advanced feature): stretch out end nodes (semi cul-de-sac), customize junction slopes.
 o Hold control to hide TMPE markings.
 
-[H1]Flag junctions[H1]
-Vanilla CS automatically flattens out the junctions even if it is unset in asset editor.
-with this mod you can give slope to junctions: select the two main roads and uncheck flat junctions. This will automatically embank (twist sideways) minor segments ends.
-Advanced tip: don't forget to use move it mod on the other node of embanked segments. you should modify its height (depending on the angle), and bring it closer to junction (to limit the lenght of embankment).
+[H1]Give slope to road transitions/intersections[/H1]
+uncheck flat junctions of ONLY the two segments that are part of the main road.
+segments connected from the side will automatically embank(sideway twist) to match the slope of the intersection.
+[url=]See video[/url] for more details.
+[/b][/quote]
 
-Incompatible mods:
-- [TMPE V11.0](https://steamcommunity.com/sharedfiles/filedetails/?id=1637663252) - use TMPE 11.5 instead: [TMPE LABS](https://steamcommunity.com/sharedfiles/filedetails/?id=1806963141)
-- [IMT 1.2.1](https://steamcommunity.com/sharedfiles/filedetails/?id=2140418403)  use IMT 1.3 instead: [IMT BETA] https://steamcommunity.com/sharedfiles/filedetails/?id=2159934925)
 
-Compatible mods:
-[IMT](https://steamcommunity.com/sharedfiles/filedetails/?id=2159934925) V1.3 or above.
-[MoveIT](https://steamcommunity.com/sharedfiles/filedetails/?id=1619685021) (workshop or latest beta)
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=1637663252 ]TMPE V11.0[/url]
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=1806963141 ]TMPE V11.5[/url]
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=2140418403 ]IMT 1.2[/url]
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=2159934925 ]IMT 1.3[/url]
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=1619685021 ]Move IT[/url]
+[url=https://steamcommunity.com/workshop/filedetails/?id=2040656402 ]Harmony Mod[/url]
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=1939169189 ]Hide Crossings Mod [experimental] [/url]
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=2034713132 ]Mod Compatibility Checker[/url]
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=2013398705 ]DAS[/url]
 
-[TMPE](https://steamcommunity.com/sharedfiles/filedetails/?id=1806963141) V11.5 or above
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=1645781000 ]Elektrix's Road Tools[/url]
+[url=https://steamcommunity.com/linkfilter/?url=https://github.com/krzychu124/Cities-Skylines-Traffic-Manager-President-Edition/wiki/Report-a-Bug ]TMPE troubleshooting guide[/url]
+[url= ][/url]
+[url= ][/url]
 
+
+
+
+future work:
+change corner offset of left/right segments independantly.
+
+
+
+
+
+
+// video
+Hello guys, in this video I will show you how to give slope to your intersections.
+to do that: uncheck flat junctions ... of ONLY the two segments that are part of the main road.
+Notice that the segments on the side are twisted sideways to match the slope of the intersection.
+there are a couple of things you can do to fine tune your intersection.
+1- the sideway twist on this road continues until the next node. I create a node near the intersection to limit the reach of the twist.
+2- now the cars entering this segment are driving UP the intersection. therefore we need to give slope to this segment to avoid suddent changes of slope.
+thats it guys. have fun with your intersection slopes.

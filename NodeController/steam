@@ -1,0 +1,126 @@
+[h1]Control node types/properties - move corners (Control+N)[/h1]
+
+This mod lets you control Nodes and override the base games' automatic settings. You can add/remove crossings, Create smooth junctions, control road transition, ...
+[h3]HOT NEW FEATURE:[/h3] you can move corners ANYWHERE!!!
+
+if you like my work, please support me.
+[url=https://www.patreon.com/KianZarrinCS][img]https://i.imgur.com/tRkyhZC.png[/img][/url]
+
+or donate with paypal
+[url=https://www.paypal.com/paypalme/KianZarrin][img]https://i.imgur.com/dSkdACn.png[/img][/url]
+
+
+[quote][b][h1]How to use[/h1]
+See [url=https://github.com/kianzarrin/RoadTransitionManager/wiki/Home ]Wiki page[/url] 
+When this mod is enabled, unnecessary forward flags outside the context of intersection are removed.
+Click on the node settings Icon shown in the screenshots to enable/disable the tool. Alternatively, you can use the shortcut key configurable from settings (Control+N) by default.
+[h3]Add crossing[/h3]
+Click on any Piece of the road to add crossing.
+[h3]Remove Crossing[/h3]
+ Yes I can Remove All crossings!
+ - Click on the crossing node you want to remove. then Set the Node type to Middle/Bend/Stretch.
+ - Press the TMPE pedestrian icon to ban crossing at junctions. That will hide crosswalk textures as well.
+[h3]Change Node types[/h3]
+- Click on a node to change node type (see screenshots)
+[h3]Manipulate corners[/h3]
+- Use Alt+Click to modify segment ends.
+- Hold control to hide TMPE icons (or turn off from settings).
+- Corner smoothness (AKA corner offset): smooth traffic flow, smooth tram tracks, align crossings, resolve road glitches.
+- flat junctions: to give slope to your junctions [url=https://youtu.be/VtE0zOXJgLk ]see video[/url]
+- modify corner positions: embnakment,  align highway entry/exit, ...
+- modify corner directions (advanced feature): stretch out end nodes (semi cul-de-sac), customize junction slopes, and other things that only a true micro-nerd would do!!!
+[/b][/quote]
+
+[quote][b][H1]Incompatible mods[/H1]
+- The original [url=https://steamcommunity.com/sharedfiles/filedetails/?id=427258853 ]Crossings mod[/url].
+- Advanced toolbar mod can move toolbar such that it covers up the activation button. Use the shortcut keybind in that case configurable from settings (Control+N by default).
+- [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2140418403 ]IMT 1.2[/url] use [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2159934925 ]IMT 1.3[/url] or above instead.
+[H1]Required mods[/H1]
+- [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1806963141 ]TMPE V11.5[/url] or above.
+- [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1939169189 ]Hide Crossings Mod experimental version [/url]
+- Harmony mod
+[H1]compatible mods[/H1]
+- [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1619685021 ]Move IT[/url]: fully compatible (once 2.9 is released).
+[H1]semi-compatible mods[/h1]
+- CSUR: only junction nodes are supported for CSUR. most importantly you can modify corner offset.
+[H1]Recommended[/h1]
+- [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2159934925 ]IMT 1.3[/url] to paint on nodes.
+- [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2034713132 ]Mod Compatibility Checker[/url]
+- [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1619685021 ]Move IT[/url] to move nodes and delete columns
+- [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1645781000 ]Elektrix's Road Tools[/url]: to add/remove nodes.
+- [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1844442251 ]Fine Road tool[/url]
+[/b][/quote]
+
+[quote][b][h1]Troubleshooting[/h1]
+- Restart Cities skylines (exit to desktop and run the program again).
+- [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2034713132 ]Mod Compatibility Checker[/url]
+- Remove all other mods (excluding this and TMPE) to check if you still encounter the issue.
+- see [url=https://steamcommunity.com/linkfilter/?url=https://github.com/krzychu124/Cities-Skylines-Traffic-Manager-President-Edition/wiki/Report-a-Bug ]TMPE troubleshooting guide[/url]
+- if you get get [code]TypeLoadException ... harmony[/code] in your log, then please report it to the [url=https://steamcommunity.com/workshop/filedetails/?id=2040656402 ]Harmony Mod[/url]. 
+  - the problem is usually and incompatible mod.
+  - run [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2013398705 ]DAS[/url] and [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2034713132 ]Mod Compatibility Checker[/url] and incldue them in your report.
+[/b][/quote]
+
+[quote][b][h1]How to report Problems[/h1]
+[h3]What to include[/h3]
+- what where you doing when the problem happened
+- what is the problem?
+- what do you expect
+- output_log.txt and NodeController.log 
+- screenshots
+[h3]Where to report[/h3]
+- in the comment section bellow
+- On [url=https://steamcommunity.com/linkfilter/?url=https://discord.gg/4rHbBy6] DISCORD [/url]
+- comment on this [url=https://github.com/kianzarrin/RoadTransitionManager/issues/4]GITHUB ISSUE[/url] 
+- you can attach logs to one of the above links or a place of your own choosing but I do need logs.
+[/b][/quote]
+
+[quote][b][h1]Future plans[/h1]
+- split segment support.
+- individual coner offset control for left and right corner.
+- Embnakment, slope, stretch sliders for node/segment-end.
+- you will be able to create rollo-coaster loop! (you already kind of can - see screenshots)
+- twist segment ends toggle.
+- corner offset to increase chances of train track connection.
+- Warn about small segments.
+- Handle lod textures
+[/b][/quote]
+
+[quote][b]Source code: [url=https://github.com/kianzarrin/RoadTransitionManager ]Repository[/url]
+[/b][/quote]
+
+
+[h1]FAQ:[/h1]
+Q: Can I remove existing crossings at intersections and road transitions?
+A: Yes! This is an improvement over the original "Crossings" mod. Click on road transitions you should set node type to Middle/Bend/Stretch. On junctions, you should ban pedestrian crossings and this will automatically remove crossing textures as well.
+
+Q: I don't see the button
+A: turn off Advanced Toolbar mod. Or just use the shortcut key configurable form settings (Control+N) by default.
+
+Q: Control+N shortcut does not work for me.
+A: To avoid key collisions. this only works when No other tool is active. The shortcut key is configurable from settings.
+
+Q: How do I snap to middle nodes?
+A: turn on snap to node from setttings.
+
+Q: What is Middle/Bend/Stretch Node?
+A: In vanilla game, Middle node is a node between 2 segments of the same type and is invisible. Bend node is for when road bends or asymmetrical road changes direction. 
+   Using node controller you can force middle/bend nodes. Also, you can use a stretch node which stretches the textures for a better match.
+
+Q: When I use bend node type the roads do not align.
+A: Use Stretch Node. Bend node is more suited for road corners and asym roads. 
+
+Q: I am a micro nerd but I do not know how to use corner position/direction
+A: ask me directly on [url=https://steamcommunity.com/linkfilter/?url=https://discord.gg/4rHbBy6] Discord [/url]
+
+Q: When I increase corner smoothness, cars glitch/slow down.
+A: Increasing node size decreases segment size. if segment size is too small then cars glitch.
+
+Q: Is this compatible with the move it?
+A: its compatible with version 1.9 and above.
+
+Q: I don't see overlays
+A: need TMPE 1.5 or above
+
+Q: I pressed hide node markings but pedestrians are still crossing.
+A: Hide node markings does not actually ban crossing. You should use TMPE to ban crossing and that would automatically remove crossing textures too. Hide node markings are only useful for micro nerds to paint over their roads.
