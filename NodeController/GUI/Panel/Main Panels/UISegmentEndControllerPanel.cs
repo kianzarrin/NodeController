@@ -6,7 +6,6 @@ namespace NodeController.GUI {
     using UnityEngine;
 
     public class UISegmentEndControllerPanel : UIPanelBase {
-        UIResetButton reset_;
         #region Instanciation
         public static UISegmentEndControllerPanel Instance { get; private set; }
 
@@ -64,9 +63,21 @@ namespace NodeController.GUI {
 
             {
                 var panel = AddPanel();
+
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Embankment";
+                label.tooltip = "twist road sideways (superelevation)";
+
+                var slider_ = panel.AddUIComponent<EmbankmentSlider>();
+                Controls.Add(slider_);
+            }
+
+            {
+                var panel = AddPanel();
                 var checkBox = panel.AddUIComponent<UIFlatJunctionsCheckbox>();
                 Controls.Add(checkBox);
             }
+
             {
                 var panel = AddPanel();
                 panel.padding = new RectOffset(10, 10, 5, 5);
@@ -85,8 +96,8 @@ namespace NodeController.GUI {
 
             {
                 var panel = AddPanel();
-                reset_ = panel.AddUIComponent<UIResetButton>();
-                Controls.Add(reset_);
+                ResetButton = panel.AddUIComponent<UIResetButton>();
+                Controls.Add(ResetButton);
             }
 
             AutoSize2 = true;
@@ -259,7 +270,7 @@ namespace NodeController.GUI {
                 if (control is UICornerTextField cornerTextField)
                     cornerTextField?.RefreshUIValueOnly();
             }
-            reset_?.Refresh();
+            ResetButton?.Refresh();
         }
 
         public override void Refresh() {

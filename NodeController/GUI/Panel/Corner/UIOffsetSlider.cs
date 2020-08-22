@@ -18,24 +18,8 @@ namespace NodeController.GUI {
         public override void RefreshNode(NodeData data) {
             //Log.Debug("UIOffsetSlider.RefreshNode() called. this.version=" + this.VersionOf());
             value = data.CornerOffset;
-            //Log.Debug($"UIOffsetSlider.RefreshNode() " +
-            //    $"data.CanModifyOffset()={data.CanModifyOffset()} " +
-            //    $"this.version:{this.VersionOf()} " +
-            //    $"data.version={data.VersionOf()} " +
-            //    $"NodeData.version={typeof(NodeData).VersionOf()}");
+            MixedValues = !data.HasUniformCornerOffset();
             isEnabled = data.CanModifyOffset();
-
-
-
-            if (data.HasUniformCornerOffset()) {
-                thumbObject.color = Color.white;
-                thumbObject.opacity = 1;
-            } else {
-                thumbObject.color = Color.grey;
-                thumbObject.opacity = 0.2f;
-            }
-
-
         }
 
         public override void RefreshSegmentEnd(SegmentEndData data) {

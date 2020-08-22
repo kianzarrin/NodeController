@@ -92,7 +92,7 @@ namespace NodeController {
         }
 
         public bool IsDefault() {
-            bool ret = Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.5f;
+            bool ret = Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.01f;
             ret &= FlatJunctions == DefaultFlatJunctions;
             ret &= Twist == DefaultTwist;
             ret &= NoCrossings == false;
@@ -182,12 +182,11 @@ namespace NodeController {
 
             Vector3 deltaPos = Vector3.zero;
 
-
             // embankment:
-            float embankmentAngle = EmbankmentAngle;
-            if (leftSide) embankmentAngle = -embankmentAngle;
-            float sinEmbankmentAngle = Mathf.Sin(EmbankmentAngle);
-            float cosEmbankmentAngle = Mathf.Cos(EmbankmentAngle);
+            float embankmentAngleRad = EmbankmentAngle * Mathf.Deg2Rad;
+            if (leftSide) embankmentAngleRad = -embankmentAngleRad;
+            float sinEmbankmentAngle = Mathf.Sin(embankmentAngleRad);
+            float cosEmbankmentAngle = Mathf.Cos(embankmentAngleRad);
             float hw = Info.m_halfWidth + Expansion;
             deltaPos.x += -hw * (1 - cosEmbankmentAngle); // outward
             deltaPos.y = hw * sinEmbankmentAngle;

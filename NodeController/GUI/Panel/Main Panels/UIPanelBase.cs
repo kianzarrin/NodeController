@@ -14,6 +14,7 @@ namespace NodeController.GUI {
             "PanelY", Settings.FileName, 58, true);
 
         public List<IDataControllerUI> Controls;
+        public UIResetButton ResetButton;
 
         public string Caption {
             get => lblCaption_.text;

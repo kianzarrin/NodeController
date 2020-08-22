@@ -1,7 +1,8 @@
+Solve the pedestrain path intersection problem on loading.
 twist (minor roads at tilted intersections)
-embankment 
-expansion
-slope
+embankment 1:X 2: 
+expansion  1:  2: 
+slope      1:  2: 
 
 
 - Esc key.

@@ -1,16 +1,19 @@
 namespace NodeController.GUI {
     using KianCommons.UI;
     using KianCommons;
+    using ColossalFramework.UI;
+    using static KianCommons.HelpersExtensions;
+    using UnityEngine;
 
     public abstract class UISliderBase: UISliderExt, IDataControllerUI {
-        UIResetButton resetButton_;
+        UIResetButton resetButton_ => root_?.ResetButton;
         UIPanelBase root_;
 
         public override void Start() {
             base.Start();
             root_ = GetRootContainer() as UIPanelBase;
-            resetButton_ = root_.GetComponentInChildren<UIResetButton>();
 
+            stepSize = 0.01f;
             //Log.Debug($"UISliderBase.Start() was called " +
             //    $"this.version={this.VersionOf()} " +
             //    $"root.version={root_.VersionOf()} " +
@@ -22,6 +25,22 @@ namespace NodeController.GUI {
         protected override void OnValueChanged() {
             base.OnValueChanged();
             Apply();
+        }
+
+
+        static float Quantize(float val, float step) {
+            if (step < 0) step = -step;
+            if (val > 0)
+                return Mathf.Floor(val / step) * step;
+            else
+                return -Mathf.Floor(-val / step) * step;
+        }
+
+        protected override void OnMouseWheel(UIMouseEventParameter p) {
+            scrollWheelAmount = 1f;
+            if (ShiftIsPressed) scrollWheelAmount *= 5f;
+            m_RawValue = Quantize(m_RawValue, 1f);
+            base.OnMouseWheel(p);
         }
 
         public void Apply() {
@@ -46,13 +65,10 @@ namespace NodeController.GUI {
         public abstract void ApplySegmentEnd(SegmentEndData data);
 
         protected bool Refreshing = false;
-        public void Refresh() {
+        public virtual void Refresh() {
             Log.Debug("UISliderBase.Refresh() was called");
 
             Refreshing = true;
-
-            tooltip = value.ToString();
-            RefreshTooltip();
 
             var data = root_.GetData();
             if (data is NodeData nodeData) {
@@ -68,6 +84,9 @@ namespace NodeController.GUI {
                     $"data={data.GetType().Name}.{data.VersionOf()} " +
                     $"NodeData.version={typeof(SegmentEndData).VersionOf()}");
             }
+
+            tooltip = value.ToString();
+            RefreshTooltip();
 
             parent.isVisible = isEnabled;
             parent.Invalidate();
