@@ -13,7 +13,7 @@ namespace NodeController.GUI {
             base.Start();
             root_ = GetRootContainer() as UIPanelBase;
 
-            stepSize = 0.01f;
+            stepSize = 0.5f; 
             //Log.Debug($"UISliderBase.Start() was called " +
             //    $"this.version={this.VersionOf()} " +
             //    $"root.version={root_.VersionOf()} " +
@@ -27,19 +27,9 @@ namespace NodeController.GUI {
             Apply();
         }
 
-
-        static float Quantize(float val, float step) {
-            if (step < 0) step = -step;
-            if (val > 0)
-                return Mathf.Floor(val / step) * step;
-            else
-                return -Mathf.Floor(-val / step) * step;
-        }
-
         protected override void OnMouseWheel(UIMouseEventParameter p) {
-            scrollWheelAmount = 1f;
+            scrollWheelAmount = 0.5f;
             if (ShiftIsPressed) scrollWheelAmount *= 5f;
-            m_RawValue = Quantize(m_RawValue, 1f);
             base.OnMouseWheel(p);
         }
 

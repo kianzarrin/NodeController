@@ -36,7 +36,7 @@ namespace NodeController {
         public float CurveRaduis0;
         public int PedestrianLaneCount;
         public Vector3Serializable CachedLeftCornerPos, CachedLeftCornerDir, CachedRightCornerPos, CachedRightCornerDir;// left and right is when you go away form junction
-        // corner pos/dir after CornerOffset, FlatJunctions,  Expansion, and EmbankmentAngle, but before DeltaLeft/RighCornerDir/Pos are applied. slope is applied last
+        // corner pos/dir after CornerOffset, FlatJunctions, Slope, Stretch, and EmbankmentAngle, but before DeltaLeft/RighCornerDir/Pos are applied.
         public Vector3Serializable LeftCornerDir0, RightCornerDir0, LeftCornerPos0, RightCornerPos0;
 
         // Configurable
@@ -50,9 +50,9 @@ namespace NodeController {
         public bool FlatJunctions;
         public bool Twist;
 
-        public float Expansion; //increase width
+        public float Stretch; //increase width
         public float EmbankmentAngle;
-        public float Slope;
+        public float SlopeAngle;
 
         // shortcuts
         public ref NetSegment Segment => ref SegmentID.ToSegment();
@@ -104,9 +104,9 @@ namespace NodeController {
             ret &= DeltaRightCornerDir == Vector3.zero;
             ret &= DeltaLeftCornerPos == Vector3.zero;
             ret &= DeltaLeftCornerDir == Vector3.zero;
-            ret &= Expansion == 0;
+            ret &= Stretch == 0;
             ret &= EmbankmentAngle == 0;
-            ret &= Slope == 0;
+            ret &= SlopeAngle == 0;
 
             return ret;
         }
@@ -121,7 +121,7 @@ namespace NodeController {
             NoJunctionProps = false;
             NoTLProps = false;
             DeltaRightCornerPos = DeltaRightCornerDir = DeltaLeftCornerPos = DeltaLeftCornerDir = default;
-            Expansion = EmbankmentAngle = Slope = 0;
+            Stretch = EmbankmentAngle = SlopeAngle = 0;
             NetManager.instance.UpdateNode(NodeID);
         }
 
@@ -180,6 +180,33 @@ namespace NodeController {
 
             // TODO calculate slope in CalculateCorner.Posfix()
 
+
+            // slope:
+            float angle0 = Mathf.Tan(cornerDir.y);
+            float angle = angle0 + SlopeAngle * Mathf.Deg2Rad;
+
+            if (angle == 90) {
+                cornerDir.x = cornerDir.z = 0;
+                cornerDir.y = 1;
+            } else if (angle == -90) {
+                cornerDir.x = cornerDir.z = 0;
+                cornerDir.y = -1;
+            } else if (angle > 90 || angle < -90) {
+                cornerDir.y += -Mathf.Atan(angle);
+                cornerDir.x = -cornerDir.x;
+                cornerDir.z = -cornerDir.z;
+            } else {
+                cornerDir.y += Mathf.Atan(angle);
+            }
+            if (NodeType != NodeTypeT.Middle) {
+                float d = VectorUtils.DotXZ(Node.m_position - cornerPos, cornerDir);
+                if (!FlatJunctions) // slope
+                    cornerPos.y = Node.m_position.y + d * cornerDir.y; // replace calculated value.
+                else // twsist segment end or nothing
+                    cornerPos.y += d * cornerDir.y;
+            }
+
+
             Vector3 deltaPos = Vector3.zero;
 
             // embankment:
@@ -187,13 +214,15 @@ namespace NodeController {
             if (leftSide) embankmentAngleRad = -embankmentAngleRad;
             float sinEmbankmentAngle = Mathf.Sin(embankmentAngleRad);
             float cosEmbankmentAngle = Mathf.Cos(embankmentAngleRad);
-            float hw = Info.m_halfWidth + Expansion;
-            deltaPos.x += -hw * (1 - cosEmbankmentAngle); // outward
-            deltaPos.y = hw * sinEmbankmentAngle;
+            float hw0 = Info.m_halfWidth;
+            float stretch = Stretch * 0.01f;
+            float hw_total = hw0 * (1+ stretch);
+            deltaPos.x += -hw_total * (1 - cosEmbankmentAngle); // outward
+            deltaPos.y = hw_total * sinEmbankmentAngle;
 
-            // expansion:
-            deltaPos.x += Expansion * cosEmbankmentAngle; // outward
-            deltaPos.y += Expansion * sinEmbankmentAngle; // vertical
+            // Stretch:
+            deltaPos.x += hw0 * stretch * cosEmbankmentAngle; // outward
+            deltaPos.y += hw0 * stretch * sinEmbankmentAngle; // vertical
 
             if (leftSide) {
                 cornerPos += TransformCoordinates(deltaPos, leftwardDir, Vector3.up, forwardDir);
@@ -211,29 +240,7 @@ namespace NodeController {
                 cornerDir += TransformCoordinates(DeltaRightCornerDir, rightwardDir, Vector3.up, forwardDir);
             }
 
-            // slope:
-            float cornery0 = cornerDir.y;
-            if (Slope == 100) {
-                cornerDir.x = cornerDir.z = 0;
-                cornerDir.y = 1;
-            } else if (Slope == -100) {
-                cornerDir.x = cornerDir.z = 0;
-                cornerDir.y = -1;
-            } else if (Slope > 100) {
-                cornerDir.y += 200 - Slope;
-                cornerDir.x = -cornerDir.x;
-                cornerDir.z = -cornerDir.z;
-            } else if (Slope < -100) {
-                cornerDir.y += -200 - Slope;
-                cornerDir.x = -cornerDir.x;
-                cornerDir.z = -cornerDir.z;
-            } else {
-                cornerDir.y += Slope;
-            }
-            if (NodeType != NodeTypeT.Middle) {
-                float d = VectorUtils.DotXZ(Node.m_position - cornerPos, cornerDir);
-                cornerPos.y += d * (cornerDir.y - cornery0);
-            }
+
         }
 
         /// <summary>

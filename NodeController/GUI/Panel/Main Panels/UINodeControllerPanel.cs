@@ -32,9 +32,6 @@ namespace NodeController.GUI {
             }
         }
 
-
-
-
         public override void Awake() {
             base.Awake();
             Instance = this;
@@ -64,6 +61,33 @@ namespace NodeController.GUI {
                 label.tooltip = "Adjusts Corner offset for smooth junction transition.";
 
                 var slider_ = panel.AddUIComponent<UIOffsetSlider>();
+                Controls.Add(slider_);
+            }
+
+            {
+                var panel = AddPanel();
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Embankment";
+                label.tooltip = "twist road sideways (superelevation)";
+                var slider_ = panel.AddUIComponent<EmbankmentSlider>();
+                Controls.Add(slider_);
+            }
+
+            {
+                var panel = AddPanel();
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Slope";
+                label.tooltip = "+90=>up -90=>down\n";
+                var slider_ = panel.AddUIComponent<SlopeSlider>();
+                Controls.Add(slider_);
+            }
+
+            {
+                var panel = AddPanel();
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Stretch";
+                label.tooltip = "-100%=>size nullified -90=>down\n";
+                var slider_ = panel.AddUIComponent<StretchSlider>();
                 Controls.Add(slider_);
             }
 

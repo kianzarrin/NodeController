@@ -1,9 +1,9 @@
 namespace NodeController.GUI {
+    using System.Linq;
+    using UnityEngine;
     using ColossalFramework.UI;
     using KianCommons;
     using KianCommons.UI;
-    using System.Linq;
-    using UnityEngine;
 
     public class UISegmentEndControllerPanel : UIPanelBase {
         #region Instanciation
@@ -52,23 +52,37 @@ namespace NodeController.GUI {
 
             {
                 var panel = AddPanel();
-
                 var label = panel.AddUIComponent<UILabel>();
                 label.text = "Corner smoothness";
                 label.tooltip = "Adjusts Corner offset for smooth junction transition.";
-
                 var slider_ = panel.AddUIComponent<UIOffsetSlider>();
                 Controls.Add(slider_);
             }
 
             {
                 var panel = AddPanel();
-
                 var label = panel.AddUIComponent<UILabel>();
                 label.text = "Embankment";
                 label.tooltip = "twist road sideways (superelevation)";
-
                 var slider_ = panel.AddUIComponent<EmbankmentSlider>();
+                Controls.Add(slider_);
+            }
+
+            {
+                var panel = AddPanel();
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Slope";
+                label.tooltip = "+90=>up -90=>down\n";
+                var slider_ = panel.AddUIComponent<SlopeSlider>();
+                Controls.Add(slider_);
+            }
+
+            {
+                var panel = AddPanel();
+                var label = panel.AddUIComponent<UILabel>();
+                label.text = "Stretch";
+                label.tooltip = "-100%=>size nullified -90=>down\n";
+                var slider_ = panel.AddUIComponent<StretchSlider>();
                 Controls.Add(slider_);
             }
 

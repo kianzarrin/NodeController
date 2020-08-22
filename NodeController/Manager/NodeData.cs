@@ -3,6 +3,7 @@ namespace NodeController {
     using ColossalFramework.Math;
     using CSUtil.Commons;
     using KianCommons;
+    using static KianCommons.HelpersExtensions;
     using System;
     using System.Runtime.Serialization;
     using TrafficManager.API.Traffic.Enums;
@@ -68,21 +69,26 @@ namespace NodeController {
         public int PedestrianLaneCount;
         public bool IsStraight;
         ushort segmentID1, segmentID2;
-
+        SegmentEndData SegmentEnd1 => SegmentEndManager.Instance.GetAt(segmentID1, NodeID);
+        SegmentEndData SegmentEnd2 => SegmentEndManager.Instance.GetAt(segmentID2, NodeID);
 
         // Configurable
         public NodeTypeT NodeType;
+
+        #region bulk edit
+        #region corner offset
         public float CornerOffset {
             get {
                 float ret = 0;
+                int count = 0;
                 for (int i = 0; i < 8; ++i) {
                     ushort segmentID = Node.GetSegment(i);
                     if (segmentID == 0) continue;
                     var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
-                    if (ret < segEnd.CornerOffset) {
-                        ret = segEnd.CornerOffset;
-                    }
+                    ret += segEnd.CornerOffset;
+                    count++;
                 }
+                ret /= count;
                 return ret;
             }
             set {
@@ -108,7 +114,8 @@ namespace NodeController {
             }
             return true;
         }
-
+        #endregion
+        #region clear markings
         // same as no markings. can't rename for the sake of backward compatibility.
         public bool ClearMarkings {
             get {
@@ -145,6 +152,77 @@ namespace NodeController {
             }
             return true;
         }
+        #endregion
+        #region embankment angle
+        public float EmbankmentAngle {
+            get {
+                Assert(CanMassEditNodeCorners());
+                Assert(SegmentCount == 2);
+                float ret = SegmentEnd1.EmbankmentAngle - SegmentEnd2.EmbankmentAngle;
+                ret = ret * 0.5f; //average
+                return ret;
+            }
+            set {
+                Assert(CanMassEditNodeCorners());
+                Assert(SegmentCount == 2);
+                SegmentEnd1.EmbankmentAngle = value;
+                SegmentEnd2.EmbankmentAngle = -value;
+            }
+        }
+
+        public bool HasUniformEmbankmentAngle() {
+            Assert(CanMassEditNodeCorners());
+            Assert(SegmentCount == 2);
+            return SegmentEnd1.EmbankmentAngle == -SegmentEnd2.EmbankmentAngle;
+        }
+        #endregion
+        #region slope angle
+        public float SlopeAngle {
+            get {
+                Assert(CanMassEditNodeCorners());
+                Assert(SegmentCount == 2);
+                float ret = SegmentEnd1.SlopeAngle - SegmentEnd2.SlopeAngle;
+                ret = ret * 0.5f; //average
+                return ret;
+            }
+            set {
+                Assert(CanMassEditNodeCorners());
+                Assert(SegmentCount == 2);
+                SegmentEnd1.SlopeAngle = value;
+                SegmentEnd2.SlopeAngle = -value;
+            }
+        }
+
+        public bool HasUniformSlopeAngle() {
+            Assert(CanMassEditNodeCorners());
+            Assert(SegmentCount == 2);
+            return SegmentEnd1.SlopeAngle == -SegmentEnd2.SlopeAngle;
+        }
+        #endregion
+        #region Stretch
+        public float Stretch {
+            get {
+                Assert(CanMassEditNodeCorners());
+                Assert(SegmentCount == 2);
+                float ret = SegmentEnd1.Stretch + SegmentEnd2.Stretch;
+                ret = ret * 0.5f; //average
+                return ret;
+            }
+            set {
+                Assert(CanMassEditNodeCorners());
+                Assert(SegmentCount == 2);
+                SegmentEnd1.Stretch = value;
+                SegmentEnd2.Stretch = value;
+            }
+        }
+
+        public bool HasUniformStretch() {
+            Assert(CanMassEditNodeCorners());
+            Assert(SegmentCount == 2);
+            return SegmentEnd1.Stretch == SegmentEnd2.Stretch;
+        }
+        #endregion
+        #endregion
 
         public bool FirstTimeTrafficLight; // turn on traffic light when inserting pedestrian node for the first time.
 

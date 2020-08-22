@@ -1,6 +1,4 @@
 namespace NodeController.GUI {
-    using UnityEngine;
-    using KianCommons;
 
     public class UIOffsetSlider : UISliderBase {
         public override void ApplyNode(NodeData data) {
