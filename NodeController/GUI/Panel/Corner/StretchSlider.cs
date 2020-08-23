@@ -10,12 +10,7 @@ namespace NodeController.GUI {
             minValue = -100;
             maxValue = 1000;
             stepSize = 1;
-        }
-
-        protected override void OnMouseWheel(UIMouseEventParameter p) {
-            scrollWheelAmount = 1f;
-            if (ShiftIsPressed) scrollWheelAmount *= 10f;
-            base.OnMouseWheel(p);
+            ScrollWheelAmount = 1;
         }
 
         public override void ApplyNode(NodeData data) 
@@ -31,15 +26,18 @@ namespace NodeController.GUI {
         }
 
         public override void RefreshNode(NodeData data) {
-            value = data.Stretch;
-            MixedValues = !data.HasUniformStretch();
             isEnabled = data.CanMassEditNodeCorners();
+            if (isEnabled) {
+                value = data.Stretch;
+                MixedValues = !data.HasUniformStretch();
+            }
         }
 
         public override void RefreshSegmentEnd(SegmentEndData data) {
             //Log.Debug("UIOffsetSlider.RefreshSegmentEnd() called. this.version=" + this.VersionOf());
-            value = data.Stretch;
             isEnabled = data.CanModifyCorners();
+            if (isEnabled)
+                value = data.Stretch;
         }
     }
 }

@@ -1,16 +1,16 @@
 namespace NodeController {
-    using ColossalFramework;
-    using ColossalFramework.Math;
-    using CSUtil.Commons;
-    using KianCommons;
-    using static KianCommons.HelpersExtensions;
     using System;
     using System.Runtime.Serialization;
-    using TrafficManager.API.Traffic.Enums;
-    using UnityEngine;
-    using TernaryBool = CSUtil.Commons.TernaryBool;
-    using Log = KianCommons.Log;
     using System.Collections.Generic;
+    using UnityEngine;
+    using ColossalFramework;
+    using static ColossalFramework.Math.VectorUtils;
+    using TrafficManager.API.Traffic.Enums;
+    using TernaryBool = CSUtil.Commons.TernaryBool;
+    using KianCommons;
+    using Log = KianCommons.Log;
+    using static KianCommons.HelpersExtensions;
+
 
     public enum NodeTypeT {
         Middle,
@@ -68,6 +68,7 @@ namespace NodeController {
         public float HWDiff;
         public int PedestrianLaneCount;
         public bool IsStraight;
+        public bool Is180;
         ushort segmentID1, segmentID2;
         SegmentEndData SegmentEnd1 => SegmentEndManager.Instance.GetAt(segmentID1, NodeID);
         SegmentEndData SegmentEnd2 => SegmentEndManager.Instance.GetAt(segmentID2, NodeID);
@@ -129,7 +130,7 @@ namespace NodeController {
                 return false;
             }
             set {
-                Log.Debug($"ClearMarkings.set() called for node:{NodeID}" /*+ Environment.StackTrace*/);
+                Log.Debug($"ClearMarkings.set() called for node:{NodeID}" + Environment.StackTrace);
                 for (int i = 0; i < 8; ++i) {
                     ushort segmentID = Node.GetSegment(i);
                     if (segmentID == 0) continue;
@@ -158,22 +159,22 @@ namespace NodeController {
             get {
                 Assert(CanMassEditNodeCorners());
                 Assert(SegmentCount == 2);
-                float ret = SegmentEnd1.EmbankmentAngle - SegmentEnd2.EmbankmentAngle;
+                float ret = SegmentEnd1.EmbankmentAngleDeg - SegmentEnd2.EmbankmentAngleDeg;
                 ret = ret * 0.5f; //average
                 return ret;
             }
             set {
                 Assert(CanMassEditNodeCorners());
                 Assert(SegmentCount == 2);
-                SegmentEnd1.EmbankmentAngle = value;
-                SegmentEnd2.EmbankmentAngle = -value;
+                SegmentEnd1.EmbankmentAngleDeg = value;
+                SegmentEnd2.EmbankmentAngleDeg = -value;
             }
         }
 
         public bool HasUniformEmbankmentAngle() {
             Assert(CanMassEditNodeCorners());
             Assert(SegmentCount == 2);
-            return SegmentEnd1.EmbankmentAngle == -SegmentEnd2.EmbankmentAngle;
+            return SegmentEnd1.EmbankmentAngleDeg == -SegmentEnd2.EmbankmentAngleDeg;
         }
         #endregion
         #region slope angle
@@ -181,22 +182,22 @@ namespace NodeController {
             get {
                 Assert(CanMassEditNodeCorners());
                 Assert(SegmentCount == 2);
-                float ret = SegmentEnd1.SlopeAngle - SegmentEnd2.SlopeAngle;
+                float ret = SegmentEnd1.SlopeAngleDeg - SegmentEnd2.SlopeAngleDeg;
                 ret = ret * 0.5f; //average
                 return ret;
             }
             set {
                 Assert(CanMassEditNodeCorners());
                 Assert(SegmentCount == 2);
-                SegmentEnd1.SlopeAngle = value;
-                SegmentEnd2.SlopeAngle = -value;
+                SegmentEnd1.SlopeAngleDeg = value;
+                SegmentEnd2.SlopeAngleDeg = -value;
             }
         }
 
         public bool HasUniformSlopeAngle() {
             Assert(CanMassEditNodeCorners());
             Assert(SegmentCount == 2);
-            return SegmentEnd1.SlopeAngle == -SegmentEnd2.SlopeAngle;
+            return SegmentEnd1.SlopeAngleDeg == -SegmentEnd2.SlopeAngleDeg;
         }
         #endregion
         #region Stretch
@@ -257,21 +258,21 @@ namespace NodeController {
 
             if (SegmentCount == 2) {
                 float hw0 = 0;
-                Vector2 dir0 = default;
+                Vector3 dir0 = default;
                 foreach (ushort segmentID in NetUtil.IterateNodeSegments(NodeID)) {
                     int nPedLanes = segmentID.ToSegment().Info.CountPedestrianLanes();
                     if (hw0 == 0) {
                         segmentID1 = segmentID;
                         hw0 = segmentID.ToSegment().Info.m_halfWidth;
-                        dir0 = VectorUtils.XZ(segmentID.ToSegment().GetDirection(NodeID));
-                        dir0.Normalize();
+                        dir0 = NormalizeXZ(segmentID.ToSegment().GetDirection(NodeID));
                         PedestrianLaneCount = nPedLanes;
                     } else {
                         segmentID2 = segmentID;
                         HWDiff = Mathf.Abs(segmentID.ToSegment().Info.m_halfWidth - hw0);
-                        Vector2 dir1 = VectorUtils.XZ(segmentID.ToSegment().GetDirection(NodeID));
-                        dir1.Normalize();
-                        IsStraight = Mathf.Abs(Vector2.Dot(dir0, dir1) + 1) < 0.001f;
+                        var dir1 = NormalizeXZ(segmentID.ToSegment().GetDirection(NodeID));
+                        float dot = DotXZ(dir0, dir1);
+                        IsStraight = dot > -0.999f; // 180 degrees
+                        Is180 = dot < 0.999f; // 0 degrees
                         PedestrianLaneCount = Math.Max(PedestrianLaneCount, nPedLanes);
                     }
                 }
@@ -292,13 +293,15 @@ namespace NodeController {
         }
 
         public bool IsDefault() {
-            bool ret = NodeType == DefaultNodeType;
+            bool isDefault = NodeType == DefaultNodeType;
+            if (!isDefault)
+                return false;
             foreach(var segEnd in IterateSegmentEndDatas()) { 
-                bool isDefault = segEnd == null || segEnd.IsDefault();
+                isDefault = segEnd == null || segEnd.IsDefault();
                 if (!isDefault)
                     return false;
             }
-            return ret;
+            return true;
         }
 
         public void ResetToDefault() {
@@ -319,7 +322,7 @@ namespace NodeController {
                     CornerOffset = 0f;
             }
 
-            Log.Debug($"NodeData.Refresh() Updating node:{NodeID}");
+            //Log.Debug($"NodeData.Refresh() Updating node:{NodeID}");
             if (HelpersExtensions.VERBOSE)
                 Log.Debug(Environment.StackTrace);
 
@@ -332,6 +335,7 @@ namespace NodeController {
 
         public bool IsCSUR => NetUtil.IsCSUR(Info);
         public NetInfo Info => NodeID.ToNode().Info;
+        public bool IsRoad => Info.m_netAI is RoadBaseAI;
         public bool EndNode() => NodeType == NodeTypeT.End;
         public bool NeedMiddleFlag() => NodeType == NodeTypeT.Middle;
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
@@ -340,8 +344,10 @@ namespace NodeController {
         public bool CanModifyOffset() => NodeType == NodeTypeT.Bend || NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
         public bool CanMassEditNodeCorners() => SegmentCount == 2;
         public bool CanModifyFlatJunctions() => !NeedMiddleFlag();
-        public bool ShowClearMarkingsToggle() => NodeType == NodeTypeT.Custom && !IsCSUR;
         public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
+        public bool CanModifyTextures() => IsRoad && !IsCSUR;
+        public bool ShowClearMarkingsToggle() => CanModifyTextures() && NodeType == NodeTypeT.Custom ;
+
 
         public bool NeedsTransitionFlag() =>
             SegmentCount == 2 &&
@@ -367,28 +373,30 @@ namespace NodeController {
             if (n != 2)
                 return true;
             var info = nodeID.ToNode().Info;
-            return info.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(info)!;
+            return info.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(info)!; // TODO support paths/tracks.
         }
 
         public bool CanChangeTo(NodeTypeT newNodeType) {
+            Log.Debug($"CanChangeTo({newNodeType}) was called" + Environment.StackTrace);
             if (SegmentCount == 1)
                 return newNodeType == NodeTypeT.End;
 
             if (SegmentCount > 2 || IsCSUR)
                 return newNodeType == NodeTypeT.Custom;
 
-            // segmentCount ==2 at this point.
+            bool middle = DefaultFlags.IsFlagSet(NetNode.Flags.Middle);
+            // segmentCount == 2 at this point.
             switch (newNodeType) {
                 case NodeTypeT.Crossing:
                     return PedestrianLaneCount >= 2 && HWDiff < 0.001f && IsStraight;
                 case NodeTypeT.UTurn:
                     return Info.m_forwardVehicleLaneCount > 0 && Info.m_backwardVehicleLaneCount > 0;
                 case NodeTypeT.Stretch:
-                    return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle) && IsStraight;
+                    return CanModifyTextures() && !middle && IsStraight;
                 case NodeTypeT.Bend:
-                    return !DefaultFlags.IsFlagSet(NetNode.Flags.Middle);
+                    return !middle;
                 case NodeTypeT.Middle:
-                    return IsStraight;
+                    return IsStraight || Is180; 
                 case NodeTypeT.Custom:
                     return true;
                 case NodeTypeT.End:

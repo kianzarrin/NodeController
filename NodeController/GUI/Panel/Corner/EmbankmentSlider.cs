@@ -14,7 +14,7 @@ namespace NodeController.GUI {
             => data.EmbankmentAngle = value;
 
         public override void ApplySegmentEnd(SegmentEndData data)
-            => data.EmbankmentAngle = value;
+            => data.EmbankmentAngleDeg = value;
 
         public override void Refresh() {
             base.Refresh();
@@ -23,14 +23,17 @@ namespace NodeController.GUI {
         }
 
         public override void RefreshNode(NodeData data) {
-            value = data.EmbankmentAngle;
-            MixedValues = !data.HasUniformEmbankmentAngle();
             isEnabled = data.CanMassEditNodeCorners();
+            if (isEnabled) {
+                value = data.EmbankmentAngle;
+                MixedValues = !data.HasUniformEmbankmentAngle();
+            }
         }
 
         public override void RefreshSegmentEnd(SegmentEndData data) {
-            value = data.EmbankmentAngle;
             isEnabled = data.CanModifyCorners();
+            if(isEnabled)
+                value = data.EmbankmentAngleDeg;
         }
     }
 }

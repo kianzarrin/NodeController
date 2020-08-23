@@ -1,4 +1,5 @@
 namespace NodeController {
+    using ColossalFramework;
     using ColossalFramework.Math;
     using CSUtil.Commons;
     using KianCommons;
@@ -30,6 +31,7 @@ namespace NodeController {
         public bool DefaultFlatJunctions => Info.m_flatJunctions;
         public bool DefaultTwist => Info.m_twistSegmentEnds;
         public NetSegment.Flags DefaultFlags;
+        public float DefaultSlopeAngleDeg;
 
         // cache
         public bool HasPedestrianLanes;
@@ -51,8 +53,8 @@ namespace NodeController {
         public bool Twist;
 
         public float Stretch; //increase width
-        public float EmbankmentAngle;
-        public float SlopeAngle;
+        public float EmbankmentAngleDeg;
+        public float SlopeAngleDeg;
 
         // shortcuts
         public ref NetSegment Segment => ref SegmentID.ToSegment();
@@ -74,6 +76,8 @@ namespace NodeController {
         public void Calculate() {
             DefaultFlags = Segment.m_flags;
             PedestrianLaneCount = Info.CountPedestrianLanes();
+            float diry = Segment.GetDirection(NodeID).y;
+            DefaultSlopeAngleDeg = Mathf.Atan(diry);
 
             // left and right is when you go away form junction
             // both in SegmentEndData Cahced* and NetSegment.CalculateCorner()
@@ -93,6 +97,7 @@ namespace NodeController {
 
         public bool IsDefault() {
             bool ret = Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.01f;
+            ret &= Mathf.Abs(SlopeAngleDeg - DefaultSlopeAngleDeg) < 0.26f; // the slider is precise down to 0.5 increments.
             ret &= FlatJunctions == DefaultFlatJunctions;
             ret &= Twist == DefaultTwist;
             ret &= NoCrossings == false;
@@ -105,14 +110,14 @@ namespace NodeController {
             ret &= DeltaLeftCornerPos == Vector3.zero;
             ret &= DeltaLeftCornerDir == Vector3.zero;
             ret &= Stretch == 0;
-            ret &= EmbankmentAngle == 0;
-            ret &= SlopeAngle == 0;
+            ret &= EmbankmentAngleDeg == 0;
 
             return ret;
         }
 
         public void ResetToDefault() {
             CornerOffset = DefaultCornerOffset;
+            SlopeAngleDeg = DefaultSlopeAngleDeg;
             FlatJunctions = DefaultFlatJunctions;
             Twist = DefaultTwist;
             NoCrossings = false;
@@ -121,7 +126,7 @@ namespace NodeController {
             NoJunctionProps = false;
             NoTLProps = false;
             DeltaRightCornerPos = DeltaRightCornerDir = DeltaLeftCornerPos = DeltaLeftCornerDir = default;
-            Stretch = EmbankmentAngle = SlopeAngle = 0;
+            Stretch = EmbankmentAngleDeg = 0;
             NetManager.instance.UpdateNode(NodeID);
         }
 
@@ -135,6 +140,10 @@ namespace NodeController {
             }
             if (!CanModifyTwist()) {
                 Twist = DefaultTwist;
+            }
+            if(!CanModifyCorners()) {
+                SlopeAngleDeg = DefaultSlopeAngleDeg;
+                Stretch = EmbankmentAngleDeg = 0;
             }
             Log.Debug($"SegmentEndData.Refresh() Updating segment:{SegmentID} node:{NodeID} CornerOffset={CornerOffset}");
             if (HelpersExtensions.VERBOSE)
@@ -180,37 +189,37 @@ namespace NodeController {
 
             // TODO calculate slope in CalculateCorner.Posfix()
 
-
             // slope:
-            float angle0 = Mathf.Tan(cornerDir.y);
-            float angle = angle0 + SlopeAngle * Mathf.Deg2Rad;
+            float dirY0 = cornerDir.y;
+            float angle0Rad = Mathf.Tan(dirY0);
+            float angle0Deg = angle0Rad * Mathf.Rad2Deg;
+            float angleDeg = angle0Deg + SlopeAngleDeg; // TODO default slope
+            float angleRad = angle0Rad + SlopeAngleDeg * Mathf.Deg2Rad;
 
-            if (angle == 90) {
+
+            if (angleDeg == 90) {
                 cornerDir.x = cornerDir.z = 0;
                 cornerDir.y = 1;
-            } else if (angle == -90) {
+            } else if (angleDeg == -90) {
                 cornerDir.x = cornerDir.z = 0;
                 cornerDir.y = -1;
-            } else if (angle > 90 || angle < -90) {
-                cornerDir.y += -Mathf.Atan(angle);
+            } else if (angleDeg > 90 || angleDeg < -90) {
+                cornerDir.y += -Mathf.Atan(angleRad);
                 cornerDir.x = -cornerDir.x;
                 cornerDir.z = -cornerDir.z;
             } else {
-                cornerDir.y += Mathf.Atan(angle);
+                cornerDir.y += Mathf.Atan(angleRad);
             }
-            if (NodeType != NodeTypeT.Middle) {
-                float d = VectorUtils.DotXZ(Node.m_position - cornerPos, cornerDir);
-                if (!FlatJunctions) // slope
-                    cornerPos.y = Node.m_position.y + d * cornerDir.y; // replace calculated value.
-                else // twsist segment end or nothing
-                    cornerPos.y += d * cornerDir.y;
+            if (!Node.m_flags.IsFlagSet(NetNode.Flags.Middle)) {
+                float d = VectorUtils.DotXZ(cornerPos - Node.m_position, cornerDir);
+                cornerPos.y += d * (cornerDir.y - dirY0); 
             }
 
 
             Vector3 deltaPos = Vector3.zero;
 
             // embankment:
-            float embankmentAngleRad = EmbankmentAngle * Mathf.Deg2Rad;
+            float embankmentAngleRad = EmbankmentAngleDeg * Mathf.Deg2Rad;
             if (leftSide) embankmentAngleRad = -embankmentAngleRad;
             float sinEmbankmentAngle = Mathf.Sin(embankmentAngleRad);
             float cosEmbankmentAngle = Mathf.Cos(embankmentAngleRad);

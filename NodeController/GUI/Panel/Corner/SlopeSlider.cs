@@ -10,7 +10,7 @@ namespace NodeController.GUI {
             => data.SlopeAngle = value;
 
         public override void ApplySegmentEnd(SegmentEndData data)
-            => data.SlopeAngle = value;
+            => data.SlopeAngleDeg = value;
 
         public override void Refresh() {
             base.Refresh();
@@ -19,15 +19,18 @@ namespace NodeController.GUI {
         }
 
         public override void RefreshNode(NodeData data) {
-            value = data.SlopeAngle;
-            MixedValues = !data.HasUniformSlopeAngle();
             isEnabled = data.CanMassEditNodeCorners();
+            if (isEnabled) {
+                value = data.SlopeAngle;
+                MixedValues = !data.HasUniformSlopeAngle();
+            }
         }
 
         public override void RefreshSegmentEnd(SegmentEndData data) {
             //Log.Debug("UIOffsetSlider.RefreshSegmentEnd() called. this.version=" + this.VersionOf());
-            value = data.SlopeAngle;
             isEnabled = data.CanModifyCorners();
+            if(isEnabled)
+                value = data.SlopeAngleDeg;
         }
     }
 }

@@ -9,11 +9,33 @@ namespace NodeController.GUI {
         UIResetButton resetButton_ => root_?.ResetButton;
         UIPanelBase root_;
 
+        public float ScrollWheelAmount;
+
+        //#region tooltip workaround
+        //private string tooltip_;
+        //public new virtual string tooltip {
+        //    get => tooltip_;
+        //    set {
+        //        tooltip = null;
+        //        tooltip_ = value;
+        //        RefreshTooltip();
+        //    }
+        //}
+
+        //public new void RefreshTooltip() {
+        //    if (!SlicedSprite) return;
+        //    this.SlicedSprite.tooltip = tooltip_;
+        //    SlicedSprite.RefreshTooltip();
+        //}
+        //#endregion
+
+
         public override void Start() {
             base.Start();
             root_ = GetRootContainer() as UIPanelBase;
 
-            stepSize = 0.5f; 
+            stepSize = 0.5f;
+            ScrollWheelAmount = 0.5f;
             //Log.Debug($"UISliderBase.Start() was called " +
             //    $"this.version={this.VersionOf()} " +
             //    $"root.version={root_.VersionOf()} " +
@@ -28,8 +50,8 @@ namespace NodeController.GUI {
         }
 
         protected override void OnMouseWheel(UIMouseEventParameter p) {
-            scrollWheelAmount = 0.5f;
-            if (ShiftIsPressed) scrollWheelAmount *= 5f;
+            scrollWheelAmount = ScrollWheelAmount;
+            if (ShiftIsPressed) scrollWheelAmount *= 10;
             base.OnMouseWheel(p);
         }
 
