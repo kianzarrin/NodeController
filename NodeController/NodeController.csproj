@@ -124,6 +124,9 @@
     <None Update="Resources\cursor_insert_crossing.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\cursor_move.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\cursor_searching.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

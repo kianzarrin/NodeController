@@ -95,6 +95,7 @@ namespace NodeController.GUI {
         }
 
         public virtual void Refresh() {
+            Unfocus();
             autoLayout = true;
             foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>())
                 control.Refresh();

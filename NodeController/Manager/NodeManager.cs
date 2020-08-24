@@ -1,6 +1,7 @@
 namespace NodeController {
     using System;
     using KianCommons;
+    using NodeController.Tool;
 
     [Serializable]
     public class NodeManager {
@@ -71,8 +72,10 @@ namespace NodeController {
                 SegmentEndManager.Instance.SetAt(segmentID: segmentID, nodeID: nodeID, value: segEnd);
             }
 
-            int nPedLanes = controlPoint.m_segment.ToSegment().Info.CountPedestrianLanes();
-            if (nodeType == NodeTypeT.Crossing && nPedLanes<2)
+            var info = controlPoint.m_segment.ToSegment().Info;
+            int nPedLanes = info.CountPedestrianLanes();
+            bool isRoad = info.m_netAI is RoadBaseAI;
+            if (nodeType == NodeTypeT.Crossing && (nPedLanes<2 || !isRoad) )
                 buffer[nodeID] = new NodeData(nodeID);
             else
                 buffer[nodeID] = new NodeData(nodeID, nodeType);
@@ -92,6 +95,7 @@ namespace NodeController {
                     GetOrCreate(segmentID: segmentID, nodeID: nodeID);
             }
 
+            HelpersExtensions.AssertNotNull(data);
             return ref data;
         }
 
@@ -102,7 +106,8 @@ namespace NodeController {
         public void RefreshData(ushort nodeID) {
             if (nodeID == 0 || buffer[nodeID] == null)
                 return;
-            if (buffer[nodeID].IsDefault()) {
+            bool selected = NodeControllerTool.Instance.SelectedNodeID == nodeID;
+            if (buffer[nodeID].IsDefault() && !selected) {
                 ResetNodeToDefault(nodeID);
             } else {
                 foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID)) {
@@ -111,7 +116,6 @@ namespace NodeController {
                 }
                 buffer[nodeID].Refresh();
             }
-
         }
 
         public void ResetNodeToDefault(ushort nodeID) {
@@ -148,7 +152,7 @@ namespace NodeController {
 
             buffer[nodeID].Calculate();
 
-            if (!buffer[nodeID].CanChangeTo(buffer[nodeID].NodeType)) {
+            if (!buffer[nodeID].CanChangeTo(buffer[nodeID].NodeType).LogRet("CanChangeTo()->")) {
                 ResetNodeToDefault(nodeID);
             }
         }

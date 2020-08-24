@@ -2,6 +2,8 @@ namespace NodeController {
     using System;
     using System.Collections.Generic;
     using KianCommons;
+    using NodeController.Tool;
+    using UnityEngine.Assertions;
 
     [Serializable]
     public class SegmentEndManager {
@@ -61,6 +63,7 @@ namespace NodeController {
                 data = new SegmentEndData(segmentID: segmentID, nodeID: nodeID);
                 SetAt(segmentID: segmentID, startNode: startNode, data);
             }
+            HelpersExtensions.AssertNotNull(data);
             return ref data;
         }
 
@@ -72,8 +75,10 @@ namespace NodeController {
             SegmentEndData segEnd = GetAt(segmentID, startNode);
             if (segmentID == 0 || segEnd == null) 
                 return;
-            if (segEnd.IsDefault()) {
-                ResetSegmentEndToDefault(segmentID,startNode);
+            ushort nodeID = segmentID.ToSegment().GetNode(startNode);
+            bool selected = NodeControllerTool.Instance.SelectedNodeID == nodeID;
+            if (segEnd.IsDefault() && !selected) {
+                ResetSegmentEndToDefault(segmentID, startNode);
             } else {
                 segEnd.Refresh();
             }

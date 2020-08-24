@@ -11,7 +11,7 @@ namespace NodeController.LifeCycle
         {
             HelpersExtensions.VERBOSE = false;
             Log.Info("LifeCycle.Load() called");
-            PluginUtil.Init();
+            CSURUtil.Init();
             HarmonyExtension.InstallHarmony();
             NodeControllerTool.Create();
             NodeManager.Instance.OnLoad();

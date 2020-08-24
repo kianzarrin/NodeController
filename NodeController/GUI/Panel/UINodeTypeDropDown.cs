@@ -92,6 +92,8 @@ namespace NodeController.GUI {
             NodeData data = (root_ as UINodeControllerPanel).NodeData;
             if (data == null) return;
             data.NodeType = SelectedItem;
+            foreach (var segmentEndData in data.IterateSegmentEndDatas())
+                segmentEndData.UpdateSlopeAngleDeg = true;
             Assert(!refreshing_, "!refreshing_");
             data.Refresh();
             (root_ as IDataControllerUI).Refresh();
@@ -105,7 +107,7 @@ namespace NodeController.GUI {
             NodeData data = (root_ as UINodeControllerPanel).NodeData;
             items = null;
             foreach (NodeTypeT nodeType in Enum.GetValues(typeof(NodeTypeT))) {
-                if (data.CanChangeTo(nodeType)) {
+                if (data.CanChangeTo(nodeType).LogRet("CanChangeTo()->")) {
                     AddItem(nodeType.ToString());
                 }
             }

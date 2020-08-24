@@ -10,7 +10,7 @@ namespace NodeController {
     using KianCommons;
     using Log = KianCommons.Log;
     using static KianCommons.HelpersExtensions;
-
+    using KianCommons.Math;
 
     public enum NodeTypeT {
         Middle,
@@ -130,7 +130,7 @@ namespace NodeController {
                 return false;
             }
             set {
-                Log.Debug($"ClearMarkings.set() called for node:{NodeID}" + Environment.StackTrace);
+                //Log.Debug($"ClearMarkings.set() called for node:{NodeID}" + Environment.StackTrace);
                 for (int i = 0; i < 8; ++i) {
                     ushort segmentID = Node.GetSegment(i);
                     if (segmentID == 0) continue;
@@ -197,7 +197,7 @@ namespace NodeController {
         public bool HasUniformSlopeAngle() {
             Assert(CanMassEditNodeCorners());
             Assert(SegmentCount == 2);
-            return SegmentEnd1.SlopeAngleDeg == -SegmentEnd2.SlopeAngleDeg;
+            return MathUtil.EqualAprox(SegmentEnd1.SlopeAngleDeg, -SegmentEnd2.SlopeAngleDeg, error: 1f);
         }
         #endregion
         #region Stretch
@@ -222,23 +222,28 @@ namespace NodeController {
             Assert(SegmentCount == 2);
             return SegmentEnd1.Stretch == SegmentEnd2.Stretch;
         }
-        #endregion
-        #endregion
+        #endregion Strech
+        #endregion bulk edit
 
         public bool FirstTimeTrafficLight; // turn on traffic light when inserting pedestrian node for the first time.
 
         public ref NetNode Node => ref NodeID.ToNode();
 
         public NodeData(ushort nodeID) {
+            Assert(IsSupported(nodeID));
             NodeID = nodeID;
             Calculate();
             NodeType = DefaultNodeType;
-            FirstTimeTrafficLight = NodeType == NodeTypeT.Crossing;
+            FirstTimeTrafficLight = false;
+            Assert(IsDefault(), "IsDefault()");
+            Assert(CanChangeTo(NodeType), $"CanChangeTo(NodeType={NodeType})");
         }
 
         public NodeData(ushort nodeID, NodeTypeT nodeType) : this(nodeID) {
             NodeType = nodeType;
-            FirstTimeTrafficLight = NodeType == NodeTypeT.Crossing;
+            FirstTimeTrafficLight = nodeType == NodeTypeT.Crossing;
+            // TODO update slope angle.
+            Assert(CanChangeTo(NodeType), $"CanChangeTo(NodeType={NodeType})");
         }
 
         public void Calculate() {
@@ -271,8 +276,8 @@ namespace NodeController {
                         HWDiff = Mathf.Abs(segmentID.ToSegment().Info.m_halfWidth - hw0);
                         var dir1 = NormalizeXZ(segmentID.ToSegment().GetDirection(NodeID));
                         float dot = DotXZ(dir0, dir1);
-                        IsStraight = dot > -0.999f; // 180 degrees
-                        Is180 = dot < 0.999f; // 0 degrees
+                        IsStraight = dot < -0.999f; // 180 degrees
+                        Is180 = dot > 0.999f; // 0 degrees
                         PedestrianLaneCount = Math.Max(PedestrianLaneCount, nPedLanes);
                     }
                 }
@@ -370,14 +375,14 @@ namespace NodeController {
             }
 
             int n = nodeID.ToNode().CountSegments();
-            if (n != 2)
-                return true;
+            if (n != 2) return true;
             var info = nodeID.ToNode().Info;
-            return info.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(info)!; // TODO support paths/tracks.
+            //return info.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(info); // TODO support paths/tracks.
+            return !NetUtil.IsCSUR(info);
         }
 
         public bool CanChangeTo(NodeTypeT newNodeType) {
-            Log.Debug($"CanChangeTo({newNodeType}) was called" + Environment.StackTrace);
+            Log.Debug($"CanChangeTo({newNodeType}) was called.");
             if (SegmentCount == 1)
                 return newNodeType == NodeTypeT.End;
 
@@ -390,7 +395,7 @@ namespace NodeController {
                 case NodeTypeT.Crossing:
                     return PedestrianLaneCount >= 2 && HWDiff < 0.001f && IsStraight;
                 case NodeTypeT.UTurn:
-                    return Info.m_forwardVehicleLaneCount > 0 && Info.m_backwardVehicleLaneCount > 0;
+                    return IsRoad && Info.m_forwardVehicleLaneCount > 0 && Info.m_backwardVehicleLaneCount > 0;
                 case NodeTypeT.Stretch:
                     return CanModifyTextures() && !middle && IsStraight;
                 case NodeTypeT.Bend:

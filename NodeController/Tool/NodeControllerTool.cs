@@ -85,9 +85,9 @@ namespace NodeController.Tool {
             CursorSearching.m_texture = TextureUtil.GetTextureFromFile("cursor_searching.png"); // grey gear
             CursorSearching.m_hotspot = new Vector2(5f, 0f);
 
-            //CursorMoveCorner = ScriptableObject.CreateInstance<CursorInfo>();
-            //CursorMoveCorner.m_texture = TextureUtil.GetTextureFromFile("cursor_move.png"); // 
-            //CursorMoveCorner.m_hotspot = new Vector2(5f, 0f);
+            CursorMoveCorner = ScriptableObject.CreateInstance<CursorInfo>();
+            CursorMoveCorner.m_texture = TextureUtil.GetTextureFromFile("cursor_move.png"); // 
+            CursorMoveCorner.m_hotspot = new Vector2(5f, 0f);
         }
 
         public static NodeControllerTool Create() {
@@ -143,12 +143,12 @@ namespace NodeController.Tool {
             Log.Debug($"NodeControllerTool.OnDisable()");
             base.OnDisable();
             Button?.Deactivate();
+            SelectedNodeID = 0;
+            SelectedSegmentID = 0;
             NCPanel?.Close();
             NCPanel?.Disable();
             SECPanel?.Close();
             SECPanel?.Disable();
-            SelectedNodeID = 0;
-            SelectedSegmentID = 0;
         }
 
         void DragCorner() {
@@ -245,7 +245,7 @@ namespace NodeController.Tool {
                 } else if (AltIsPressed) {
                     searching = true;
                 } else if (insert) {
-                    bool isRoad = m_prefab.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(m_prefab);
+                    bool isRoad = !NetUtil.IsCSUR(m_prefab);
                     ToolErrors error = m_cachedErrors;
                     error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
                     fail = error != ToolErrors.None || !isRoad;
@@ -398,10 +398,9 @@ namespace NodeController.Tool {
                     bool fail = !NodeData.IsSupported(nodeID);
                     DrawNodeCircle(cameraInfo, GetColor(fail), nodeID, false);
                 } else if (controlPoint.m_segment != 0) {
-                    bool isRoad = m_prefab.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(m_prefab);
                     ToolErrors error = m_cachedErrors;
                     error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
-                    bool fail = error != ToolErrors.None || !isRoad;
+                    bool fail = error != ToolErrors.None || NetUtil.IsCSUR(m_prefab);
                     Color color = GetColor(fail, true);
                     RenderStripOnSegment(cameraInfo, controlPoint.m_segment, controlPoint.m_position, 1.5f, color);
                 }
@@ -496,7 +495,7 @@ namespace NodeController.Tool {
                 SelectedSegmentID = 0;
                 NCPanel.ShowNode(SelectedNodeID);
             } else if (c.m_segment != 0) {
-                if (m_prefab.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(m_prefab)) {
+                if (!NetUtil.IsCSUR(m_prefab)) {
                     SimulationManager.instance.AddAction(delegate () {
                         NodeData nodeData = NodeManager.Instance.InsertNode(c);
                         if (nodeData != null) {
@@ -516,9 +515,9 @@ namespace NodeController.Tool {
             if (SelectedNodeID == 0) {
                 DisableTool();
             } else {
+                SelectedSegmentID = SelectedNodeID = 0;
                 NCPanel.Close();
                 SECPanel.Close();
-                SelectedSegmentID = SelectedNodeID = 0;
             }
         }
 

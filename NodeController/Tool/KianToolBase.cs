@@ -1,4 +1,5 @@
 namespace NodeController.Tool {
+    using ColossalFramework;
     using ColossalFramework.UI;
     using KianCommons;
     using UnityEngine;
@@ -13,6 +14,23 @@ namespace NodeController.Tool {
 
         protected abstract void OnPrimaryMouseClicked();
         protected abstract void OnSecondaryMouseClicked();
+
+        static InfoManager infoMan => Singleton<InfoManager>.instance;
+        public static void SetUnderGroundView() => infoMan.SetCurrentMode(
+            InfoManager.InfoMode.Underground, InfoManager.SubInfoMode.UndergroundTunnels);
+        public static void SetOverGroundView() => infoMan.SetCurrentMode(
+            InfoManager.InfoMode.None, InfoManager.SubInfoMode.None);
+
+        protected virtual void OnPageDown() {
+            Log.Debug("KianToolBase.OnPageDown()");
+            if (m_mouseRayValid)
+                SetUnderGroundView();
+        }
+
+        protected virtual void OnPageUp() {
+            if (m_mouseRayValid)
+                SetOverGroundView();
+        }
 
         public void ToggleTool() {
             Log.Debug("ToggleTool: called");
@@ -40,16 +58,26 @@ namespace NodeController.Tool {
             if (e.type == EventType.MouseUp && m_mouseRayValid) {
                 if (e.button == 0) OnPrimaryMouseClicked();
                 else if (e.button == 1) OnSecondaryMouseClicked();
-            }
+            } 
             if (e.type == EventType.keyDown && e.keyCode == KeyCode.Escape) {
                 e.Use();
                 DisableTool();
+            }
+            if (e.type == EventType.keyDown && e.keyCode == KeyCode.PageUp) {
+                e.Use();
+                OnPageUp();
+            }
+            if (e.type == EventType.keyDown && e.keyCode == KeyCode.PageDown) {
+                e.Use();
+                OnPageDown();
             }
         }
 
         #region hover
         internal Ray m_mouseRay;
         internal float m_mouseRayLength;
+
+        /// <summary>mouse ray in CS but not inside UI panel</summary>
         internal bool m_mouseRayValid;
         internal Vector3 m_mousePosition;
         internal RaycastOutput raycastOutput;
@@ -71,7 +99,7 @@ namespace NodeController.Tool {
         }
 
         protected override void OnToolLateUpdate() {
-            base.OnToolUpdate();
+            base.OnToolLateUpdate();
             m_mousePosition = Input.mousePosition;
             m_mouseRay = Camera.main.ScreenPointToRay(m_mousePosition);
             m_mouseRayLength = Camera.main.farClipPlane;
@@ -81,6 +109,69 @@ namespace NodeController.Tool {
         public ushort HoveredNodeId { get; private set; } = 0;
         public ushort HoveredSegmentId { get; private set; } = 0;
         protected bool IsHoverValid { get; private set; }
+
+
+        //  copy modified from DefaultTool.GetService()
+        public virtual RaycastService GetService() {
+            var currentMode = Singleton<InfoManager>.instance.CurrentMode;
+            var currentSubMode = Singleton<InfoManager>.instance.CurrentSubMode;
+            ItemClass.Availability avaliblity = Singleton<ToolManager>.instance.m_properties.m_mode;
+            if ((avaliblity & ItemClass.Availability.MapAndAsset) == ItemClass.Availability.None) {
+                switch (currentMode) {
+                    case InfoManager.InfoMode.TrafficRoutes:
+                    case InfoManager.InfoMode.Tours:
+                        break;
+                    case InfoManager.InfoMode.Underground:
+                        if (currentSubMode == InfoManager.SubInfoMode.Default) {
+                            return new RaycastService { m_itemLayers = ItemClass.Layer.MetroTunnels };
+                        }
+                        // ignore water pipes:
+                        return new RaycastService { m_itemLayers =  ItemClass.Layer.Default };
+                    default:
+                        if (currentMode != InfoManager.InfoMode.Water) {
+                            if (currentMode == InfoManager.InfoMode.Transport) {
+                                return new RaycastService(
+                                    ItemClass.Service.PublicTransport,
+                                    ItemClass.SubService.None,
+                                    ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels
+                                    /*| ItemClass.Layer.MetroTunnels | ItemClass.Layer.BlimpPaths | ItemClass.Layer.HelicopterPaths | ItemClass.Layer.FerryPaths*/
+                                    );
+                            }
+                            if (currentMode == InfoManager.InfoMode.Traffic) {
+                                break;
+                            }
+                            if (currentMode != InfoManager.InfoMode.Heating) {
+                                return new RaycastService { m_itemLayers = ItemClass.Layer.Default };
+                            }
+                        }
+                        // ignore water pipes:
+                        //return new RaycastService(ItemClass.Service.Water, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.WaterPipes);
+                        return new RaycastService { m_itemLayers = ItemClass.Layer.Default };
+                    case InfoManager.InfoMode.Fishing:
+                        // ignore fishing
+                        //return new RaycastService(ItemClass.Service.Fishing, ItemClass.SubService.None, ItemClass.Layer.Default | ItemClass.Layer.FishingPaths);
+                        return new RaycastService { m_itemLayers = ItemClass.Layer.Default };
+                }
+                return new RaycastService { m_itemLayers = ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels };
+            }
+            if (currentMode != InfoManager.InfoMode.Underground) {
+                if (currentMode != InfoManager.InfoMode.Tours) {
+                    if (currentMode == InfoManager.InfoMode.Transport) {
+                        return new RaycastService {
+                            m_itemLayers = ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels
+                            /*| ItemClass.Layer.AirplanePaths | ItemClass.Layer.ShipPaths | ItemClass.Layer.Markers*/
+                        };
+                    }
+                    if (currentMode != InfoManager.InfoMode.Traffic) {
+                        return new RaycastService { m_itemLayers = ItemClass.Layer.Default | ItemClass.Layer.Markers };
+                    }
+                }
+                return new RaycastService {
+                    m_itemLayers = ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels | ItemClass.Layer.Markers
+                };
+            }
+            return new RaycastService { m_itemLayers = ItemClass.Layer.MetroTunnels };
+        }
 
         // simulation thread
         protected bool DetermineHoveredElements() {
@@ -92,18 +183,14 @@ namespace NodeController.Tool {
 
             // find currently hovered node
             RaycastInput nodeInput = new RaycastInput(m_mouseRay, m_mouseRayLength) {
-                m_netService = {
-                        // find road segments
-                        m_itemLayers = ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels,
-                        m_service = ItemClass.Service.Road
-                    },
+                m_netService = GetService(),
                 m_ignoreTerrain = true,
-                m_ignoreNodeFlags = NetNode.Flags.None
+                m_ignoreNodeFlags = NetNode.Flags.None,
             };
 
             if (RayCast(nodeInput, out raycastOutput)) {
                 HoveredNodeId = raycastOutput.m_netNode;
-            }
+            } 
 
             HoveredSegmentId = GetSegmentFromNode(raycastOutput.m_hitPos);
 
@@ -114,11 +201,7 @@ namespace NodeController.Tool {
 
             // find currently hovered segment
             var segmentInput = new RaycastInput(m_mouseRay, m_mouseRayLength) {
-                m_netService = {
-                    // find road segments
-                    m_itemLayers = ItemClass.Layer.Default | ItemClass.Layer.MetroTunnels,
-                    m_service = ItemClass.Service.Road
-                },
+                m_netService = GetService(),
                 m_ignoreTerrain = true,
                 m_ignoreSegmentFlags = NetSegment.Flags.None
             };
@@ -126,7 +209,6 @@ namespace NodeController.Tool {
             if (RayCast(segmentInput, out raycastOutput)) {
                 HoveredSegmentId = raycastOutput.m_netSegment;
             }
-
 
             if (HoveredNodeId <= 0 && HoveredSegmentId > 0) {
                 // alternative way to get a node hit: check distance to start and end nodes

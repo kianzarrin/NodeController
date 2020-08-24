@@ -100,8 +100,8 @@ namespace NodeController.GUI {
             }
             {
                 var panel = AddPanel();
-                var button = panel.AddUIComponent<UIResetButton>();
-                Controls.Add(button);
+                ResetButton = panel.AddUIComponent<UIResetButton>();
+                Controls.Add(ResetButton);
             }
             Disable();
         }

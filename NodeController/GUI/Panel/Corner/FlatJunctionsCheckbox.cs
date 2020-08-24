@@ -53,6 +53,7 @@ namespace NodeController.GUI {
             if (data == null)
                 return;
             data.FlatJunctions = this.isChecked;
+            data.UpdateSlopeAngleDeg = true; // reset slope angle.
             Assert(!refreshing_, "!refreshing_");
             data.Refresh();
             root_.Refresh();

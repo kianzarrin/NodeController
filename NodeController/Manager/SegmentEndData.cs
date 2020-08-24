@@ -4,6 +4,7 @@ namespace NodeController {
     using CSUtil.Commons;
     using KianCommons;
     using KianCommons.Math;
+    using NodeController.GUI;
     using System;
     using UnityEngine;
     using CSURUtil = Util.CSURUtil;
@@ -30,8 +31,8 @@ namespace NodeController {
         public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(NodeID);
         public bool DefaultFlatJunctions => Info.m_flatJunctions;
         public bool DefaultTwist => Info.m_twistSegmentEnds;
-        public NetSegment.Flags DefaultFlags;
         public float DefaultSlopeAngleDeg;
+        public NetSegment.Flags DefaultFlags;
 
         // cache
         public bool HasPedestrianLanes;
@@ -55,12 +56,14 @@ namespace NodeController {
         public float Stretch; //increase width
         public float EmbankmentAngleDeg;
         public float SlopeAngleDeg;
+        public bool UpdateSlopeAngleDeg = false;
 
         // shortcuts
         public ref NetSegment Segment => ref SegmentID.ToSegment();
         public ref NetNode Node => ref NodeID.ToNode();
         public NodeData NodeData => NodeManager.Instance.buffer[NodeID];
         public ref NodeTypeT NodeType => ref NodeData.NodeType;
+        public Vector3 Direction => Segment.GetDirection(NodeID);
 
         public SegmentEndData(ushort segmentID, ushort nodeID) {
             NodeID = nodeID;
@@ -69,15 +72,15 @@ namespace NodeController {
             Calculate();
             CornerOffset = DefaultCornerOffset;
             FlatJunctions = DefaultFlatJunctions;
+            SlopeAngleDeg = DefaultSlopeAngleDeg = CurrentSlopeAngleDeg;
+            Log.Debug($"SegmentEndData() Direction={Direction} Slope={SlopeAngleDeg}");
             Twist = DefaultTwist;
+            HelpersExtensions.Assert(IsDefault());
         }
-
 
         public void Calculate() {
             DefaultFlags = Segment.m_flags;
             PedestrianLaneCount = Info.CountPedestrianLanes();
-            float diry = Segment.GetDirection(NodeID).y;
-            DefaultSlopeAngleDeg = Mathf.Atan(diry);
 
             // left and right is when you go away form junction
             // both in SegmentEndData Cahced* and NetSegment.CalculateCorner()
@@ -96,8 +99,8 @@ namespace NodeController {
         }
 
         public bool IsDefault() {
-            bool ret = Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.01f;
-            ret &= Mathf.Abs(SlopeAngleDeg - DefaultSlopeAngleDeg) < 0.26f; // the slider is precise down to 0.5 increments.
+            bool ret = Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.1f;
+            ret &= Mathf.Abs(SlopeAngleDeg - DefaultSlopeAngleDeg) < 1; // TODO change to minimum possible.
             ret &= FlatJunctions == DefaultFlatJunctions;
             ret &= Twist == DefaultTwist;
             ret &= NoCrossings == false;
@@ -145,6 +148,7 @@ namespace NodeController {
                 SlopeAngleDeg = DefaultSlopeAngleDeg;
                 Stretch = EmbankmentAngleDeg = 0;
             }
+
             Log.Debug($"SegmentEndData.Refresh() Updating segment:{SegmentID} node:{NodeID} CornerOffset={CornerOffset}");
             if (HelpersExtensions.VERBOSE)
                 Log.Debug(Environment.StackTrace);
@@ -160,7 +164,8 @@ namespace NodeController {
         public bool IsCSUR => NetUtil.IsCSUR(Info);
         public NetInfo Info => Segment.Info;
         public bool CanModifyOffset() => NodeData?.CanModifyOffset() ?? false;
-        public bool CanModifyCorners() => CanModifyOffset() || NodeType == NodeTypeT.End || NodeType == NodeTypeT.Middle;
+        public bool CanModifyCorners() => NodeData != null &&
+            (CanModifyOffset() || NodeType == NodeTypeT.End || NodeType == NodeTypeT.Middle);
         public bool CanModifyFlatJunctions() => NodeData?.CanModifyFlatJunctions() ?? false;
         public bool CanModifyTwist() {
             if (NodeData == null || NodeData.SegmentCount < 3)
@@ -181,6 +186,8 @@ namespace NodeController {
         }
         #endregion
 
+        public float CurrentSlopeAngleDeg => Mathf.Atan(Direction.y) * Mathf.Rad2Deg;
+
         /// <param name="leftSide">left side going away from the junction</param>
         public void ApplyCornerAdjustments(ref Vector3 cornerPos, ref Vector3 cornerDir, bool leftSide) {
             Vector3 rightwardDir = Vector3.Cross(Vector3.up, cornerDir).normalized; // going away from the junction
@@ -190,20 +197,27 @@ namespace NodeController {
             // TODO calculate slope in CalculateCorner.Posfix()
 
             // slope:
+            if (UpdateSlopeAngleDeg) {
+                SlopeAngleDeg = CurrentSlopeAngleDeg;
+                UpdateSlopeAngleDeg = false;
+                SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () { 
+                    if (UINodeControllerPanel.Instance.isVisible)
+                        UINodeControllerPanel.Instance.Refresh();
+                    if (UISegmentEndControllerPanel.Instance.isVisible)
+                        UISegmentEndControllerPanel.Instance.Refresh();
+                });
+            }
+
             float dirY0 = cornerDir.y;
-            float angle0Rad = Mathf.Tan(dirY0);
-            float angle0Deg = angle0Rad * Mathf.Rad2Deg;
-            float angleDeg = angle0Deg + SlopeAngleDeg; // TODO default slope
-            float angleRad = angle0Rad + SlopeAngleDeg * Mathf.Deg2Rad;
+            float angleRad = SlopeAngleDeg * Mathf.Deg2Rad;
 
-
-            if (angleDeg == 90) {
+            if ( 89 <= SlopeAngleDeg && SlopeAngleDeg <= 91) {
                 cornerDir.x = cornerDir.z = 0;
                 cornerDir.y = 1;
-            } else if (angleDeg == -90) {
+            } else if (-89 >= SlopeAngleDeg && SlopeAngleDeg >= -91) {
                 cornerDir.x = cornerDir.z = 0;
                 cornerDir.y = -1;
-            } else if (angleDeg > 90 || angleDeg < -90) {
+            } else if (SlopeAngleDeg > 90 || SlopeAngleDeg < -90) {
                 cornerDir.y += -Mathf.Atan(angleRad);
                 cornerDir.x = -cornerDir.x;
                 cornerDir.z = -cornerDir.z;
