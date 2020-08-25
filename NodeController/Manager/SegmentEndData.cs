@@ -56,7 +56,7 @@ namespace NodeController {
         public float Stretch; //increase width
         public float EmbankmentAngleDeg;
         public float SlopeAngleDeg;
-        public bool UpdateSlopeAngleDeg = false;
+        public bool UpdateSlopeAngleDeg = true;
 
         // shortcuts
         public ref NetSegment Segment => ref SegmentID.ToSegment();
@@ -73,6 +73,7 @@ namespace NodeController {
             CornerOffset = DefaultCornerOffset;
             FlatJunctions = DefaultFlatJunctions;
             SlopeAngleDeg = DefaultSlopeAngleDeg = CurrentSlopeAngleDeg;
+            UpdateSlopeAngleDeg = false;
             Log.Debug($"SegmentEndData() Direction={Direction} Slope={SlopeAngleDeg}");
             Twist = DefaultTwist;
             HelpersExtensions.Assert(IsDefault());
@@ -210,6 +211,8 @@ namespace NodeController {
 
             float dirY0 = cornerDir.y;
             float angleRad = SlopeAngleDeg * Mathf.Deg2Rad;
+            Log.Debug($"SlopeAngleDeg={SlopeAngleDeg} CurrentSlopeAngleDeg={CurrentSlopeAngleDeg} " +
+                $"cornerDir={cornerDir} segmentEndDir={Direction}");
 
             if ( 89 <= SlopeAngleDeg && SlopeAngleDeg <= 91) {
                 cornerDir.x = cornerDir.z = 0;
@@ -218,11 +221,11 @@ namespace NodeController {
                 cornerDir.x = cornerDir.z = 0;
                 cornerDir.y = -1;
             } else if (SlopeAngleDeg > 90 || SlopeAngleDeg < -90) {
-                cornerDir.y += -Mathf.Atan(angleRad);
+                cornerDir.y = -Mathf.Tan(angleRad);
                 cornerDir.x = -cornerDir.x;
                 cornerDir.z = -cornerDir.z;
             } else {
-                cornerDir.y += Mathf.Atan(angleRad);
+                cornerDir.y = Mathf.Tan(angleRad);
             }
             if (!Node.m_flags.IsFlagSet(NetNode.Flags.Middle)) {
                 float d = VectorUtils.DotXZ(cornerPos - Node.m_position, cornerDir);

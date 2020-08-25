@@ -108,6 +108,7 @@ namespace NodeController.GUI {
 
 
         public void ShowNode(ushort nodeID) {
+            NodeManager.Instance.RefreshData(NodeID); // refresh previous node data if any.
             UISegmentEndControllerPanel.Instance.Close();
             NodeID = nodeID;
             NodeManager.Instance.RefreshData(NodeID);

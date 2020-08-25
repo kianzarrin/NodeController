@@ -4,6 +4,7 @@ namespace NodeController.LifeCycle
     using NodeController.Util;
     using static KianCommons.HelpersExtensions;
     using KianCommons;
+    using System.Net.Mail;
 
     public static class LifeCycle
     {
@@ -15,6 +16,7 @@ namespace NodeController.LifeCycle
             HarmonyExtension.InstallHarmony();
             NodeControllerTool.Create();
             NodeManager.Instance.OnLoad();
+            SegmentEndManager.Instance.OnLoad();
         }
 
         public static void Release()

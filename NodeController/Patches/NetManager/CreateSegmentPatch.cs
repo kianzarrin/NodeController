@@ -20,6 +20,9 @@ namespace NodeController.Patches._NetManager
                 MoveItIntegration.PasteSegment(segment, MoveMiddleNodePatch.SegmentData, null);
             } else if (SplitSegmentPatch.CopyData) {
                 MoveItIntegration.PasteSegment(segment, SplitSegmentPatch.SegmentData, null);
+            } else {
+                SegmentEndManager.Instance.SetAt(segment, true, null);
+                SegmentEndManager.Instance.SetAt(segment, false, null);
             }
         }
     }

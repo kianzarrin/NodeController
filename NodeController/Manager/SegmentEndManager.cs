@@ -95,8 +95,15 @@ namespace NodeController {
         }
 
         public void RefreshAllSegmentEnds() {
-            foreach (var nodeData in buffer)
-                nodeData?.Refresh();
+            foreach (var segmentEndData in buffer) {
+                if (segmentEndData == null) continue;
+                if (NetUtil.IsSegmentValid(segmentEndData.SegmentID)) {
+                    segmentEndData.Refresh();
+                } else {
+                    ResetSegmentEndToDefault(segmentEndData.SegmentID, true);
+                    ResetSegmentEndToDefault(segmentEndData.SegmentID, false);
+                }
+            }
         }
 
         public void OnBeforeCalculateSegmentEnd(ushort segmentID, bool startNode) {

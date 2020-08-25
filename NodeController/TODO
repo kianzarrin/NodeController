@@ -1,6 +1,13 @@
+- fix tool cursor (done not tested)
+
+- fix initial slope: check tan VS atan (partially fixed but still doesn't work)
+- release segment ends when segment is released.  (done not tested)
+- set segment end to null when new segment is created. (done not tested)
 - twist (minor roads at tilted intersections)
 - round values
 - hint box
+- asert dx^2+dz^2 is 1 before slope calculations.. at the very list print warning.
+- make slope backward compatible by setting update slope to true when deserializing old version.
 
 - lock corners while dragging or using mousewheal
 - corner offset to increase chances of train track connection.

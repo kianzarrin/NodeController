@@ -1,7 +1,7 @@
 namespace NodeController {
-    using System;
     using KianCommons;
     using NodeController.Tool;
+    using System;
 
     [Serializable]
     public class NodeManager {
@@ -36,7 +36,7 @@ namespace NodeController {
             SerializationUtil.Serialize(Instance.buffer[nodeID])
             .LogRet($"NodeManager.CopyNodeData({nodeID}) ->");
 
-        public static ushort TargetNodeID = 0; 
+        public static ushort TargetNodeID = 0;
 
         [Obsolete("kept here for backward compatibility with MoveIT")]
         /// <param name="nodeID">target nodeID</param>
@@ -63,9 +63,9 @@ namespace NodeController {
         #endregion
 
         public NodeData InsertNode(NetTool.ControlPoint controlPoint, NodeTypeT nodeType = NodeTypeT.Crossing) {
-            if(ToolBase.ToolErrors.None != NetUtil.InsertNode(controlPoint, out ushort nodeID))
+            if (ToolBase.ToolErrors.None != NetUtil.InsertNode(controlPoint, out ushort nodeID))
                 return null;
-            HelpersExtensions.Assert(nodeID!=0,"nodeID");
+            HelpersExtensions.Assert(nodeID != 0, "nodeID");
 
             foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID)) {
                 var segEnd = new SegmentEndData(segmentID, nodeID);
@@ -75,7 +75,7 @@ namespace NodeController {
             var info = controlPoint.m_segment.ToSegment().Info;
             int nPedLanes = info.CountPedestrianLanes();
             bool isRoad = info.m_netAI is RoadBaseAI;
-            if (nodeType == NodeTypeT.Crossing && (nPedLanes<2 || !isRoad) )
+            if (nodeType == NodeTypeT.Crossing && (nPedLanes < 2 || !isRoad))
                 buffer[nodeID] = new NodeData(nodeID);
             else
                 buffer[nodeID] = new NodeData(nodeID, nodeType);
@@ -119,7 +119,7 @@ namespace NodeController {
         }
 
         public void ResetNodeToDefault(ushort nodeID) {
-            if(buffer[nodeID]!=null)
+            if (buffer[nodeID] != null)
                 Log.Debug($"node:{nodeID} reset to defualt");
             else
                 Log.Debug($"node:{nodeID} is alreadey null. no need to reset to default");
@@ -130,8 +130,13 @@ namespace NodeController {
         }
 
         public void RefreshAllNodes() {
-            foreach (var nodeData in buffer)
-                nodeData?.Refresh();
+            foreach (var nodeData in buffer) {
+                if (nodeData == null) continue;
+                if (NetUtil.IsNodeValid(nodeData.NodeID))
+                    nodeData.Refresh();
+                else
+                    ResetNodeToDefault(nodeData.NodeID);
+            }
         }
 
         /// <summary>Called after stock code and before postfix code.</summary>

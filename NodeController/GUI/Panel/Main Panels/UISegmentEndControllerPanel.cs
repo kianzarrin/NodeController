@@ -264,6 +264,7 @@ namespace NodeController.GUI {
             if (Instance != this)
                 Log.Error("Assertion Failed: Instance == this");
             UINodeControllerPanel.Instance.Close();
+            SegmentEndManager.Instance.RefreshData(SegmentID, StartNode); // refresh previous segment data if any.
             SegmentID = segmentID;
             NodeID = nodeID;
             SegmentEndManager.Instance.RefreshData(SegmentID, StartNode);

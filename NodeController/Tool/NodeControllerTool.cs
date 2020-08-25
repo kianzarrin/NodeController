@@ -141,6 +141,7 @@ namespace NodeController.Tool {
 
         protected override void OnDisable() {
             Log.Debug($"NodeControllerTool.OnDisable()");
+            ToolCursor = null;
             base.OnDisable();
             Button?.Deactivate();
             SelectedNodeID = 0;
@@ -223,7 +224,7 @@ namespace NodeController.Tool {
             // F)fail modify (end node) red geerbox.
             // G)inside panel: normal
 
-            if (!m_mouseRayValid || handleHovered_) // G
+            if (!this.enabled || !m_mouseRayValid || handleHovered_) // G
                 return null;
 
             if (CornerFocusMode)
@@ -274,6 +275,7 @@ namespace NodeController.Tool {
 
         protected override void OnToolUpdate() {
             base.OnToolUpdate();
+            ToolCursor = GetCursor();
 
             while (!Monitor.TryEnter(this.m_cacheLock, SimulationManager.SYNCHRONIZE_TIMEOUT)) {
             }
@@ -290,8 +292,6 @@ namespace NodeController.Tool {
             } else {
                 m_prefab = null;
             }
-
-            ToolCursor = GetCursor();
         }
 
         protected override void OnToolLateUpdate() {

@@ -12,6 +12,7 @@ namespace NodeController.Patches {
     using ColossalFramework.Math;
     using UnityEngine.UI;
     using static ColossalFramework.Math.VectorUtils;
+    using ColossalFramework;
 
     [UsedImplicitly]
     [HarmonyPatch]
@@ -51,25 +52,28 @@ namespace NodeController.Patches {
             SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
             bool flatJunctions = data?.FlatJunctions ?? segmentID.ToSegment().Info.m_flatJunctions;
             ushort nodeID = segmentID.ToSegment().GetNode(start);
-            if (!flatJunctions) {
-                FixCornerPos(
-                    nodeID.ToNode().m_position,
-                    segmentID.ToSegment().GetDirection(nodeID),
-                    ref cornerPos);
-            } else {
-                // left segment going away from the node is right segment going toward the node.
-                ushort neighbourSegmentID = leftSide
-                    ? segmentID.ToSegment().GetRightSegment(nodeID)
-                    : segmentID.ToSegment().GetLeftSegment (nodeID);
-                var neighbourData = SegmentEndManager.Instance.GetAt(neighbourSegmentID, nodeID);
+            bool middle = nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle);
+            if (!middle) {
+                if (!flatJunctions) {
+                    FixCornerPos(
+                        nodeID.ToNode().m_position,
+                        segmentID.ToSegment().GetDirection(nodeID),
+                        ref cornerPos);
+                } else {
+                    // left segment going away from the node is right segment going toward the node.
+                    ushort neighbourSegmentID = leftSide
+                        ? segmentID.ToSegment().GetRightSegment(nodeID)
+                        : segmentID.ToSegment().GetLeftSegment(nodeID);
+                    var neighbourData = SegmentEndManager.Instance.GetAt(neighbourSegmentID, nodeID);
 
-                bool neighbourFlatJunctions = neighbourData?.FlatJunctions ?? neighbourSegmentID.ToSegment().Info.m_flatJunctions;
-                if (!neighbourFlatJunctions) {
-                    FixCornerPosMinor(
-                        nodePos: nodeID.ToNode().m_position,
-                        neighbourEndDir: neighbourSegmentID.ToSegment().GetDirection(nodeID),
-                        cornerDir: ref cornerDirection,
-                        cornerPos: ref cornerPos);
+                    bool neighbourFlatJunctions = neighbourData?.FlatJunctions ?? neighbourSegmentID.ToSegment().Info.m_flatJunctions;
+                    if (!neighbourFlatJunctions) {
+                        FixCornerPosMinor(
+                            nodePos: nodeID.ToNode().m_position,
+                            neighbourEndDir: neighbourSegmentID.ToSegment().GetDirection(nodeID),
+                            cornerDir: ref cornerDirection,
+                            cornerPos: ref cornerPos);
+                    }
                 }
             }
 
