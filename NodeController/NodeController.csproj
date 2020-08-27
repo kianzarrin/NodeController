@@ -39,6 +39,7 @@
     <None Remove="KianCommons\libs\**" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="DecompiledSources\NetAI.cs" />
     <Compile Remove="DecompiledSources\NetNode.cs" />
     <Compile Remove="DecompiledSources\NetSegment2.cs" />
     <Compile Remove="KianCommons\KianCommons\Properties\AssemblyInfo.cs" />
@@ -105,6 +106,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DecompiledSources\NetAI.cs" />
     <None Include="DecompiledSources\NetNode.cs" />
     <None Include="DecompiledSources\NetSegment2.cs" />
   </ItemGroup>

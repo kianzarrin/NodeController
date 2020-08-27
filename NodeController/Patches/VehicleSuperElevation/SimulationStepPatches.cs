@@ -6,6 +6,7 @@ namespace NodeController.Patches.VehicleSuperElevation {
     using KianCommons;
     using UnityEngine;
     using static SuperElevationCommons;
+    using System.IO;
 
     //public override void SimulationStep(ushort vehicleID, ref Vehicle vehicleData, ref Vehicle.Frame frameData,
     //                                    ushort leaderID, ref Vehicle leaderData, int lodPhysics)
@@ -26,12 +27,13 @@ namespace NodeController.Patches.VehicleSuperElevation {
             //Vehicle.Frame lastFrameData = leadingVehicle.GetLastFrameData();
             VehicleInfo leadningInfo = leadingVehicle.Info;
             if (!leadingVehicle.GetCurrentPathPos(out var pathPos)) return;
+            uint laneID = PathManager.GetLaneID(pathPos);
 
             bool inverted = leadingVehicle.m_flags.IsFlagSet(Vehicle.Flags.Inverted);
             float deltaPos = inverted ? leadningInfo.m_attachOffsetBack : leadningInfo.m_attachOffsetFront;
-            float deltaOffset = deltaPos / pathPos.m_segment.ToSegment().m_averageLength;
-            float leading_offset = leadingVehicle.m_lastPathOffset * (1f / 255f);
-            float offset = Mathf.Clamp(leading_offset - deltaOffset, 0, 1);
+            float deltaOffset = deltaPos / laneID.ToLane().m_length;
+            float offset = leadingVehicle.m_lastPathOffset * (1f / 255f) - deltaOffset;
+            offset = Mathf.Clamp(offset, 0, 1);
 
             float se = GetCurrentSE(pathPos, offset);
             var rot = Quaternion.Euler(0, 0f, se);
