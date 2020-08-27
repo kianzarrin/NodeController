@@ -4,7 +4,6 @@ namespace NodeController.Patches.VehicleSuperElevation {
     using KianCommons;
     using ColossalFramework;
     using static KianCommons.Patches.TranspilerUtils;
-    using TrafficManager.Custom.AI;
 
     public static class SuperElevationCommons {
         delegate void SimulationStepDelegate(
@@ -25,29 +24,31 @@ namespace NodeController.Patches.VehicleSuperElevation {
                 return;
 
             float se = GetCurrentSE(pathPos, vehicleData.m_lastPathOffset*(1f/255f));
-            var rot = Quaternion.Euler(0, 0f, -se); // minus to rotate to right
+            var rot = Quaternion.Euler(0, 0f, se);
             frameData.m_rotation *= rot;
         }
 
-        static bool GetCurrentPathPos(this ref Vehicle vehicleData, out PathUnit.Position pathPos) {
+        internal static bool GetCurrentPathPos(this ref Vehicle vehicleData, out PathUnit.Position pathPos) {
             byte pathIndex = vehicleData.m_pathPositionIndex;
             if (pathIndex == 255) pathIndex = 0;
             return pathUnitBuffer[vehicleData.m_path].GetPosition(pathIndex >> 1, out pathPos);
         }
 
-        static float GetCurrentSE(PathUnit.Position pathPos, float offset) {
-            uint laneID = PathManager.GetLaneID(pathPos);
-            //laneID.ToLane().GetClosestPosition(pos, out pos, out var offset);
+        internal static NetInfo.Lane GetLaneInfo(this ref PathUnit.Position pathPos) =>
+            pathPos.m_segment.ToSegment().Info.m_lanes[pathPos.m_lane];
 
-            NetUtil.GetLaneTailAndHeadNodes(laneID, pathPos.m_lane, tail: out ushort tail, head: out ushort head);
-            SegmentEndData segTail = SegmentEndManager.Instance.GetAt(pathPos.m_segment, tail);
-            SegmentEndData segHead = SegmentEndManager.Instance.GetAt(pathPos.m_segment, head);
-            float tailSE = segTail == null ? 0f : segTail.SuperElevationDeg;
-            float headSE = segHead == null ? 0f : -segHead.SuperElevationDeg;
+        internal static float GetCurrentSE(PathUnit.Position pathPos, float offset) {
+            // bezier is always from start to end node regardless of direction.
+            SegmentEndData segStart = SegmentEndManager.Instance.GetAt(pathPos.m_segment, true);
+            SegmentEndData segEnd = SegmentEndManager.Instance.GetAt(pathPos.m_segment, false);
+            float startSE = segStart == null ? 0f : segStart.SuperElevationDeg;
+            float endSE = segEnd == null ? 0f : -segEnd.SuperElevationDeg;
+            float se = startSE * (1-offset) + endSE * offset;
+           
 
-            float se = tailSE * offset + headSE * (1 - offset);
             bool invert = pathPos.m_segment.ToSegment().m_flags.IsFlagSet(NetSegment.Flags.Invert);
-            if (!invert) se = -se;
+            bool backward = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.Backward;
+            if (invert^backward) se = -se;
             return se;
         }
 
