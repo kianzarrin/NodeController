@@ -41,6 +41,7 @@ namespace NodeController {
         public Vector3Serializable CachedLeftCornerPos, CachedLeftCornerDir, CachedRightCornerPos, CachedRightCornerDir;// left and right is when you go away form junction
         // corner pos/dir after CornerOffset, FlatJunctions, Slope, Stretch, and EmbankmentAngle, but before DeltaLeft/RighCornerDir/Pos are applied.
         public Vector3Serializable LeftCornerDir0, RightCornerDir0, LeftCornerPos0, RightCornerPos0;
+        public float SuperElevationDeg; // rightward rotation of the road when going away from the junction.
 
         // Configurable
         public bool NoCrossings;
@@ -64,6 +65,7 @@ namespace NodeController {
         public NodeData NodeData => NodeManager.Instance.buffer[NodeID];
         public ref NodeTypeT NodeType => ref NodeData.NodeType;
         public Vector3 Direction => Segment.GetDirection(NodeID);
+
 
         public SegmentEndData(ushort segmentID, ushort nodeID) {
             NodeID = nodeID;
@@ -95,6 +97,10 @@ namespace NodeController {
             CachedRightCornerPos = rpos;
             CachedLeftCornerDir = ldir;
             CachedRightCornerDir = rdir;
+
+            Vector3 diff = rpos - lpos;
+            float se = Mathf.Atan2(diff.y, VectorUtils.LengthXZ(diff));
+            SuperElevationDeg = se * Mathf.Rad2Deg;
 
             Refresh();
         }
@@ -211,8 +217,8 @@ namespace NodeController {
 
             float dirY0 = cornerDir.y;
             float angleRad = SlopeAngleDeg * Mathf.Deg2Rad;
-            Log.Debug($"SlopeAngleDeg={SlopeAngleDeg} CurrentSlopeAngleDeg={CurrentSlopeAngleDeg} " +
-                $"cornerDir={cornerDir} segmentEndDir={Direction}");
+            //Log.Debug($"SlopeAngleDeg={SlopeAngleDeg} CurrentSlopeAngleDeg={CurrentSlopeAngleDeg} " +
+            //    $"cornerDir={cornerDir} segmentEndDir={Direction}");
 
             if ( 89 <= SlopeAngleDeg && SlopeAngleDeg <= 91) {
                 cornerDir.x = cornerDir.z = 0;

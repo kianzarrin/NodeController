@@ -54,7 +54,7 @@ namespace NodeController.Patches {
             ushort nodeID = segmentID.ToSegment().GetNode(start);
             bool middle = nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle);
             if (!middle) {
-                if (flatJunctions) {
+                if (!flatJunctions) {
                     FixCornerPos(
                         nodeID.ToNode().m_position,
                         segmentID.ToSegment().GetDirection(nodeID),
