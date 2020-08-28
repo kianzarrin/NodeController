@@ -89,8 +89,9 @@ namespace NodeController {
             Refresh();
         }
 
+        bool insideAfterCalcualte_ = false;
         public void OnAfterCalculate() {
-
+            insideAfterCalcualte_ = true;
             // left and right is when you go away form junction
             // both in SegmentEndData Cahced* and NetSegment.CalculateCorner()
 
@@ -107,6 +108,7 @@ namespace NodeController {
             Vector3 diff = rpos - lpos;
             float se = Mathf.Atan2(diff.y, VectorUtils.LengthXZ(diff));
             SuperElevationDeg = se * Mathf.Rad2Deg;
+            insideAfterCalcualte_ = false;
         }
 
 
@@ -209,7 +211,7 @@ namespace NodeController {
             // TODO calculate slope in CalculateCorner.Posfix()
 
             // slope:
-            if (UpdateSlopeAngleDeg) {
+            if (UpdateSlopeAngleDeg && insideAfterCalcualte_) {
                 Log.Debug("slope updated : \n" + new StackTrace(true));
                 SlopeAngleDeg = CurrentSlopeAngleDeg;
                 UpdateSlopeAngleDeg = false;

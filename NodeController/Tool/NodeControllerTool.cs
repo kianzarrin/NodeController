@@ -325,10 +325,6 @@ namespace NodeController.Tool {
             var segEnd = SelectedSegmentEndData;
             if (segEnd == null || !segEnd.CanModifyCorners() ) return null;
 
-            // avoid race condition
-            if (segEnd.NodeData.DefaultFlags.IsFlagSet(NetNode.Flags.Junction) != segEnd.NodeData.NeedJunctionFlag() )
-                return null;
-
             var pos = left? segEnd.CachedLeftCornerPos: segEnd.CachedRightCornerPos;
             float terrainY = Singleton<TerrainManager>.instance.SampleDetailHeightSmooth(pos);
             var ret = new CornerMarker {

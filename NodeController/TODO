@@ -1,4 +1,3 @@
-- fix flat junctions.
 - twist checkbox (for embanking side roads at sloped intersections.)
 - round values
 - hint box
@@ -8,8 +7,7 @@
 - direction length field (includences and influenced by values from the other dir fields).
 
 - lock corners while dragging or using mousewheal
-- asert dx^2+dz^2 is 1 before slope calculations.. at the very list print warning.
-- race condition when moving corners on nodes where junction flags has been forced changed.
+- assert dx^2+dz^2 is 1 before slope calculations.. at the very list print warning.
 
 - corner offset to increase chances of train track connection.
 - fix the orientation of asym road
