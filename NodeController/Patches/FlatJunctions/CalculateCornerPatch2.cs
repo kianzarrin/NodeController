@@ -50,11 +50,12 @@ namespace NodeController.Patches {
             ref Vector3 cornerPos, ref Vector3 cornerDirection)
         {
             SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
-            bool flatJunctions = data?.FlatJunctions ?? segmentID.ToSegment().Info.m_flatJunctions;
             ushort nodeID = segmentID.ToSegment().GetNode(start);
             bool middle = nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle);
             if (!middle) {
-                if (!flatJunctions) {
+                bool flatJunctions = data?.FlatJunctions ?? segmentID.ToSegment().Info.m_flatJunctions;
+                bool slope = !flatJunctions;
+                if (slope) {
                     FixCornerPos(
                         nodeID.ToNode().m_position,
                         segmentID.ToSegment().GetDirection(nodeID),
@@ -67,7 +68,9 @@ namespace NodeController.Patches {
                     var neighbourData = SegmentEndManager.Instance.GetAt(neighbourSegmentID, nodeID);
 
                     bool neighbourFlatJunctions = neighbourData?.FlatJunctions ?? neighbourSegmentID.ToSegment().Info.m_flatJunctions;
-                    if (!neighbourFlatJunctions) {
+                    bool neighbourslope = !neighbourFlatJunctions;
+                    bool twist = true;// segmentID.ToSegment().Info.m_twistSegmentEnds;
+                    if (twist && neighbourslope) {
                         FixCornerPosMinor(
                             nodePos: nodeID.ToNode().m_position,
                             neighbourEndDir: neighbourSegmentID.ToSegment().GetDirection(nodeID),
@@ -76,7 +79,7 @@ namespace NodeController.Patches {
                     }
                 }
             }
-
+            //Log.DebugWait($"flat junction is {FlatJunctions} at {this}", seconds: 0.1f);
             // manual adjustments:
             data?.ApplyCornerAdjustments(ref cornerPos, ref cornerDirection, leftSide);
         }

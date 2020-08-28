@@ -140,7 +140,7 @@ namespace NodeController {
         }
 
         /// <summary>Called after stock code and before postfix code.</summary>
-        public void OnBeforeCalculateNode(ushort nodeID) {
+        public void OnBeforeCalculateNodePatch(ushort nodeID) {
             // nodeID.ToNode still has default flags.
             if (buffer[nodeID] == null)
                 return;

@@ -30,7 +30,7 @@ namespace NodeController.Patches {
             ushort nodeID = NetUtil.GetID(__instance);
             if (!NetUtil.IsNodeValid(nodeID)) return;
 
-            NodeManager.Instance.OnBeforeCalculateNode(nodeID);
+            NodeManager.Instance.OnBeforeCalculateNodePatch(nodeID);
 
             NodeData nodeData = NodeManager.Instance.buffer[nodeID];
 

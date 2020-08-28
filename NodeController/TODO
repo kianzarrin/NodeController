@@ -1,22 +1,20 @@
-- fix tool cursor (done not tested)
-
-- fix initial slope: check tan VS atan (partially fixed but still doesn't work)
-- release segment ends when segment is released.  (done not tested)
-- set segment end to null when new segment is created. (done not tested)
-- twist (minor roads at tilted intersections)
+- fix flat junctions.
+- twist checkbox (for embanking side roads at sloped intersections.)
 - round values
 - hint box
-- asert dx^2+dz^2 is 1 before slope calculations.. at the very list print warning.
-- make slope backward compatible by setting update slope to true when deserializing old version.
+- text fields for embankment,slope,twist.
+- individual offset control for left and right segment
+- direction values to be absolute.
+- direction length field (includences and influenced by values from the other dir fields).
 
 - lock corners while dragging or using mousewheal
-- corner offset to increase chances of train track connection.
-
-- fix the orientation of asym road
-- support for asymetric textures
-
+- asert dx^2+dz^2 is 1 before slope calculations.. at the very list print warning.
 - race condition when moving corners on nodes where junction flags has been forced changed.
 
+- corner offset to increase chances of train track connection.
+- fix the orientation of asym road
+- support for asymetric textures
 - lod support (not now)
 
-- Click on a road to insert crossing.
+- Toggle Crossing tool mod activatble from UUI.
+

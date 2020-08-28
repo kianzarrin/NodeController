@@ -382,7 +382,7 @@ namespace NodeController {
         }
 
         public bool CanChangeTo(NodeTypeT newNodeType) {
-            Log.Debug($"CanChangeTo({newNodeType}) was called.");
+            //Log.Debug($"CanChangeTo({newNodeType}) was called.");
             if (SegmentCount == 1)
                 return newNodeType == NodeTypeT.End;
 

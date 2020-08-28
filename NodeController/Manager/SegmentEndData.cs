@@ -6,6 +6,7 @@ namespace NodeController {
     using KianCommons.Math;
     using NodeController.GUI;
     using System;
+    using System.Diagnostics;
     using UnityEngine;
     using CSURUtil = Util.CSURUtil;
     using Log = KianCommons.Log;
@@ -85,6 +86,11 @@ namespace NodeController {
             DefaultFlags = Segment.m_flags;
             PedestrianLaneCount = Info.CountPedestrianLanes();
 
+            Refresh();
+        }
+
+        public void OnAfterCalculate() {
+
             // left and right is when you go away form junction
             // both in SegmentEndData Cahced* and NetSegment.CalculateCorner()
 
@@ -101,9 +107,8 @@ namespace NodeController {
             Vector3 diff = rpos - lpos;
             float se = Mathf.Atan2(diff.y, VectorUtils.LengthXZ(diff));
             SuperElevationDeg = se * Mathf.Rad2Deg;
-
-            Refresh();
         }
+
 
         public bool IsDefault() {
             bool ret = Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.1f;
@@ -205,6 +210,7 @@ namespace NodeController {
 
             // slope:
             if (UpdateSlopeAngleDeg) {
+                Log.Debug("slope updated : \n" + new StackTrace(true));
                 SlopeAngleDeg = CurrentSlopeAngleDeg;
                 UpdateSlopeAngleDeg = false;
                 SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () { 

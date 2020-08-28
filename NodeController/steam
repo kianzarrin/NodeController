@@ -26,7 +26,7 @@ Click on any Piece of the road to add crossing.
 - Use Alt+Click to modify segment ends.
 - Hold control to hide TMPE icons (or turn off from settings).
 - Corner smoothness (AKA corner offset): smooth traffic flow, smooth tram tracks, align crossings, resolve road glitches.
-- flat junctions: to give slope to your junctions [url=https://youtu.be/VtE0zOXJgLk ]see video[/url]
+- flat junctions: to give slope to your junctions [url=https://youtu.be/Iuq8COIe_HY  ]see video[/url]
 - modify corner positions: embnakment,  align highway entry/exit, ...
 - modify corner directions (advanced feature): stretch out end nodes (semi cul-de-sac), customize junction slopes, and other things that only a true micro-nerd would do!!!
 [/b][/quote]
@@ -89,6 +89,10 @@ Click on any Piece of the road to add crossing.
 [quote][b]Source code: [url=https://github.com/kianzarrin/RoadTransitionManager ]Repository[/url]
 [/b][/quote]
 
+[h1]Thanks to[/h1]
+- Chamelon: [url=https://steamcommunity.com/id/chameleonlifede/myworkshopf ]Workshop page[/url]
+- kjmci: [url=https://steamcommunity.com/id/kjmci/myworkshopfiles/?appid=255710 ]Workshop page[/url]
+- [url=https://steamcommunity.com/id/Allystrya/myworkshopfiles/]Allystrya[/url]
 
 [h1]FAQ:[/h1]
 Q: Can I remove existing crossings at intersections and road transitions?

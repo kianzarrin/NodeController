@@ -107,7 +107,7 @@ namespace NodeController.GUI {
             NodeData data = (root_ as UINodeControllerPanel).NodeData;
             items = null;
             foreach (NodeTypeT nodeType in Enum.GetValues(typeof(NodeTypeT))) {
-                if (data.CanChangeTo(nodeType).LogRet("CanChangeTo()->")) {
+                if (data.CanChangeTo(nodeType)/*.LogRet("CanChangeTo()->")*/) {
                     AddItem(nodeType.ToString());
                 }
             }
