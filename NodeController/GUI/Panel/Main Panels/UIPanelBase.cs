@@ -6,6 +6,7 @@ namespace NodeController.GUI {
     using ColossalFramework;
     using KianCommons;
     using KianCommons.UI;
+    using System.Reflection.Emit;
 
     public abstract class UIPanelBase : UIAutoSizePanel, IDataControllerUI {
         public static readonly SavedFloat SavedX = new SavedFloat(
@@ -26,7 +27,11 @@ namespace NodeController.GUI {
 
         public abstract NetworkTypeT NetworkType { get; }
 
-        public abstract object GetData();
+        /// <summary>
+        /// if data id is 0, returns null. otherwise calls *Manager.GetORCreateData(...)
+        /// </summary>
+        /// <returns></returns>
+        public abstract INetworkData GetData();
 
         public override void Awake() {
             base.Awake();
@@ -109,5 +114,26 @@ namespace NodeController.GUI {
             float x = spriteEndX + 0.5f * (dragHandle_.width - spriteEndX - lblCaption_.width);
             lblCaption_.relativePosition = new Vector2(x, 14);
         }
+
+        public virtual void RefreshValues() {
+            foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>()) {
+                control?.RefreshValues();
+            }
+        }
+
+        public UILabel Hintbox;
+
+        public void MakeHintBox() {
+            var panel = AddUIComponent<UIPanel>();
+            panel.width = width;
+            panel.height = 0;
+            Hintbox = panel.AddUIComponent<UILabel>();
+            Hintbox.relativePosition = Vector2.zero;
+            Hintbox.size = new Vector2(width, 10);
+            Hintbox.minimumSize = new Vector2(width, 0);
+            Hintbox.maximumSize = new Vector2(width, 100);
+            Hintbox.wordWrap = true;
+        }
+
     }
 }

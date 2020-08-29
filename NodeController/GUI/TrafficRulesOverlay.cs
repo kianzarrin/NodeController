@@ -99,6 +99,7 @@ namespace NodeController.GUI {
                 float zoom = 100.0f * baseZoom_ / diff.magnitude;
                 float size = SIGN_SIZE_PIXELS * zoom;
                 if (!handleClick) size *= 0.75f * VIEW_SIZE_RATIO;
+                Log.DebugWait("final sign size=" + size);
 
                 var boundingBox = new Rect(
                     x: signScreenPos.x - (size * 0.5f),

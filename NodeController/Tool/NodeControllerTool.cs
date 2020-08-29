@@ -173,7 +173,7 @@ namespace NodeController.Tool {
             }
             if (positionChanged) {
                 SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
-                    SECPanel.RefreshTableValuesOnly();
+                    SECPanel.RefreshValues();
                 });
             }
         }

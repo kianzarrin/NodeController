@@ -24,7 +24,7 @@ namespace NodeController {
         }
 
         public void OnLoad() {
-            RefreshAllSegmentEnds();
+            UpdateAll();
         }
 
         #endregion LifeCycle
@@ -68,19 +68,21 @@ namespace NodeController {
         }
 
         /// <summary>
-        /// releases data for <paramref name="nodeID"/> if uncessary. Calls update node.
+        /// releases data for <paramref name="segmentID"/> <paramref name="startNode"/> if uncessary. marks segment for update.
         /// </summary>
-        /// <param name="nodeID"></param>
-        public void RefreshData(ushort segmentID, bool startNode) {
+        public void UpdateData(ushort segmentID, bool startNode) {
             SegmentEndData segEnd = GetAt(segmentID, startNode);
-            if (segmentID == 0 || segEnd == null) 
+            if (segEnd == null) return;
+            if (!NetUtil.IsSegmentValid(segmentID)) {
+                ResetSegmentEndToDefault(segmentID, startNode);
                 return;
+            }
             ushort nodeID = segmentID.ToSegment().GetNode(startNode);
             bool selected = NodeControllerTool.Instance.SelectedNodeID == nodeID;
             if (segEnd.IsDefault() && !selected) {
                 ResetSegmentEndToDefault(segmentID, startNode);
             } else {
-                segEnd.Refresh();
+                segEnd.Update();
             }
         }
 
@@ -94,11 +96,11 @@ namespace NodeController {
             NetManager.instance.UpdateSegment(segmentID);
         }
 
-        public void RefreshAllSegmentEnds() {
+        public void UpdateAll() {
             foreach (var segmentEndData in buffer) {
                 if (segmentEndData == null) continue;
                 if (NetUtil.IsSegmentValid(segmentEndData.SegmentID)) {
-                    segmentEndData.Refresh();
+                    segmentEndData.Update();
                 } else {
                     ResetSegmentEndToDefault(segmentEndData.SegmentID, true);
                     ResetSegmentEndToDefault(segmentEndData.SegmentID, false);
@@ -106,7 +108,11 @@ namespace NodeController {
             }
         }
 
-        public void OnBeforeCalculateSegmentEnd(ushort segmentID, bool startNode) {
+        /// <summary>
+        /// Called after stock code and before postfix code.
+        /// if node is invalid or otherwise unsupported, it will be set to null.
+        /// </summary>
+        public void OnBeforeCalculateNodePatch(ushort segmentID, bool startNode) {
             SegmentEndData segEnd = GetAt(segmentID, startNode);
             // nodeID.ToNode still has default flags.
             if (segEnd == null)

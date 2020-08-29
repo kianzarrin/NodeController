@@ -19,22 +19,19 @@ namespace NodeController.GUI {
         public override void ApplySegmentEnd(SegmentEndData data)
             => data.Stretch = value;
 
-        public override void Refresh() {
-            base.Refresh();
-            tooltip += "%";
-            RefreshTooltip();
-        }
+        public override string TooltipPostfix => "%";
 
-        public override void RefreshNode(NodeData data) {
+
+        public override void RefreshNode(NodeData data) =>
+            MixedValues = !data.HasUniformStretch();
+
+        public override void RefreshNodeValues(NodeData data) {
             isEnabled = data.CanMassEditNodeCorners();
-            if (isEnabled) {
+            if (isEnabled)
                 value = data.Stretch;
-                MixedValues = !data.HasUniformStretch();
-            }
         }
 
-        public override void RefreshSegmentEnd(SegmentEndData data) {
-            //Log.Debug("UIOffsetSlider.RefreshSegmentEnd() called. this.version=" + this.VersionOf());
+        public override void RefreshSegmentEndValues(SegmentEndData data) {
             isEnabled = data.CanModifyCorners();
             if (isEnabled)
                 value = data.Stretch;

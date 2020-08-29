@@ -16,23 +16,20 @@ namespace NodeController.GUI {
         public override void ApplySegmentEnd(SegmentEndData data)
             => data.EmbankmentAngleDeg = value;
 
-        public override void Refresh() {
-            base.Refresh();
-            tooltip += " degrees";
-            RefreshTooltip();
-        }
+        public override string TooltipPostfix => " degress";
 
-        public override void RefreshNode(NodeData data) {
+        public override void RefreshNode(NodeData data) =>
+            MixedValues = !data.HasUniformEmbankmentAngle();
+
+        public override void RefreshNodeValues(NodeData data) {
             isEnabled = data.CanMassEditNodeCorners();
-            if (isEnabled) {
+            if (isEnabled)
                 value = data.EmbankmentAngle;
-                MixedValues = !data.HasUniformEmbankmentAngle();
-            }
         }
 
-        public override void RefreshSegmentEnd(SegmentEndData data) {
+        public override void RefreshSegmentEndValues(SegmentEndData data) {
             isEnabled = data.CanModifyCorners();
-            if(isEnabled)
+            if (isEnabled)
                 value = data.EmbankmentAngleDeg;
         }
     }

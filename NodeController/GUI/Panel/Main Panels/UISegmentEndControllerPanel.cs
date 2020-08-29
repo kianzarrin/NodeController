@@ -5,6 +5,7 @@ namespace NodeController.GUI {
     using KianCommons;
     using KianCommons.UI;
 
+
     public class UISegmentEndControllerPanel : UIPanelBase {
         #region Instanciation
         public static UISegmentEndControllerPanel Instance { get; private set; }
@@ -36,7 +37,7 @@ namespace NodeController.GUI {
         }
 
         public override NetworkTypeT NetworkType => NetworkTypeT.Node;
-        public override object GetData() => SegmentEndData;
+        public override INetworkData GetData() => SegmentEndData;
 
         public override void Awake() {
             base.Awake();
@@ -116,6 +117,9 @@ namespace NodeController.GUI {
 
             AutoSize2 = true;
         }
+
+
+
 
         UIAutoSizePanel tableLeft_, tableRight_;
         public void MakeCornerTable(UIPanel container) {
@@ -264,10 +268,10 @@ namespace NodeController.GUI {
             if (Instance != this)
                 Log.Error("Assertion Failed: Instance == this");
             UINodeControllerPanel.Instance.Close();
-            SegmentEndManager.Instance.RefreshData(SegmentID, StartNode); // refresh previous segment data if any.
+            SegmentEndManager.Instance.UpdateData(SegmentID, StartNode); // refresh previous segment data if any.
             SegmentID = segmentID;
             NodeID = nodeID;
-            SegmentEndManager.Instance.RefreshData(SegmentID, StartNode);
+            SegmentEndManager.Instance.UpdateData(SegmentID, StartNode);
             Enable();
             Show();
             Refresh();
@@ -275,17 +279,9 @@ namespace NodeController.GUI {
 
         public void Close() {
             Log.Debug("UISegmentEndControllerPanel.Close() was called");
-            SegmentEndManager.Instance.RefreshData(SegmentID, StartNode);
+            SegmentEndManager.Instance.UpdateData(SegmentID, StartNode);
             SegmentID = NodeID = 0;
             Hide();
-        }
-
-        public void RefreshTableValuesOnly() {
-            foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>()) {
-                if (control is UICornerTextField cornerTextField)
-                    cornerTextField?.RefreshUIValueOnly();
-            }
-            ResetButton?.Refresh();
         }
 
         public override void Refresh() {

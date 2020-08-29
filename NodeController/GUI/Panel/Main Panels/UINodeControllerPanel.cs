@@ -1,6 +1,7 @@
 namespace NodeController.GUI {
     using ColossalFramework.UI;
     using KianCommons;
+
     using NodeController.Tool;
 
     public class UINodeControllerPanel : UIPanelBase {
@@ -21,7 +22,7 @@ namespace NodeController.GUI {
         #endregion Instanciation
 
         public override NetworkTypeT NetworkType => NetworkTypeT.Node;
-        public override object GetData() => NodeData;
+        public override INetworkData GetData() => NodeData;
 
         public ushort NodeID { get; private set; }
 
@@ -108,17 +109,17 @@ namespace NodeController.GUI {
 
 
         public void ShowNode(ushort nodeID) {
-            NodeManager.Instance.RefreshData(NodeID); // refresh previous node data if any.
+            NodeManager.Instance.UpdateData(NodeID); // refresh previous node data if any.
             UISegmentEndControllerPanel.Instance.Close();
             NodeID = nodeID;
-            NodeManager.Instance.RefreshData(NodeID);
+            NodeManager.Instance.UpdateData(NodeID);
             Enable();
             Show();
             Refresh();
         }
 
         public void Close() {
-            NodeManager.Instance.RefreshData(NodeID);
+            NodeManager.Instance.UpdateData(NodeID);
             NodeID = 0;
             Hide();
         }

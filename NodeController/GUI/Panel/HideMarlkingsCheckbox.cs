@@ -5,10 +5,11 @@ namespace NodeController.GUI {
     using KianCommons;
     using static KianCommons.HelpersExtensions;
 
+
     public class UIHideMarkingsCheckbox : UICheckBox, IDataControllerUI {
         public static UIHideMarkingsCheckbox Instance { get; private set; }
 
-        UIPanel root_;
+        UIPanelBase root_;
         public override void Awake() {
             base.Awake();
             Instance = this;
@@ -44,7 +45,7 @@ namespace NodeController.GUI {
         public override void Start() {
             base.Start();
             width = parent.width;
-            root_ = GetRootContainer() as UIPanel;
+            root_ = GetRootContainer() as UIPanelBase;
         }
 
         // protection against unncessary apply/refresh/infinite recursion.
@@ -66,7 +67,7 @@ namespace NodeController.GUI {
                 return;
             data.ClearMarkings = this.isChecked;
             Assert(!refreshing_, "!refreshing_");
-            data.Refresh();
+            data.Update();
             (root_ as IDataControllerUI).Refresh();
 
         }
@@ -79,33 +80,23 @@ namespace NodeController.GUI {
             Log.Debug($"UIHideMarkingsCheckbox.ApplySegmentEnd(): {data}" +
                 $"isChecked={isChecked} " +
                 $"data.NoMarkings is set to {data.NoMarkings}");
-            data.Refresh();
+            data.Update();
         }
 
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
-            if (root_ is UINodeControllerPanel)
-                RefreshNode();
-            else if (root_ is UISegmentEndControllerPanel)
-                RefreshSegmentEnd();
+
+            RefreshValues();
+            if (root_?.GetData() is NodeData nodeData)
+                RefreshNode(nodeData);
 
             parent.isVisible = isVisible = this.isEnabled;
             Invalidate();
             refreshing_ = false;
         }
 
-
-        public void RefreshNode() {
-            NodeData data = (root_ as UINodeControllerPanel).NodeData;
-            if (data == null) {
-                Disable();
-                return;
-            }
-
-            this.isChecked = data.ClearMarkings;
-            isEnabled = data.ShowClearMarkingsToggle();
-
+        public void RefreshNode(NodeData data) {
             if (data.HasUniformNoMarkings()) {
                 checkedBoxObject.color = Color.white;
             } else {
@@ -113,14 +104,15 @@ namespace NodeController.GUI {
             }
         }
 
-        public void RefreshSegmentEnd() {
-            SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
-            if (data == null) {
-                Disable();
-                return;
-            }
-            isChecked = data.NoMarkings;
-            isEnabled = data.ShowClearMarkingsToggle();
+        public void RefreshValues() {
+            INetworkData data = root_?.GetData();
+            if (data is SegmentEndData segmentEndData) {
+                isChecked = segmentEndData.NoMarkings;
+                isEnabled = segmentEndData.ShowClearMarkingsToggle();
+            } else if (data is NodeData nodeData) {
+                this.isChecked = nodeData.ClearMarkings;
+                isEnabled = nodeData.ShowClearMarkingsToggle();
+            } else Disable();
         }
     }
 }

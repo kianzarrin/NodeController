@@ -68,10 +68,10 @@ namespace NodeController.GUI {
             }
         }
 
-        UIPanel root_;
+        UIPanelBase root_;
         public override void Start() {
             base.Start();
-            root_ = GetRootContainer() as UIPanel;
+            root_ = GetRootContainer() as UIPanelBase;
 
         }
 
@@ -95,7 +95,7 @@ namespace NodeController.GUI {
             foreach (var segmentEndData in data.IterateSegmentEndDatas())
                 segmentEndData.UpdateSlopeAngleDeg = true;
             Assert(!refreshing_, "!refreshing_");
-            data.Refresh();
+            data.Update();
             (root_ as IDataControllerUI).Refresh();
         }
 
@@ -116,7 +116,7 @@ namespace NodeController.GUI {
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
-            NodeData data = (root_ as UINodeControllerPanel).NodeData;
+            NodeData data = root_?.GetData() as NodeData;
             if (data == null) {
                 Disable();
                 return;
@@ -131,6 +131,10 @@ namespace NodeController.GUI {
             Invalidate();
             triggerButton.Invalidate();
             refreshing_ = false;
+        }
+
+        public void RefreshValues() {
+            throw new NotImplementedException();
         }
     }
 }

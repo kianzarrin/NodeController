@@ -41,8 +41,8 @@ namespace NodeController.Patches.VehicleSuperElevation {
             // bezier is always from start to end node regardless of direction.
             SegmentEndData segStart = SegmentEndManager.Instance.GetAt(pathPos.m_segment, true);
             SegmentEndData segEnd = SegmentEndManager.Instance.GetAt(pathPos.m_segment, false);
-            float startSE = segStart == null ? 0f : segStart.SuperElevationDeg;
-            float endSE = segEnd == null ? 0f : -segEnd.SuperElevationDeg;
+            float startSE = segStart == null ? 0f : segStart.CachedSuperElevationDeg;
+            float endSE = segEnd == null ? 0f : -segEnd.CachedSuperElevationDeg;
             float se = startSE * (1-offset) + endSE * offset;
            
 

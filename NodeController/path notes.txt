@@ -8,46 +8,6 @@ CarAI.SimulationStep(ushort, ref Vehicle, ref Vehicle.Frame, ushort, ref Vehicle
 Vehicle.RenderInstance(...)
     uint targetFrame = this.GetTargetFrame(info, vehicleID);
     Vehicle.Frame frameData = this.GetFrameData(targetFrame - 32u); 
-        
-VehicleAI.UpdatePathTargetPosition:
-    pathID = vehicle.m_pathl
-    path = pathMan.m_pathUnits.m_buffer[pathID];
-    byte b = vehicleData.m_pathPositionIndex;
-    if(b<255)
-        b2 = vehicleData.m_lastPathOffset;
-        path.GetPosition(b >> 1, out position)
-    else if(b==255):
-        b=0;
-        path.CalculatePathPositionOffset(0, vector, out b2))
-        path.CalculatePathPositionOffset(b >> 1, vector, out b2))
-
-PthUnit.Position:
-    public ushort m_segment;
-    public byte m_offset; -> float_offset*255
-    public byte m_lane;
-
-
-check where vehicle rotation is calculated and then take into account super electation. but this should also rotate the wheals
-
-// PathUnit
-public static void CalculatePathPositionOffset(uint laneID, Vector3 refPos, out byte offset)
-{
-	laneID.ToLane().GetClosestPosition(refPos, out _, out floatt);
-	offset = (byte)Mathf.Clamp(Mathf.RoundToInt(t * 255f), 0, 255);
-}
-
-for realistic superelvation physics:
-    CarAI.SimulationStep() should
-        frameData.m_swayVelocity += (current_superelvation-prev_superelvation)*(1- this.m_info.m_springs);
-        (insert before: frameData.m_swayPosition += frameData.m_swayVelocity * 0.5f)
-    CarAI.SimulationStep().Prefix()
-        pathIndex = VehcileData.m_pathPositionIndex
-        if(pathIndex == 255)pathIndex=0
-        pathBuffer[VehcileData.m_path].GetPosition(pathIndex >> 1, out pathPos)
-        offset = pathPos.m_offset/255f
-        se = superelevation[vehcileID][frameIndex] = startSE * offset + endSE *(1-offset);
-    Vehicle.RenderInstance:
-        rotation passed to type matrix shoudl be have the extra super elevation.
 
 for simplicistic superlevation:
     CarAI.SimulationStep().PostFix()

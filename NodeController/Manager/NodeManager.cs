@@ -22,7 +22,7 @@ namespace NodeController {
         }
 
         public void OnLoad() {
-            RefreshAllNodes();
+            UpdateAll();
         }
 
         #endregion LifeCycle
@@ -56,7 +56,7 @@ namespace NodeController {
                 TargetNodeID = nodeID; // must be done before deserialization.
                 buffer[nodeID] = SerializationUtil.Deserialize(data) as NodeData;
                 buffer[nodeID].NodeID = nodeID;
-                RefreshData(nodeID);
+                UpdateData(nodeID);
                 TargetNodeID = 0;
             }
         }
@@ -100,10 +100,10 @@ namespace NodeController {
         }
 
         /// <summary>
-        /// releases data for <paramref name="nodeID"/> if uncessary. Calls update node.
+        /// Calls update node. releases data for <paramref name="nodeID"/> if uncessary. 
         /// </summary>
         /// <param name="nodeID"></param>
-        public void RefreshData(ushort nodeID) {
+        public void UpdateData(ushort nodeID) {
             if (nodeID == 0 || buffer[nodeID] == null)
                 return;
             bool selected = NodeControllerTool.Instance.SelectedNodeID == nodeID;
@@ -112,9 +112,9 @@ namespace NodeController {
             } else {
                 foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID)) {
                     var segEnd = SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: nodeID);
-                    segEnd.Refresh();
+                    segEnd.Update();
                 }
-                buffer[nodeID].Refresh();
+                buffer[nodeID].Update();
             }
         }
 
@@ -129,22 +129,25 @@ namespace NodeController {
             NetManager.instance.UpdateNode(nodeID);
         }
 
-        public void RefreshAllNodes() {
+        public void UpdateAll() {
             foreach (var nodeData in buffer) {
                 if (nodeData == null) continue;
                 if (NetUtil.IsNodeValid(nodeData.NodeID))
-                    nodeData.Refresh();
+                    nodeData.Update();
                 else
                     ResetNodeToDefault(nodeData.NodeID);
             }
         }
 
-        /// <summary>Called after stock code and before postfix code.</summary>
+        /// <summary>
+        /// Called after stock code and before postfix code.
+        /// if node is invalid or otherwise unsupported, it will be set to null.
+        /// </summary>
         public void OnBeforeCalculateNodePatch(ushort nodeID) {
             // nodeID.ToNode still has default flags.
-            if (buffer[nodeID] == null)
-                return;
-            if (!NodeData.IsSupported(nodeID)) {
+            if (buffer[nodeID] == null) return;
+
+            if (!NetUtil.IsNodeValid(nodeID) || !NodeData.IsSupported(nodeID)) {
                 SetNullNodeAndSegmentEnds(nodeID);
                 return;
             }

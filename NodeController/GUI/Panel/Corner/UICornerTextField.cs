@@ -106,7 +106,7 @@ namespace NodeController.GUI {
                 // deep refresh is for OnSubmit()
                 SetData(value);
                 SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
-                data?.Refresh();
+                data?.Update();
                 resetButton_?.Refresh();
             }
         }
@@ -165,11 +165,11 @@ namespace NodeController.GUI {
                 Disable();
                 return;
             }
-            data.Refresh();
+            data.Update();
             isEnabled = data.CanModifyCorners();
         }
 
-        public void RefreshUIValueOnly() {
+        public void RefreshValues() {
             refreshing_ = true;
             Value = GetData();
             refreshing_ = false;

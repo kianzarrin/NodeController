@@ -12,6 +12,7 @@ namespace NodeController {
     using static KianCommons.HelpersExtensions;
     using KianCommons.Math;
 
+
     public enum NodeTypeT {
         Middle,
         Bend,
@@ -23,7 +24,7 @@ namespace NodeController {
     }
 
     [Serializable]
-    public class NodeData : ISerializable {
+    public class NodeData : ISerializable, INetworkData, INetworkData<NodeData> {
         public override string ToString() => $"NodeData(id:{NodeID} type:{NodeType})";
         #region serialization
         public NodeData() { } // so that the code compiles
@@ -41,14 +42,14 @@ namespace NodeController {
 
             // corner offset and clear markings
             SerializationUtil.SetObjectProperties(info, this);
+            Update();
         }
 
-        public NodeData(NodeData template) {
-            HelpersExtensions.CopyProperties(this, template);
+        private NodeData(NodeData template) {
+            CopyProperties(this, template);
         }
 
         public NodeData Clone() => new NodeData(this);
-
         #endregion
 
 
@@ -178,7 +179,7 @@ namespace NodeController {
         }
         #endregion
         #region slope angle
-        public float SlopeAngle {
+        public float SlopeAngleDeg {
             get {
                 Assert(CanMassEditNodeCorners());
                 Assert(SegmentCount == 2);
@@ -237,6 +238,7 @@ namespace NodeController {
             FirstTimeTrafficLight = false;
             Assert(IsDefault(), "IsDefault()");
             Assert(CanChangeTo(NodeType), $"CanChangeTo(NodeType={NodeType})");
+            Update();
         }
 
         public NodeData(ushort nodeID, NodeTypeT nodeType) : this(nodeID) {
@@ -247,6 +249,14 @@ namespace NodeController {
         }
 
         public void Calculate() {
+            CalculateDefaults();
+            Refresh();
+        }
+
+        /// <summary>
+        /// Capture the default values.
+        /// </summary>
+        private void CalculateDefaults() {
             SegmentCount = NodeID.ToNode().CountSegments();
             DefaultFlags = NodeID.ToNode().m_flags;
 
@@ -289,6 +299,25 @@ namespace NodeController {
             Refresh();
         }
 
+        /// <summary>
+        /// this is called to make necessary changes to the node to handle external changes
+        /// </summary>
+        private void Refresh() {
+            if (VERBOSE) Log.Debug($"NodeData.Refresh() node:{NodeID}\n" + Environment.StackTrace);
+
+            if (NodeType != NodeTypeT.Custom)
+                ClearMarkings = false;
+
+            if (!CanModifyOffset()) {
+                if (NodeType == NodeTypeT.UTurn)
+                    CornerOffset = 8f;
+                else if (NodeType == NodeTypeT.Crossing)
+                    CornerOffset = 0f;
+            }
+        }
+
+        public void Update() => NetManager.instance.UpdateNode(NodeID);
+
         public IEnumerable<SegmentEndData> IterateSegmentEndDatas() {
             for (int i = 0; i < 8; ++i) {
                 ushort segmentID = Node.GetSegment(i);
@@ -316,61 +345,18 @@ namespace NodeController {
             NetManager.instance.UpdateNode(NodeID);
         }
 
-        public void Refresh() {
-            if (NodeType != NodeTypeT.Custom)
-                ClearMarkings = false;
-
-            if (!CanModifyOffset()) {
-                if (NodeType == NodeTypeT.UTurn)
-                    CornerOffset = 8f;
-                else if (NodeType == NodeTypeT.Crossing)
-                    CornerOffset = 0f;
+        public static bool IsSupported(ushort nodeID) {
+            if (!NetUtil.IsNodeValid(nodeID)) // check info !=null (and maybe more checks in future)
+                return false;
+            foreach (ushort segmentID in NetUtil.IterateNodeSegments(nodeID)) {
+                if (!NetUtil.IsSegmentValid(segmentID))
+                    return false;
             }
 
-            //Log.Debug($"NodeData.Refresh() Updating node:{NodeID}");
-            if (HelpersExtensions.VERBOSE)
-                Log.Debug(Environment.StackTrace);
-
-            NetManager.instance.UpdateNode(NodeID);
-        }
-
-        bool CrossingIsRemoved(ushort segmentId) =>
-            HideCrosswalks.Patches.CalculateMaterialCommons.
-            ShouldHideCrossing(NodeID, segmentId);
-
-        public bool IsCSUR => NetUtil.IsCSUR(Info);
-        public NetInfo Info => NodeID.ToNode().Info;
-        public bool IsRoad => Info.m_netAI is RoadBaseAI;
-        public bool EndNode() => NodeType == NodeTypeT.End;
-        public bool NeedMiddleFlag() => NodeType == NodeTypeT.Middle;
-        public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
-        public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
-        public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
-        public bool CanModifyOffset() => NodeType == NodeTypeT.Bend || NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
-        public bool CanMassEditNodeCorners() => SegmentCount == 2;
-        public bool CanModifyFlatJunctions() => !NeedMiddleFlag();
-        public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
-        public bool CanModifyTextures() => IsRoad && !IsCSUR;
-        public bool ShowClearMarkingsToggle() => CanModifyTextures() && NodeType == NodeTypeT.Custom ;
-
-
-        public bool NeedsTransitionFlag() =>
-            SegmentCount == 2 &&
-            (NodeType == NodeTypeT.Custom ||
-            NodeType == NodeTypeT.Crossing ||
-            NodeType == NodeTypeT.UTurn);
-
-        public bool ShouldRenderCenteralCrossingTexture() =>
-            NodeType == NodeTypeT.Crossing &&
-            CrossingIsRemoved(segmentID1) &&
-            CrossingIsRemoved(segmentID2);
-
-        public static bool IsSupported(ushort nodeID) {
             var flags = nodeID.ToNode().m_flags;
             if (!flags.CheckFlags(
                 required: NetNode.Flags.Created,
-                forbidden: NetNode.Flags.LevelCrossing /*| NetNode.Flags.End*/ |
-                           NetNode.Flags.Outside | NetNode.Flags.Deleted)) {
+                forbidden: NetNode.Flags.LevelCrossing | NetNode.Flags.Outside | NetNode.Flags.Deleted)) {
                 return false;
             }
 
@@ -401,7 +387,7 @@ namespace NodeController {
                 case NodeTypeT.Bend:
                     return !middle;
                 case NodeTypeT.Middle:
-                    return IsStraight || Is180; 
+                    return IsStraight || Is180;
                 case NodeTypeT.Custom:
                     return true;
                 case NodeTypeT.End:
@@ -410,6 +396,35 @@ namespace NodeController {
                     throw new Exception("Unreachable code");
             }
         }
+
+        public bool IsCSUR => NetUtil.IsCSUR(Info);
+        public NetInfo Info => NodeID.ToNode().Info;
+        public bool IsRoad => Info.m_netAI is RoadBaseAI;
+        public bool EndNode() => NodeType == NodeTypeT.End;
+        public bool NeedMiddleFlag() => NodeType == NodeTypeT.Middle;
+        public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
+        public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
+        public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
+        public bool CanModifyOffset() => NodeType == NodeTypeT.Bend || NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
+        public bool CanMassEditNodeCorners() => SegmentCount == 2;
+        public bool CanModifyFlatJunctions() => !NeedMiddleFlag();
+        public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
+        public bool CanModifyTextures() => IsRoad && !IsCSUR;
+        public bool ShowClearMarkingsToggle() => CanModifyTextures() && NodeType == NodeTypeT.Custom ;
+
+        bool CrossingIsRemoved(ushort segmentId) =>
+            HideCrosswalks.Patches.CalculateMaterialCommons.
+            ShouldHideCrossing(NodeID, segmentId);
+        public bool NeedsTransitionFlag() =>
+            SegmentCount == 2 &&
+            (NodeType == NodeTypeT.Custom ||
+            NodeType == NodeTypeT.Crossing ||
+            NodeType == NodeTypeT.UTurn);
+
+        public bool ShouldRenderCenteralCrossingTexture() =>
+            NodeType == NodeTypeT.Crossing &&
+            CrossingIsRemoved(segmentID1) &&
+            CrossingIsRemoved(segmentID2);
 
         public string ToolTip(NodeTypeT nodeType) {
             switch (nodeType) {

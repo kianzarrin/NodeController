@@ -6,8 +6,8 @@ namespace NodeController.GUI {
     using UnityEngine;
 
     public abstract class UISliderBase: UISliderExt, IDataControllerUI {
-        UIResetButton resetButton_ => root_?.ResetButton;
-        UIPanelBase root_;
+        UIResetButton resetButton_ => Root?.ResetButton;
+        protected UIPanelBase Root;
 
         public float ScrollWheelAmount;
 
@@ -32,7 +32,7 @@ namespace NodeController.GUI {
 
         public override void Start() {
             base.Start();
-            root_ = GetRootContainer() as UIPanelBase;
+            Root = GetRootContainer() as UIPanelBase;
 
             stepSize = 0.5f;
             ScrollWheelAmount = 0.5f;
@@ -57,13 +57,13 @@ namespace NodeController.GUI {
 
         public void Apply() {
             if (Refreshing) return;
-            object data = root_.GetData();
+            object data = Root.GetData();
             if (data is NodeData nodeData) {
                 ApplyNode(nodeData);
-                nodeData.Refresh();
+                nodeData.Update();
             } else if (data is SegmentEndData segEndData) {
                 ApplySegmentEnd(segEndData);
-                segEndData.Refresh();
+                segEndData.Update();
             }
 
             resetButton_?.Refresh();
@@ -76,28 +76,22 @@ namespace NodeController.GUI {
         /// <summary>set data value. data refresh is already taken care of</summary>
         public abstract void ApplySegmentEnd(SegmentEndData data);
 
+
+        public virtual string TooltipPostfix => "";
+
         protected bool Refreshing = false;
         public virtual void Refresh() {
             Log.Debug("UISliderBase.Refresh() was called");
+            INetworkData data = Root.GetData();
+            RefreshValues();
 
-            Refreshing = true;
+            // RefreshValues sets and then unsets Refreshing. therefore this must be called after RefreshValues.
+            Refreshing = true; 
 
-            var data = root_.GetData();
-            if (data is NodeData nodeData) {
+            if (isEnabled && data is NodeData nodeData)
                 RefreshNode(nodeData);
-            } else if (data is SegmentEndData segEndData) {
-                RefreshSegmentEnd(segEndData);
-            } else if (data == null) {
-                Log.Debug("data is null. disabling ...");
-                Disable();
-            } else {
-                throw new System.Exception($"UISliderBase.Refresh() Unreachable code: " +
-                    $"this.version:{this.VersionOf()} " +
-                    $"data={data.GetType().Name}.{data.VersionOf()} " +
-                    $"NodeData.version={typeof(SegmentEndData).VersionOf()}");
-            }
 
-            tooltip = value.ToString();
+            tooltip = value.ToString() +  TooltipPostfix;
             RefreshTooltip();
 
             parent.isVisible = isEnabled;
@@ -110,15 +104,31 @@ namespace NodeController.GUI {
         }
 
         /// <summary>
-        /// read value from data.
-        /// setup is enabled (which in turn sets up is visible), opactiy, color, ...
+        /// <see cref="RefreshNodeValues()"/> is called before hand.
+        /// Precondition: isEnabled = true
+        /// setup opactiy, color, ...
         /// </summary>
         public abstract void RefreshNode(NodeData data);
 
         /// <summary>
-        /// read value from data.
-        /// setup is enabled (which in turn sets up is visible), opactiy, color, ...
+        /// read isEnabled and value
         /// </summary>
-        public abstract void RefreshSegmentEnd(SegmentEndData data);
+        public abstract void RefreshNodeValues(NodeData data);
+
+        /// <summary>
+        /// read isEnabled and value
+        /// </summary>
+        public abstract void RefreshSegmentEndValues(SegmentEndData data);
+
+        public virtual void RefreshValues() {
+            Refreshing = true;
+            INetworkData data = Root?.GetData();
+            if (data is SegmentEndData segmentEndData) {
+                RefreshSegmentEndValues(segmentEndData);
+            } else if (data is NodeData nodeData) {
+                RefreshNodeValues(nodeData);
+            } else Disable();
+            Refreshing = false;
+        }
     }
 }

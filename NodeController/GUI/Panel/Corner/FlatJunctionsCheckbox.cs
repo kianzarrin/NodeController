@@ -5,6 +5,7 @@ namespace NodeController.GUI {
     using KianCommons;
     using static KianCommons.HelpersExtensions;
 
+
     public class UIFlatJunctionsCheckbox : UICheckBox, IDataControllerUI {
         public static UIFlatJunctionsCheckbox Instance { get; private set; }
 
@@ -40,11 +41,11 @@ namespace NodeController.GUI {
 
         }
 
-        IDataControllerUI root_;
+        UIPanelBase root_;
         public override void Start() {
             base.Start();
             width = parent.width;
-            root_ = GetRootContainer() as IDataControllerUI;
+            root_ = GetRootContainer() as UIPanelBase;
         }
 
         public void Apply() {
@@ -55,7 +56,7 @@ namespace NodeController.GUI {
             data.FlatJunctions = this.isChecked;
             data.UpdateSlopeAngleDeg = true; // reset slope angle.
             Assert(!refreshing_, "!refreshing_");
-            data.Refresh();
+            data.Update();
             root_.Refresh();
         }
 
@@ -65,18 +66,26 @@ namespace NodeController.GUI {
         public void Refresh() {
             Log.Debug("Refresh called()\n"/* + Environment.StackTrace*/);
             refreshing_ = true;
-            var data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
-            if (data == null) {
-                Disable();
-                return;
-            }
 
-            this.isChecked = data.FlatJunctions;
+            RefreshValues();
+            //if (root_?.GetData() is NodeData nodeData)
+            //    RefreshNode(nodeData);
 
-            parent.isVisible = isVisible = this.isEnabled = data.CanModifyFlatJunctions();
+            parent.isVisible = isVisible = this.isEnabled;
             parent.Invalidate();
             Invalidate();
             refreshing_ = false;
+        }
+
+        public void RefreshValues() {
+            INetworkData data = root_?.GetData();
+            if (data is SegmentEndData segmentEndData) {
+                this.isChecked = segmentEndData.FlatJunctions;
+                isEnabled = segmentEndData.CanModifyFlatJunctions();
+            } else if (data is NodeData nodeData) {
+                //this.isChecked = nodeData.FlatJunctions; // TODO complete
+                isEnabled = nodeData.CanModifyFlatJunctions();
+            } else Disable();
         }
     }
 }

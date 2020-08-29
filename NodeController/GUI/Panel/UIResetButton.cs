@@ -5,6 +5,7 @@ namespace NodeController.GUI {
     using static KianCommons.HelpersExtensions;
     using KianCommons;
 
+
     public class UIResetButton : UIButton, IDataControllerUI {
         public static UIResetButton Instance { get; private set; }
 
@@ -31,9 +32,8 @@ namespace NodeController.GUI {
             base.Start();
             width = parent.width;
             root_ = GetRootContainer() as UIPanelBase;
-            if (root_ is UINodeControllerPanel ncpanel)
+            if (root_.NetworkType == NetworkTypeT.Node)
                 tooltip += "including segment ends.";
-
         }
 
         protected override void OnClick(UIMouseEventParameter p) {
@@ -45,11 +45,7 @@ namespace NodeController.GUI {
 
         public void Apply() {
             if (VERBOSE) Log.Debug("UIResetButton.Apply called()\n" + Environment.StackTrace);
-            if (root_ is UINodeControllerPanel ncpanel)
-                ncpanel.NodeData?.ResetToDefault(); 
-            else if (root_ is UISegmentEndControllerPanel secpanel)
-                secpanel.SegmentEndData?.ResetToDefault();
-
+            root_?.GetData()?.ResetToDefault();
             Assert(!refreshing_, "!refreshing_");
             root_.Refresh();
         }
@@ -60,30 +56,21 @@ namespace NodeController.GUI {
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
-            if (root_ is UINodeControllerPanel ncpanel)
-                RefreshNode();
-            else if (root_ is UISegmentEndControllerPanel secpanel)
-                RefreshSegmentEnd();
+            RefreshValues();
 
             parent.isVisible = isVisible = true;
             Invalidate();
             refreshing_ = false;
         }
-        public void RefreshNode() {
-            NodeData data = (root_ as UINodeControllerPanel).NodeData;
-            if (data == null)
-                Disable();
-            else
-                isEnabled = !data.IsDefault();
-        }
-        public void RefreshSegmentEnd() {
-            SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
-            if (data == null)
-                Disable();
-            else
-                isEnabled = !data.IsDefault();
-        }
 
+        public void RefreshValues() {
+            INetworkData data = root_.GetData();
+            if (data == null) {
+                Disable();
+                return;
+            }
+            isEnabled = !data.IsDefault();
+        }
     }
 }
 

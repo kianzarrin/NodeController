@@ -5,6 +5,7 @@ namespace NodeController {
     using KianCommons;
     using KianCommons.Math;
     using NodeController.GUI;
+
     using System;
     using System.Diagnostics;
     using UnityEngine;
@@ -12,7 +13,7 @@ namespace NodeController {
     using Log = KianCommons.Log;
 
     [Serializable]
-    public class SegmentEndData {
+    public class SegmentEndData: INetworkData, INetworkData<SegmentEndData> {
         // intrinsic
         public ushort NodeID;
         public ushort SegmentID;
@@ -23,7 +24,7 @@ namespace NodeController {
         }
 
         /// <summary>clone</summary>
-        public SegmentEndData(SegmentEndData template) =>
+        private SegmentEndData(SegmentEndData template) =>
             HelpersExtensions.CopyProperties(this, template);
 
         public SegmentEndData Clone() => new SegmentEndData(this);
@@ -42,7 +43,7 @@ namespace NodeController {
         public Vector3Serializable CachedLeftCornerPos, CachedLeftCornerDir, CachedRightCornerPos, CachedRightCornerDir;// left and right is when you go away form junction
         // corner pos/dir after CornerOffset, FlatJunctions, Slope, Stretch, and EmbankmentAngle, but before DeltaLeft/RighCornerDir/Pos are applied.
         public Vector3Serializable LeftCornerDir0, RightCornerDir0, LeftCornerPos0, RightCornerPos0;
-        public float SuperElevationDeg; // rightward rotation of the road when going away from the junction.
+        public float CachedSuperElevationDeg; // rightward rotation of the road when going away from the junction.
 
         // Configurable
         public bool NoCrossings;
@@ -83,13 +84,43 @@ namespace NodeController {
         }
 
         public void Calculate() {
+            //Capture the default values.
             DefaultFlags = Segment.m_flags;
             PedestrianLaneCount = Info.CountPedestrianLanes();
 
             Refresh();
         }
 
+        /// <summary>
+        /// this is called to make necessary changes to the node to handle external changes
+        /// </summary>
+        private void Refresh() {
+            if (HelpersExtensions.VERBOSE)
+                Log.Debug("SegmentEndData.Refresh() for this\n" + Environment.StackTrace);
+
+            if (!CanModifyOffset()) {
+                Log.Debug("SegmentEndData.Refresh(): setting CornerOffset = DefaultCornerOffset");
+                CornerOffset = DefaultCornerOffset;
+            }
+            if (!CanModifyFlatJunctions()) {
+                FlatJunctions = DefaultFlatJunctions;
+            }
+            if (!CanModifyTwist()) {
+                Twist = DefaultTwist;
+            }
+            if (!CanModifyCorners()) {
+                SlopeAngleDeg = DefaultSlopeAngleDeg;
+                Stretch = EmbankmentAngleDeg = 0;
+            }
+        }
+
+        public void Update() => NetManager.instance.UpdateNode(NodeID);
+
         bool insideAfterCalcualte_ = false;
+
+        /// <summary>
+        /// called after all calculations are done. this is called in order to cache values.
+        /// </summary>
         public void OnAfterCalculate() {
             insideAfterCalcualte_ = true;
             // left and right is when you go away form junction
@@ -107,7 +138,7 @@ namespace NodeController {
 
             Vector3 diff = rpos - lpos;
             float se = Mathf.Atan2(diff.y, VectorUtils.LengthXZ(diff));
-            SuperElevationDeg = se * Mathf.Rad2Deg;
+            CachedSuperElevationDeg = se * Mathf.Rad2Deg;
             insideAfterCalcualte_ = false;
         }
 
@@ -144,29 +175,6 @@ namespace NodeController {
             NoTLProps = false;
             DeltaRightCornerPos = DeltaRightCornerDir = DeltaLeftCornerPos = DeltaLeftCornerDir = default;
             Stretch = EmbankmentAngleDeg = 0;
-            NetManager.instance.UpdateNode(NodeID);
-        }
-
-        public void Refresh() {
-            if (!CanModifyOffset()) {
-                Log.Debug("SegmentEndData.Refresh(): setting CornerOffset = DefaultCornerOffset");
-                CornerOffset = DefaultCornerOffset;
-            }
-            if (!CanModifyFlatJunctions()) {
-                FlatJunctions = DefaultFlatJunctions;
-            }
-            if (!CanModifyTwist()) {
-                Twist = DefaultTwist;
-            }
-            if(!CanModifyCorners()) {
-                SlopeAngleDeg = DefaultSlopeAngleDeg;
-                Stretch = EmbankmentAngleDeg = 0;
-            }
-
-            Log.Debug($"SegmentEndData.Refresh() Updating segment:{SegmentID} node:{NodeID} CornerOffset={CornerOffset}");
-            if (HelpersExtensions.VERBOSE)
-                Log.Debug(Environment.StackTrace);
-
             NetManager.instance.UpdateNode(NodeID);
         }
 
