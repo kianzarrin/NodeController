@@ -104,24 +104,23 @@ namespace NodeController.GUI {
                 ResetButton = panel.AddUIComponent<UIResetButton>();
                 Controls.Add(ResetButton);
             }
-            Disable();
-        }
 
+            MakeHintBox();
+            Disable();
+            AutoSize2 = true;
+        }
 
         public void ShowNode(ushort nodeID) {
             NodeManager.Instance.UpdateData(NodeID); // refresh previous node data if any.
-            UISegmentEndControllerPanel.Instance.Close();
             NodeID = nodeID;
-            NodeManager.Instance.UpdateData(NodeID);
-            Enable();
-            Show();
-            Refresh();
+            NodeManager.Instance.UpdateData(NodeID); // refresh current node data
+            base.Open();
         }
 
-        public void Close() {
+        public override void Close() {
             NodeManager.Instance.UpdateData(NodeID);
             NodeID = 0;
-            Hide();
+            base.Close();
         }
     }
 }

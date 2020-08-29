@@ -6,9 +6,10 @@ namespace NodeController.GUI {
     using ColossalFramework;
     using KianCommons;
     using KianCommons.UI;
-    using System.Reflection.Emit;
 
     public abstract class UIPanelBase : UIAutoSizePanel, IDataControllerUI {
+        public static UIPanelBase ActivePanel;
+
         public static readonly SavedFloat SavedX = new SavedFloat(
             "PanelX", Settings.FileName, 87, true);
         public static readonly SavedFloat SavedY = new SavedFloat(
@@ -42,7 +43,7 @@ namespace NodeController.GUI {
             base.Start();
             Log.Debug("UIPanelBase started");
 
-            width = 250;
+            width = 400;
             name = "UIPanelBase";
             backgroundSprite = "MenuPanel2";
             absolutePosition = new Vector3(SavedX, SavedY);
@@ -106,6 +107,7 @@ namespace NodeController.GUI {
                 control.Refresh();
             //Update();
             RefreshSizeRecursive();
+            Hintbox.width = this.width;
             Invalidate();
             autoLayout = false;
 
@@ -121,18 +123,29 @@ namespace NodeController.GUI {
             }
         }
 
-        public UILabel Hintbox;
+        public virtual void Close() {
+            Hide();
+            Disable();
+            if (ActivePanel == this)
+                ActivePanel = null;
+        }
+
+        public virtual void Open() {
+            ActivePanel?.Close();
+            Enable();
+            Show();
+            ActivePanel = this;
+            Refresh();
+        }
+
+        public HintBox Hintbox;
 
         public void MakeHintBox() {
             var panel = AddUIComponent<UIPanel>();
             panel.width = width;
             panel.height = 0;
-            Hintbox = panel.AddUIComponent<UILabel>();
-            Hintbox.relativePosition = Vector2.zero;
-            Hintbox.size = new Vector2(width, 10);
-            Hintbox.minimumSize = new Vector2(width, 0);
-            Hintbox.maximumSize = new Vector2(width, 100);
-            Hintbox.wordWrap = true;
+            Hintbox = panel.AddUIComponent<HintBox>();
+            Hintbox.Hint3 = "Alt + Click : select segment end\nClick : select/insert node\nControl : Hide TMPE signs";
         }
 
     }

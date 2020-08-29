@@ -5,7 +5,6 @@ namespace NodeController.GUI {
     using KianCommons;
     using KianCommons.UI;
 
-
     public class UISegmentEndControllerPanel : UIPanelBase {
         #region Instanciation
         public static UISegmentEndControllerPanel Instance { get; private set; }
@@ -115,7 +114,10 @@ namespace NodeController.GUI {
                 Controls.Add(ResetButton);
             }
 
+            MakeHintBox();
+
             AutoSize2 = true;
+            Disable();
         }
 
 
@@ -265,29 +267,26 @@ namespace NodeController.GUI {
         }
 
         public void ShowSegmentEnd(ushort segmentID, ushort nodeID) {
-            if (Instance != this)
-                Log.Error("Assertion Failed: Instance == this");
-            UINodeControllerPanel.Instance.Close();
+            if (Instance != this) Log.Error("Assertion Failed: Instance == this");
             SegmentEndManager.Instance.UpdateData(SegmentID, StartNode); // refresh previous segment data if any.
             SegmentID = segmentID;
             NodeID = nodeID;
             SegmentEndManager.Instance.UpdateData(SegmentID, StartNode);
-            Enable();
-            Show();
-            Refresh();
+            base.Open();
         }
 
-        public void Close() {
-            Log.Debug("UISegmentEndControllerPanel.Close() was called");
+        public override void Close() {
             SegmentEndManager.Instance.UpdateData(SegmentID, StartNode);
             SegmentID = NodeID = 0;
-            Hide();
+            base.Close();
         }
 
         public override void Refresh() {
             tableLeft_.isVisible = tableRight_.isVisible =
                 SegmentEndData?.CanModifyCorners() ?? false;
             base.Refresh();
+            Hintbox.Refresh();
         }
     }
 }
+ 

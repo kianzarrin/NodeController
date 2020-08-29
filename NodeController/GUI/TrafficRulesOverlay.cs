@@ -8,6 +8,7 @@ namespace NodeController.GUI {
     using KianCommons;
     using Log = KianCommons.Log;
     using NodeController.Util;
+    using ColossalFramework.Math;
 
 
     /// <summary>
@@ -15,7 +16,7 @@ namespace NodeController.GUI {
     /// Create one and set its fields before calling DrawSignHandles
     /// </summary>
     public struct TrafficRulesOverlay {
-        private const float SIGN_SIZE_PIXELS = 80f;
+        private const float SIGN_SIZE_PIXELS = 60;
         private const float AVERAGE_METERS_PER_PIXEL = 0.075f;
         private const float SIGN_SIZE_METERS = SIGN_SIZE_PIXELS * AVERAGE_METERS_PER_PIXEL;
         private const float VIEW_SIZE_RATIO = 0.8f;
@@ -98,8 +99,10 @@ namespace NodeController.GUI {
                 Vector3 diff = signCenter - camPos;
                 float zoom = 100.0f * baseZoom_ / diff.magnitude;
                 float size = SIGN_SIZE_PIXELS * zoom;
+                float viewAngle = Mathf.Abs(Mathf.Atan2(diff.y, VectorUtils.LengthXZ(diff)));
+                size *= viewAngle / (Mathf.PI * 0.5f);
                 if (!handleClick) size *= 0.75f * VIEW_SIZE_RATIO;
-                Log.DebugWait("final sign size=" + size);
+                //Log.DebugWait("final sign size=" + size);
 
                 var boundingBox = new Rect(
                     x: signScreenPos.x - (size * 0.5f),
@@ -151,6 +154,8 @@ namespace NodeController.GUI {
             Vector3 diff = signCenter - camPos;
             float zoom = 100.0f * baseZoom / diff.magnitude;
             float size = SIGN_SIZE_PIXELS * zoom;
+            float viewAngle = Mathf.Abs(Mathf.Atan2(diff.y, VectorUtils.LengthXZ(diff)));
+            size *= viewAngle / (Mathf.PI * 0.5f);
             if (!handleClick) size *= 0.75f * VIEW_SIZE_RATIO;
 
             var boundingBox = new Rect(
