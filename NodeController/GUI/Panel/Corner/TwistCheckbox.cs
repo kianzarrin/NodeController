@@ -5,7 +5,6 @@ namespace NodeController.GUI {
     using KianCommons;
     using static KianCommons.HelpersExtensions;
 
-
     public class TwistCheckbox : UICheckBox, IDataControllerUI {
         public static TwistCheckbox Instance { get; private set; }
 
@@ -27,7 +26,7 @@ namespace NodeController.GUI {
             checkedBoxObject.relativePosition = Vector3.zero;
 
             label = AddUIComponent<UILabel>();
-            label.text = "Flat junctions";
+            label.text = "Twist segment ends";
             label.textScale = 0.9f;
             label.relativePosition = new Vector2(sprite.width + 5f, (height - label.height) / 2 + 1);
             tooltip = "If turned off, junctions could have slope. Useful for highway intersections.\n" +
@@ -53,7 +52,7 @@ namespace NodeController.GUI {
             var data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
             if (data == null)
                 return;
-            data.FlatJunctions = this.isChecked;
+            data.Twist = this.isChecked;
             data.UpdateSlopeAngleDeg = true; // reset slope angle.
             Assert(!refreshing_, "!refreshing_");
             data.Update();
@@ -71,7 +70,13 @@ namespace NodeController.GUI {
             //if (root_?.GetData() is NodeData nodeData)
             //    RefreshNode(nodeData);
 
-            parent.isVisible = isVisible = this.isEnabled;
+            // TODO: does this do anything? should I apply color to each sprite?
+            if (enabled)
+                color = Color.white;
+            else
+                color = new Color32(100,100,100,100);
+
+            parent.isVisible = isVisible;
             parent.Invalidate();
             Invalidate();
             refreshing_ = false;
@@ -80,12 +85,14 @@ namespace NodeController.GUI {
         public void RefreshValues() {
             INetworkData data = root_?.GetData();
             if (data is SegmentEndData segmentEndData) {
-                this.isChecked = segmentEndData.FlatJunctions;
-                isEnabled = segmentEndData.CanModifyFlatJunctions();
+                isVisible = segmentEndData.CanModifyTwist();
+                if (isVisible) {
+                    this.isChecked = segmentEndData.Twist;
+                    isEnabled = segmentEndData.FlatJunctions;
+                }
             } else if (data is NodeData nodeData) {
-                //this.isChecked = nodeData.FlatJunctions; // TODO complete
-                isEnabled = nodeData.CanModifyFlatJunctions();
-            } else Disable();
+                Hide();
+            } else Hide();
         }
     }
 }

@@ -68,10 +68,10 @@ namespace NodeController.GUI {
             }
         }
 
-        UIPanelBase root_;
+        UINodeControllerPanel root_;
         public override void Start() {
             base.Start();
-            root_ = GetRootContainer() as UIPanelBase;
+            root_ = GetRootContainer() as UINodeControllerPanel;
 
         }
 
@@ -89,7 +89,7 @@ namespace NodeController.GUI {
 
         public void Apply() {
             if(VERBOSE)Log.Debug("UINodeTypeDropDown.Apply called()\n" + Environment.StackTrace);
-            NodeData data = (root_ as UINodeControllerPanel).NodeData;
+            NodeData data = root_.NodeData;
             if (data == null) return;
             data.NodeType = SelectedItem;
             foreach (var segmentEndData in data.IterateSegmentEndDatas())
@@ -104,7 +104,7 @@ namespace NodeController.GUI {
 
         public void Repopulate() {
             if (VERBOSE) Log.Debug("UINodeTypeDropDown.Repopulate called()" + Environment.StackTrace);
-            NodeData data = (root_ as UINodeControllerPanel).NodeData;
+            NodeData data = root_.NodeData;
             items = null;
             foreach (NodeTypeT nodeType in Enum.GetValues(typeof(NodeTypeT))) {
                 if (data.CanChangeTo(nodeType)/*.LogRet("CanChangeTo()->")*/) {
@@ -116,7 +116,7 @@ namespace NodeController.GUI {
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
-            NodeData data = root_?.GetData() as NodeData;
+            NodeData data = root_?.NodeData;
             if (data == null) {
                 Disable();
                 return;
@@ -134,7 +134,9 @@ namespace NodeController.GUI {
         }
 
         public void RefreshValues() {
-            throw new NotImplementedException();
+            NodeData data = root_?.NodeData;
+            if(data != null)
+                SelectedItem = data.NodeType;
         }
     }
 }

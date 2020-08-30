@@ -1,7 +1,6 @@
 namespace NodeController.GUI {
     using ColossalFramework.UI;
     using KianCommons;
-
     using NodeController.Tool;
 
     public class UINodeControllerPanel : UIPanelBase {
@@ -113,7 +112,7 @@ namespace NodeController.GUI {
         public void ShowNode(ushort nodeID) {
             NodeManager.Instance.UpdateData(NodeID); // refresh previous node data if any.
             NodeID = nodeID;
-            NodeManager.Instance.UpdateData(NodeID); // refresh current node data
+            NodeManager.Instance.UpdateData(nodeID); // refresh current node data
             base.Open();
         }
 

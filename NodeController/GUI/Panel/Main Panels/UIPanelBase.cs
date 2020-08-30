@@ -131,7 +131,8 @@ namespace NodeController.GUI {
         }
 
         public virtual void Open() {
-            ActivePanel?.Close();
+            if(ActivePanel!=this)
+                ActivePanel?.Close();
             Enable();
             Show();
             ActivePanel = this;

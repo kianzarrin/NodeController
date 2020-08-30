@@ -50,10 +50,15 @@ namespace NodeController.GUI {
 
         public void Apply() {
             Log.Debug("UIFlatJunctionsCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
-            var data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
+            SegmentEndData data = root_?.GetData() as SegmentEndData;
             if (data == null)
                 return;
+ 
             data.FlatJunctions = this.isChecked;
+            if (!this.isChecked)
+                data.Twist = false;
+            else
+                data.Twist = data.DefaultTwist;
             data.UpdateSlopeAngleDeg = true; // reset slope angle.
             Assert(!refreshing_, "!refreshing_");
             data.Update();

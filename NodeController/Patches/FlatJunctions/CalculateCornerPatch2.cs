@@ -3,14 +3,9 @@ namespace NodeController.Patches {
     using HarmonyLib;
     using JetBrains.Annotations;
     using System;
-    using System.Collections.Generic;
     using System.Reflection;
-    using System.Reflection.Emit;
-    using static KianCommons.Patches.TranspilerUtils;
-    using NodeController.Util;
     using UnityEngine;
-    using ColossalFramework.Math;
-    using UnityEngine.UI;
+
     using static ColossalFramework.Math.VectorUtils;
     using ColossalFramework;
 
@@ -69,7 +64,7 @@ namespace NodeController.Patches {
 
                     bool neighbourFlatJunctions = neighbourData?.FlatJunctions ?? neighbourSegmentID.ToSegment().Info.m_flatJunctions;
                     bool neighbourslope = !neighbourFlatJunctions;
-                    bool twist = true;// segmentID.ToSegment().Info.m_twistSegmentEnds;
+                    bool twist = data?.Twist ?? segmentID.ToSegment().Info.m_twistSegmentEnds;
                     if (twist && neighbourslope) {
                         FixCornerPosMinor(
                             nodePos: nodeID.ToNode().m_position,

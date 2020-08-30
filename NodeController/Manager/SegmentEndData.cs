@@ -199,7 +199,7 @@ namespace NodeController {
             var segEnd1 = SegmentEndManager.Instance.GetOrCreate(segmentID1, NodeID);
             var segEnd2 = SegmentEndManager.Instance.GetOrCreate(segmentID2, NodeID);
 
-            return segEnd1.FlatJunctions || segEnd2.FlatJunctions;
+            return segEnd1.FlatJunctions && segEnd2.FlatJunctions;
         }
         public bool ShowClearMarkingsToggle() {
             if (IsCSUR) return false;
