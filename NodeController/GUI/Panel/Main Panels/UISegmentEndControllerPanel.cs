@@ -89,9 +89,13 @@ namespace NodeController.GUI {
             {
                 var panel = AddPanel();
                 var checkBox = panel.AddUIComponent<UIFlatJunctionsCheckbox>();
+                var padding = panel.autoLayoutPadding;
+                padding.bottom = 0;
+                panel.autoLayoutPadding = padding;
                 Controls.Add(checkBox);
+
                 var panel2 = panel.AddUIComponent<UIAutoSizePanel>();
-                panel2.padding = new RectOffset(50, 0, 0, 0);
+                panel2.padding = new RectOffset(50, 5, 0, 5);
                 var checkBox2 = panel2.AddUIComponent<TwistCheckbox>();
                 Controls.Add(checkBox2);
 

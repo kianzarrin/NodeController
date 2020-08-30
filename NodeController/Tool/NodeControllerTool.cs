@@ -181,7 +181,7 @@ namespace NodeController.Tool {
         override public void SimulationStep() {
             base.SimulationStep();
             if (CornerFocusMode) {
-                DragCorner(); 
+                DragCorner();
                 return;
             }
 
@@ -299,7 +299,7 @@ namespace NodeController.Tool {
             ForceInfoMode(InfoManager.InfoMode.None, InfoManager.SubInfoMode.None);
         }
 
-        public Color GetColor(bool error, bool newNode=false) {
+        public Color GetColor(bool error, bool newNode = false) {
             if (error)
                 return base.GetToolColor(false, true);
             Color ret = newNode ? Color.green : Color.yellow;
@@ -323,9 +323,9 @@ namespace NodeController.Tool {
 
         CornerMarker GetCornerMarker(bool left) {
             var segEnd = SelectedSegmentEndData;
-            if (segEnd == null || !segEnd.CanModifyCorners() ) return null;
+            if (segEnd == null || !segEnd.CanModifyCorners()) return null;
 
-            var pos = left? segEnd.CachedLeftCornerPos: segEnd.CachedRightCornerPos;
+            var pos = left ? segEnd.CachedLeftCornerPos : segEnd.CachedRightCornerPos;
             float terrainY = Singleton<TerrainManager>.instance.SampleDetailHeightSmooth(pos);
             var ret = new CornerMarker {
                 Position = pos,
@@ -346,7 +346,7 @@ namespace NodeController.Tool {
         public override void RenderOverlay(RenderManager.CameraInfo cameraInfo) {
             base.RenderOverlay(cameraInfo);
 
-            if ( SelectedSegmentID != 0) {
+            if (SelectedSegmentID != 0) {
                 GetCornerMarker(left: true)?.RenderOverlay(cameraInfo, Color.red, leftCornerHovered_, leftCornerSelected_);
                 GetCornerMarker(left: false)?.RenderOverlay(cameraInfo, Color.red, rightCornerHovered_, rightCornerSelected_);
             }
@@ -411,7 +411,7 @@ namespace NodeController.Tool {
                 // CornerUI(); should i do this here or in simulation step?
                 return;
             }
-            if(!ControlIsPressed)
+            if (!ControlIsPressed)
                 DrawSigns();
         }
 
@@ -427,17 +427,17 @@ namespace NodeController.Tool {
                 leftCornerSelected_ = leftCornerHovered_ = GetCornerMarker(left: true)?.IntersectRay() ?? false;
             } else if (mouseUp) {
                 leftCornerSelected_ = false;
-                leftCornerHovered_ = GetCornerMarker(left: true).IntersectRay();
+                leftCornerHovered_ = GetCornerMarker(left: true)?.IntersectRay() ?? false;
             } else {
                 leftCornerHovered_ = leftCornerSelected_ || (GetCornerMarker(left: true)?.IntersectRay() ?? false);
             }
             if (mouseDown) {
-                rightCornerSelected_ = rightCornerHovered_ = GetCornerMarker(left: false)?.IntersectRay()??false;
+                rightCornerSelected_ = rightCornerHovered_ = GetCornerMarker(left: false)?.IntersectRay() ?? false;
             } else if (mouseUp) {
                 rightCornerSelected_ = false;
-                rightCornerHovered_ = GetCornerMarker(left: false).IntersectRay();
+                rightCornerHovered_ = GetCornerMarker(left: false)?.IntersectRay() ?? false;
             } else {
-                rightCornerHovered_ = rightCornerSelected_ || (GetCornerMarker(left: false)?.IntersectRay()??false);
+                rightCornerHovered_ = rightCornerSelected_ || (GetCornerMarker(left: false)?.IntersectRay() ?? false);
             }
         }
 
@@ -448,13 +448,13 @@ namespace NodeController.Tool {
                 TrafficRulesOverlay overlay =
                     new TrafficRulesOverlay(handleClick: false);
                 foreach (NodeData nodeData in NodeManager.Instance.buffer) {
-                    if (nodeData == null ) continue;
+                    if (nodeData == null) continue;
                     overlay.DrawSignHandles(
                         nodeData.NodeID, 0, camPos: ref camPos, out _);
                 }
             } else {
                 NodeData nodeData = NodeManager.Instance.buffer[SelectedNodeID];
-                bool draw = !Hide_TMPE_Overlay || (nodeData !=null && nodeData.SegmentCount <= 2);
+                bool draw = !Hide_TMPE_Overlay || (nodeData != null && nodeData.SegmentCount <= 2);
                 if (draw) {
                     TrafficRulesOverlay overlay =
                         new TrafficRulesOverlay(handleClick: true);

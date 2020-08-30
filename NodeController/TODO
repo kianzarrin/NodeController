@@ -1,10 +1,10 @@
-- twist checkbox (for embanking side roads at sloped intersections.)
-- round values
-- hint box
-- text fields for embankment,slope,twist.
 - individual offset control for left and right segment
-- direction values to be absolute.
+- direction values to be absolute (store the difference show the absolute).
 - direction length field (includences and influenced by values from the other dir fields).
+- slope: store the difference show the absolute.
+- text fields for embankment,slope,twist.
+- improve hint box
+- round values
 
 - lock corners while dragging or using mousewheal
 - assert dx^2+dz^2 is 1 before slope calculations.. at the very list print warning.

@@ -199,7 +199,10 @@ namespace NodeController {
             var segEnd1 = SegmentEndManager.Instance.GetOrCreate(segmentID1, NodeID);
             var segEnd2 = SegmentEndManager.Instance.GetOrCreate(segmentID2, NodeID);
 
-            return segEnd1.FlatJunctions && segEnd2.FlatJunctions;
+            Log.Debug($"{this}.CanModifyTwist() flatjunctions: {segEnd1.FlatJunctions} {segEnd2.FlatJunctions}" );
+            bool slope1 = !segEnd1.FlatJunctions;
+            bool slope2 = !segEnd2.FlatJunctions;
+            return slope1 || slope2;
         }
         public bool ShowClearMarkingsToggle() {
             if (IsCSUR) return false;

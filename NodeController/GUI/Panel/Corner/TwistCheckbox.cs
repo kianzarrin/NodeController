@@ -7,6 +7,7 @@ namespace NodeController.GUI {
 
     public class TwistCheckbox : UICheckBox, IDataControllerUI {
         public static TwistCheckbox Instance { get; private set; }
+        public UISprite UncheckedSprite, CheckedSprite;
 
         public override void Awake() {
             base.Awake();
@@ -15,12 +16,12 @@ namespace NodeController.GUI {
             height = 30f;
             clipChildren = true;
 
-            UISprite sprite = AddUIComponent<UISprite>();
+            UISprite sprite = UncheckedSprite = AddUIComponent<UISprite>();
             sprite.spriteName = "ToggleBase";
             sprite.size = new Vector2(19f, 19f);
             sprite.relativePosition = new Vector2(0, (height - sprite.height) / 2);
 
-            checkedBoxObject = sprite.AddUIComponent<UISprite>();
+            checkedBoxObject = CheckedSprite = sprite.AddUIComponent<UISprite>();
             ((UISprite)checkedBoxObject).spriteName = "ToggleBaseFocused";
             checkedBoxObject.size = sprite.size;
             checkedBoxObject.relativePosition = Vector3.zero;
@@ -37,7 +38,6 @@ namespace NodeController.GUI {
                     return;
                 Apply();
             };
-
         }
 
         UIPanelBase root_;
@@ -63,33 +63,38 @@ namespace NodeController.GUI {
         bool refreshing_ = false;
 
         public void Refresh() {
-            Log.Debug("Refresh called()\n"/* + Environment.StackTrace*/);
+            Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
 
             RefreshValues();
             //if (root_?.GetData() is NodeData nodeData)
             //    RefreshNode(nodeData);
 
-            // TODO: does this do anything? should I apply color to each sprite?
-            if (enabled)
-                color = Color.white;
-            else
-                color = new Color32(100,100,100,100);
+            if (isEnabled) {
+                label.color = UncheckedSprite.color = CheckedSprite.color  = Color.white;
 
-            parent.isVisible = isVisible;
+            } else {
+                byte c = 75;
+                label.color = UncheckedSprite.color = CheckedSprite.color = new Color32(c, c, c, c);
+            }
+
             parent.Invalidate();
             Invalidate();
+            Log.Debug($"TwistChekbox.Refresh() visible={isVisible}");
+
             refreshing_ = false;
         }
 
         public void RefreshValues() {
             INetworkData data = root_?.GetData();
             if (data is SegmentEndData segmentEndData) {
-                isVisible = segmentEndData.CanModifyTwist();
-                if (isVisible) {
+                bool b = segmentEndData.CanModifyTwist().LogRet("CanModifyTwist->");
+                if (b) {
                     this.isChecked = segmentEndData.Twist;
                     isEnabled = segmentEndData.FlatJunctions;
                 }
+                isVisible = parent.isVisible = b;
+                Log.Debug($"TwistChekbox.Refresh() isVisible={isVisible} b={b}");
             } else if (data is NodeData nodeData) {
                 Hide();
             } else Hide();
