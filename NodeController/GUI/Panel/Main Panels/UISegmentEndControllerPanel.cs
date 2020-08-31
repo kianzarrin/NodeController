@@ -52,13 +52,13 @@ namespace NodeController.GUI {
             Caption = "Segment End Controller";
 
             {
-                cornerPanel_ = AddUIComponent<UIAutoSizePanel>();
-                cornerPanel_.autoLayoutDirection = LayoutDirection.Horizontal;
-                cornerPanel_.AutoSize2 = true;
-                cornerPanel_.padding = new RectOffset(5, 5, 5, 5);
-                cornerPanel_.autoLayoutPadding = new RectOffset(0, 4, 0, 0);
+                offsetPanel_ = AddUIComponent<UIAutoSizePanel>();
+                offsetPanel_.autoLayoutDirection = LayoutDirection.Horizontal;
+                offsetPanel_.AutoSize2 = true;
+                offsetPanel_.padding = new RectOffset(5, 5, 5, 5);
+                offsetPanel_.autoLayoutPadding = new RectOffset(0, 4, 0, 0);
                 {
-                    var panel = cornerPanel_.AddUIComponent<UIAutoSizePanel>();
+                    var panel = offsetPanel_.AddUIComponent<UIAutoSizePanel>();
                     panel.AutoSize2 = false;
                     panel.width = 290; // set slider width
                     var label = panel.AddUIComponent<UILabel>();
@@ -68,7 +68,7 @@ namespace NodeController.GUI {
                     Controls.Add(slider_);
                 }
                 {
-                    var table = cornerPanel_.AddUIComponent<UIAutoSizePanel>();
+                    var table = offsetPanel_.AddUIComponent<UIAutoSizePanel>();
                     table.name = "offset_table";
                     table.autoLayoutDirection = LayoutDirection.Vertical;
                     table.AutoSize2 = true;
@@ -100,67 +100,81 @@ namespace NodeController.GUI {
 
             {
                 var panel = AddPanel();
-                var label = panel.AddUIComponent<UILabel>();
-                label.text = "Embankment";
-                label.tooltip = "twist road sideways (superelevation)";
-                var slider_ = panel.AddUIComponent<EmbankmentSlider>();
-                Controls.Add(slider_);
+                {
+                    var panel0 = panel.AddUIComponent<UIAutoSizePanel>();
+                    panel0.width = panel.width;
+                    var label = panel0.AddUIComponent<UILabel>();
+                    label.text = "Embankment";
+                    label.tooltip = "twist road sideways (superelevation)";
+                    var slider_ = panel0.AddUIComponent<EmbankmentSlider>();
+                    Controls.Add(slider_);
+                }
+                {
+                    var row2 = panel.AddUIComponent<UIAutoSizePanel>();
+                    row2.autoSize = row2.AutoSize2 = true;
+                    row2.autoLayoutDirection = LayoutDirection.Horizontal;
+                    var col1 = row2.AddUIComponent<UIAutoSizePanel>();
+                    col1.AutoSize2 = true;
+                    var col2 = row2.AddUIComponent<UIAutoSizePanel>();
+                    col2.AutoSize2 = true;
+                    var col3 = row2.AddUIComponent<UIAutoSizePanel>();
+                    col3.AutoSize2 = true;
+                    var col4 = row2.AddUIComponent<UIAutoSizePanel>();
+                    col4.AutoSize2 = true;
 
-                var row2 = panel.AddUIComponent<UIAutoSizePanel>();
-                row2.autoSize = row2.AutoSize2 = true;
-                row2.autoLayoutDirection = LayoutDirection.Horizontal;
-                var col1 = row2.AddUIComponent<UIAutoSizePanel>();
-                col1.AutoSize2 = true;
-                var col2 = row2.AddUIComponent<UIAutoSizePanel>();
-                col1.AutoSize2 = true;
-                var col3 = row2.AddUIComponent<UIAutoSizePanel>();
-                col1.AutoSize2 = true;
-                var col4 = row2.AddUIComponent<UIAutoSizePanel>();
-                col1.AutoSize2 = true;
+                    var fieldAngle = col1.AddUIComponent<UICornerTextField>();
+                    fieldAngle.GetData = () => SegmentEndData.EmbankmentAngleDeg;
+                    fieldAngle.SetData = val => SegmentEndData.EmbankmentAngleDeg = Mathf.Clamp(val, -180, +180);
+                    Controls.Add(fieldAngle);
 
-                var fieldAngle = col1.AddUIComponent<UICornerTextField>();
-                fieldAngle.GetData = () => SegmentEndData.EmbankmentAngleDeg;
-                fieldAngle.SetData = val => SegmentEndData.EmbankmentAngleDeg = Mathf.Clamp(val, -180, +180);
-                Controls.Add(fieldAngle);
+                    var lbl1 = col2.AddUIComponent<UILabel>();
+                    lbl1.autoSize = true;
+                    lbl1.text = "degrees  ";
+                    lbl1.padding = new RectOffset(0, 0, 4, 0);
 
-                var lbl1 = col2.AddUIComponent<UILabel>();
-                lbl1.autoSize = true;
-                lbl1.text = "degrees  ";
 
-                var fieldPercent = col3.AddUIComponent<UICornerTextField>();
-                fieldPercent.GetData = () => SegmentEndData.EmbankmentPercent;
-                fieldPercent.SetData = val => SegmentEndData.EmbankmentPercent = val;
-                Controls.Add(fieldPercent);
+                    var fieldPercent = col3.AddUIComponent<UICornerTextField>();
+                    fieldPercent.GetData = () => SegmentEndData.EmbankmentPercent;
+                    fieldPercent.SetData = val => SegmentEndData.EmbankmentPercent = val;
+                    Controls.Add(fieldPercent);
 
-                var lbl2 = col4.AddUIComponent<UILabel>();
-                lbl2.autoSize = true;
-                lbl2.text = "%";
+                    var lbl2 = col4.AddUIComponent<UILabel>();
+                    lbl2.autoSize = true;
+                    lbl2.text = "%";
+                    lbl2.padding = new RectOffset(0, 0, 4, 0);
+                }
             }
 
             {
                 var panel = AddPanel();
-                var label = panel.AddUIComponent<UILabel>();
-                label.text = "Slope";
-                label.tooltip = "+90=>up -90=>down\n";
-                var slider_ = panel.AddUIComponent<SlopeSlider>();
-                Controls.Add(slider_);
+                {
+                    var panel0 = panel.AddUIComponent<UIAutoSizePanel>();
+                    panel0.width = panel.width;
+                    var label = panel0.AddUIComponent<UILabel>();
+                    label.text = "Slope";
+                    label.tooltip = "+90=>up -90=>down\n";
+                    var slider_ = panel0.AddUIComponent<SlopeSlider>();
+                    Controls.Add(slider_);
+                }
+                {
+                    var row2 = panel.AddUIComponent<UIAutoSizePanel>();
+                    row2.autoSize = row2.AutoSize2 = true;
+                    row2.autoLayoutDirection = LayoutDirection.Horizontal;
+                    var col1 = row2.AddUIComponent<UIAutoSizePanel>();
+                    col1.AutoSize2 = true;
+                    var col2 = row2.AddUIComponent<UIAutoSizePanel>();
+                    col2.AutoSize2 = true;
 
-                var row2 = panel.AddUIComponent<UIAutoSizePanel>();
-                row2.autoSize = row2.AutoSize2 = true;
-                row2.autoLayoutDirection = LayoutDirection.Horizontal;
-                var col1 = row2.AddUIComponent<UIAutoSizePanel>();
-                col1.AutoSize2 = true;
-                var col2 = row2.AddUIComponent<UIAutoSizePanel>();
-                col1.AutoSize2 = true;
+                    var fieldAngle = col1.AddUIComponent<UICornerTextField>();
+                    fieldAngle.GetData = () => SegmentEndData.SlopeAngleDeg;
+                    fieldAngle.SetData = val => SegmentEndData.SlopeAngleDeg = Mathf.Clamp(val, -180, +180);
+                    Controls.Add(fieldAngle);
 
-                var fieldAngle = col1.AddUIComponent<UICornerTextField>();
-                fieldAngle.GetData = () => SegmentEndData.SlopeAngleDeg;
-                fieldAngle.SetData = val => SegmentEndData.SlopeAngleDeg = Mathf.Clamp(val, -180, +180);
-                Controls.Add(fieldAngle);
-
-                var lbl1 = col2.AddUIComponent<UILabel>();
-                lbl1.autoSize = true;
-                lbl1.text = "degrees";
+                    var lbl1 = col2.AddUIComponent<UILabel>();
+                    lbl1.autoSize = true;
+                    lbl1.text = "degrees";
+                    lbl1.padding = new RectOffset(0, 0, 4, 0);
+                }
             }
 
             {
@@ -217,7 +231,7 @@ namespace NodeController.GUI {
 
 
 
-        UIAutoSizePanel cornerPanel_;
+        UIAutoSizePanel offsetPanel_;
         UIAutoSizePanel tableLeft_, tableRight_;
         public void MakeCornerTable(UIPanel container) {
             UICornerTextField lposx, lposy, lposz,
@@ -276,7 +290,7 @@ namespace NodeController.GUI {
 
                 ldiry = row3.AddUIComponent<UICornerTextField>();
                 ldiry.GetData = () => SegmentEndData.DeltaRightCornerDir.y;
-                ldiry.SetData = val => SegmentEndData.SetRightCornerDirI(val, 2);
+                ldiry.SetData = val => SegmentEndData.SetRightCornerDirI(val, 1);
                 ldiry.MouseWheelRatio = 0.1f;
                 Controls.Add(ldiry);
             }
@@ -381,7 +395,7 @@ namespace NodeController.GUI {
         public override void Refresh() {
             tableLeft_.isVisible = tableRight_.isVisible =
                 SegmentEndData?.CanModifyCorners() ?? false;
-            cornerPanel_.isVisible = SegmentEndData?.CanModifyOffset() ?? false;
+            offsetPanel_.isVisible = SegmentEndData?.CanModifyOffset() ?? false;
             base.Refresh();
             Hintbox.Refresh();
         }

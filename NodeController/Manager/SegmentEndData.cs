@@ -83,6 +83,7 @@ namespace NodeController {
             Log.Debug($"SegmentEndData() Direction={Direction} Slope={SlopeAngleDeg}");
             Twist = DefaultTwist;
             HelpersExtensions.Assert(IsDefault());
+            Update();
         }
 
         public void Calculate() {
@@ -116,6 +117,10 @@ namespace NodeController {
             }
         }
 
+        /// <summary>
+        /// this will eventually call OnAfterCalculate() and which in case this is the selected node/segmentEnd,
+        /// calls RefreshValues() for the active panel.
+        /// </summary>
         public void Update() => NetManager.instance.UpdateNode(NodeID);
 
         bool insideAfterCalcualte_ = false;
@@ -141,6 +146,16 @@ namespace NodeController {
             Vector3 diff = rpos - lpos;
             float se = Mathf.Atan2(diff.y, VectorUtils.LengthXZ(diff));
             CachedSuperElevationDeg = se * Mathf.Rad2Deg;
+
+            if (NodeID == NodeControllerTool.Instance.SelectedNodeID) {
+                SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
+                    if (UINodeControllerPanel.Instance.isVisible)
+                        UINodeControllerPanel.Instance.RefreshValues();
+                    if (UISegmentEndControllerPanel.Instance.isVisible &&
+                    NodeControllerTool.Instance.SelectedNodeID == this.SegmentID)
+                        UISegmentEndControllerPanel.Instance.RefreshValues();
+                });
+            }
             insideAfterCalcualte_ = false;
         }
 
@@ -196,25 +211,34 @@ namespace NodeController {
 
         public float SlopeAngleDeg {
             get => DeltaSlopeAngleDeg + EndDirSlopeAngleDeg;
-            set => DeltaSlopeAngleDeg = SlopeAngleDeg - EndDirSlopeAngleDeg;
+            set => DeltaSlopeAngleDeg = value - EndDirSlopeAngleDeg;
         }
 
+        /// <summary>
+        /// reverse transformed coordinates.
+        /// </summary>
         public Vector3 LeftCornerDir {
-            get => CachedLeftCornerDir;
+            get {
+                CalculateTransformVectors(LeftCornerDir0, true, out var outward, out var forward);
+                return ReverseTransformCoordinats(CachedLeftCornerDir, outward, Vector3.up, forward);
+            }
             set {
                 CalculateTransformVectors(LeftCornerDir0, true, out var outward, out var forward);
-                DeltaLeftCornerDir = ReverseTransformCoordinats(value - LeftCornerDir0, outward, Vector3.up, forward);
-                CachedLeftCornerDir = value;
+                DeltaLeftCornerDir = value - ReverseTransformCoordinats( LeftCornerDir0, outward, Vector3.up, forward);
+                CachedLeftCornerDir = LeftCornerDir0 + TransformCoordinates(DeltaLeftCornerDir, outward, Vector3.up, forward);
                 Update();
             }
         }
 
         public Vector3 RightCornerDir {
-            get => CachedRightCornerDir;
+            get {
+                CalculateTransformVectors(RightCornerDir0, false, out var outward, out var forward);
+                return ReverseTransformCoordinats(CachedRightCornerDir, outward, Vector3.up, forward);
+            }
             set {
                 CalculateTransformVectors(RightCornerDir0, false, out var outward, out var forward);
-                DeltaRightCornerDir = ReverseTransformCoordinats(value - RightCornerDir0, outward, Vector3.up, forward);
-                CachedRightCornerDir = value;
+                DeltaRightCornerDir = value - ReverseTransformCoordinats(RightCornerDir0, outward, Vector3.up, forward);
+                CachedRightCornerDir = RightCornerDir0 + TransformCoordinates(DeltaRightCornerDir, outward, Vector3.up, forward);
                 Update();
             }
         }
@@ -242,6 +266,9 @@ namespace NodeController {
             }
         }
 
+        /// <summary>
+        /// all directions going away fromt he junction
+        /// </summary>
         public void CalculateTransformVectors(Vector3 dir, bool left, out Vector3 outward, out Vector3 forward) {
             Vector3 rightward = Vector3.Cross(Vector3.up, dir).normalized; // going away from the junction
             Vector3 leftward = -rightward;
@@ -250,7 +277,7 @@ namespace NodeController {
         }
 
         /// <summary>
-        /// tranforms input vector from relative (to x y x inputs) coordinate to absulute coodinate.
+        /// tranforms input vector from relative (to x y z inputs) coordinate to absulute coodinate.
         /// </summary>
         public static Vector3 TransformCoordinates(Vector3 v, Vector3 x, Vector3 y, Vector3 z)
             => v.x * x + v.y * y + v.z * z;
@@ -305,17 +332,6 @@ namespace NodeController {
         public void ApplyCornerAdjustments(ref Vector3 cornerPos, ref Vector3 cornerDir, bool leftSide) {
             CalculateTransformVectors(dir: cornerDir, left: false, outward: out var rightwardDir, forward: out var forwardDir);
             Vector3 leftwardDir = -rightwardDir;
-
-            // slope:
-            if (insideAfterCalcualte_ && NodeID == NodeControllerTool.Instance.SelectedNodeID) {
-                SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
-                    if (UINodeControllerPanel.Instance.isVisible)
-                        UINodeControllerPanel.Instance.RefreshValues();
-                    if (UISegmentEndControllerPanel.Instance.isVisible &&
-                    UISegmentEndControllerPanel.Instance.SegmentID == this.SegmentID)
-                        UISegmentEndControllerPanel.Instance.RefreshValues();
-                });
-            }
 
             float dirY0 = cornerDir.y;
             float angleDeg = SlopeAngleDeg; // save calculation time.
@@ -373,7 +389,7 @@ namespace NodeController {
                 cornerPos += TransformCoordinates(DeltaLeftCornerPos, leftwardDir, Vector3.up, forwardDir);
                 cornerDir += TransformCoordinates(DeltaLeftCornerDir, leftwardDir, Vector3.up, forwardDir);
                 if (LeftCornerDirLengthLock)
-                    cornerDir *= LeftCornerDirLength / cornerDir * cornerDir.magnitude;
+                    cornerDir *= LeftCornerDirLength / cornerDir.magnitude;
                 else if (insideAfterCalcualte_)
                     LeftCornerDirLength = cornerDir.magnitude;
             } else {
@@ -386,7 +402,7 @@ namespace NodeController {
                 cornerPos += TransformCoordinates(DeltaRightCornerPos, rightwardDir, Vector3.up, forwardDir);
                 cornerDir += TransformCoordinates(DeltaRightCornerDir, rightwardDir, Vector3.up, forwardDir);
                 if (RightCornerDirLengthLock)
-                    cornerDir *= RightCornerDirLength / cornerDir * cornerDir.magnitude;
+                    cornerDir *= RightCornerDirLength / cornerDir.magnitude;
                 else if(insideAfterCalcualte_)
                     RightCornerDirLength = cornerDir.magnitude;
 

@@ -134,9 +134,11 @@ namespace NodeController.GUI {
         }
 
         public void RefreshValues() {
+            refreshing_ = true;
             NodeData data = root_?.NodeData;
             if(data != null)
                 SelectedItem = data.NodeType;
+            refreshing_ = false;
         }
     }
 }

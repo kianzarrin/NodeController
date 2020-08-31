@@ -159,7 +159,7 @@ namespace NodeController.Tool {
             if (leftCornerSelected_) {
                 var pos = RaycastMouseLocation(segEnd.LeftCornerPos.y);
                 var delta = pos - segEnd.LeftCornerPos;
-                positionChanged = delta.sqrMagnitude < 1e-04;
+                positionChanged = delta.sqrMagnitude > 1e-04;
                 if (positionChanged) {
                     segEnd.LeftCornerPos = pos;
                     if(LockMode)
@@ -168,7 +168,7 @@ namespace NodeController.Tool {
             } else if (rightCornerSelected_) {
                 var pos = RaycastMouseLocation(segEnd.RightCornerPos.y);
                 var delta = pos - segEnd.RightCornerPos;
-                positionChanged = delta.sqrMagnitude < 1e-04;
+                positionChanged = delta.sqrMagnitude > 1e-04;
                 if (positionChanged) {
                     segEnd.RightCornerPos = pos;
                     if (LockMode)
@@ -176,10 +176,7 @@ namespace NodeController.Tool {
                 }
             }
             if (positionChanged) {
-                segEnd.Update();
-                SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
-                    SECPanel.RefreshValues();
-                });
+                segEnd.Update(); // this will refresh panel values on update.
             }
         }
 
@@ -326,11 +323,12 @@ namespace NodeController.Tool {
             return true;// nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Junction);
         }
 
+        /// <param name="left">going away from junction</param>
         CornerMarker GetCornerMarker(bool left) {
             var segEnd = SelectedSegmentEndData;
             if (segEnd == null || !segEnd.CanModifyCorners()) return null;
 
-            var pos = left ? segEnd.CachedLeftCornerPos : segEnd.CachedRightCornerPos;
+            var pos = left ? segEnd.LeftCornerPos : segEnd.RightCornerPos;
             float terrainY = Singleton<TerrainManager>.instance.SampleDetailHeightSmooth(pos);
             var ret = new CornerMarker {
                 Position = pos,
@@ -339,7 +337,7 @@ namespace NodeController.Tool {
             return ret;
         }
 
-
+        // left/right: going away from junction
         bool leftCornerSelected_ = false, leftCornerHovered_ = false;
         bool rightCornerSelected_ = false, rightCornerHovered_ = false;
         bool CornerFocusMode =>
@@ -412,10 +410,6 @@ namespace NodeController.Tool {
         protected override void OnToolGUI(Event e) {
             base.OnToolGUI(e); // calls on click events on mosue up
             CalculateConrerSelectionMode(e);
-            if (CornerFocusMode) {
-                // CornerUI(); should i do this here or in simulation step?
-                return;
-            }
             if (!ControlIsPressed)
                 DrawSigns();
         }

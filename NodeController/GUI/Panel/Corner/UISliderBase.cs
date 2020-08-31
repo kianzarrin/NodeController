@@ -4,6 +4,7 @@ namespace NodeController.GUI {
     using ColossalFramework.UI;
     using static KianCommons.HelpersExtensions;
     using UnityEngine;
+    using System;
 
     public abstract class UISliderBase: UISliderExt, IDataControllerUI {
         //UIResetButton resetButton_ => Root?.ResetButton;
@@ -48,8 +49,6 @@ namespace NodeController.GUI {
             }
 
             Root?.RefreshValues();
-            //resetButton_?.Refresh();
-            Refresh();
         }
 
         /// <summary>set data value. data refresh is already taken care of</summary>
@@ -63,26 +62,30 @@ namespace NodeController.GUI {
 
         protected bool Refreshing = false;
         public virtual void Refresh() {
-            Log.Debug("UISliderBase.Refresh() was called");
-            INetworkData data = Root.GetData();
-            RefreshValues();
+            try {
+                Log.Debug("UISliderBase.Refresh() was called\n" /*+ Environment.StackTrace*/);
+                INetworkData data = Root.GetData();
+                RefreshValues();
 
-            // RefreshValues sets and then unsets Refreshing. therefore this must be called after RefreshValues.
-            Refreshing = true; 
+                // RefreshValues sets and then unsets Refreshing. therefore this must be called after RefreshValues.
+                Refreshing = true;
 
-            if (isEnabled && data is NodeData nodeData)
-                RefreshNode(nodeData);
+                if (isEnabled && data is NodeData nodeData)
+                    RefreshNode(nodeData);
 
-            tooltip = value.ToString() +  TooltipPostfix;
-            RefreshTooltip();
+                tooltip = value.ToString() + TooltipPostfix;
+                RefreshTooltip();
 
-            parent.isVisible = isEnabled;
-            parent.Invalidate();
-            Invalidate();
-            thumbObject.Invalidate();
-            SlicedSprite.Invalidate();
-            //Log.Debug($"slider.Refresh: node:{data.NodeID} isEnabled={isEnabled}\n" + Environment.StackTrace);
-            Refreshing = false;
+                parent.isVisible = isEnabled;
+                parent.Invalidate();
+                Invalidate();
+                thumbObject.Invalidate();
+                SlicedSprite.Invalidate();
+                //Log.Debug($"slider.Refresh: node:{data.NodeID} isEnabled={isEnabled}\n" + Environment.StackTrace);
+            }
+            finally {
+                Refreshing = false;
+            }
         }
 
         /// <summary>
@@ -103,14 +106,18 @@ namespace NodeController.GUI {
         public abstract void RefreshSegmentEndValues(SegmentEndData data);
 
         public virtual void RefreshValues() {
-            Refreshing = true;
-            INetworkData data = Root?.GetData();
-            if (data is SegmentEndData segmentEndData) {
-                RefreshSegmentEndValues(segmentEndData);
-            } else if (data is NodeData nodeData) {
-                RefreshNodeValues(nodeData);
-            } else Disable();
-            Refreshing = false;
+            try {
+                Refreshing = true;
+                INetworkData data = Root?.GetData();
+                if (data is SegmentEndData segmentEndData) {
+                    RefreshSegmentEndValues(segmentEndData);
+                } else if (data is NodeData nodeData) {
+                    RefreshNodeValues(nodeData);
+                } else Disable();
+            }
+            finally {
+                Refreshing = false;
+            }
         }
     }
 }
