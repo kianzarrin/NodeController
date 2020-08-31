@@ -109,6 +109,8 @@ namespace NodeController {
                 ushort segmentID = Node.GetSegment(i);
                 if (segmentID == 0) continue;
                 var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                if (!segEnd.HasUniformCornerOffset())
+                    return false;
                 if (cornerOffset0 == -1)
                     cornerOffset0 = segEnd.CornerOffset;
                 else if (cornerOffset0 != segEnd.CornerOffset)

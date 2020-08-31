@@ -26,6 +26,7 @@ namespace NodeController.GUI {
         public ushort NodeID { get; private set; }
         public bool StartNode => NetUtil.IsStartNode(segmentId: SegmentID, nodeId: NodeID);
         public static Vector2 CELL_SIZE = new Vector2(100, 20);
+        public static Vector2 CELL_SIZE2 = new Vector2(60, 20); // corner table
 
         public SegmentEndData SegmentEndData {
             get {
@@ -51,12 +52,50 @@ namespace NodeController.GUI {
             Caption = "Segment End Controller";
 
             {
-                var panel = AddPanel();
-                var label = panel.AddUIComponent<UILabel>();
-                label.text = "Corner smoothness";
-                label.tooltip = "Adjusts Corner offset for smooth junction transition.";
-                var slider_ = panel.AddUIComponent<UIOffsetSlider>();
-                Controls.Add(slider_);
+                cornerPanel_ = AddUIComponent<UIAutoSizePanel>();
+                cornerPanel_.autoLayoutDirection = LayoutDirection.Horizontal;
+                cornerPanel_.AutoSize2 = true;
+                cornerPanel_.padding = new RectOffset(5, 5, 5, 5);
+                cornerPanel_.autoLayoutPadding = new RectOffset(0, 4, 0, 0);
+                {
+                    var panel = cornerPanel_.AddUIComponent<UIAutoSizePanel>();
+                    panel.AutoSize2 = false;
+                    panel.width = 290; // set slider width
+                    var label = panel.AddUIComponent<UILabel>();
+                    label.text = "Corner smoothness";
+                    label.tooltip = "Adjusts Corner offset for smooth junction transition.";
+                    var slider_ = panel.AddUIComponent<UIOffsetSlider>();
+                    Controls.Add(slider_);
+                }
+                {
+                    var table = cornerPanel_.AddUIComponent<UIAutoSizePanel>();
+                    table.name = "offset_table";
+                    table.autoLayoutDirection = LayoutDirection.Vertical;
+                    table.AutoSize2 = true;
+                    var row1 = AddTableRow(table);
+                    var row2 = AddTableRow(table);
+                    row1.width = row2.width = CELL_SIZE2.x * 2;
+
+                    AddTableLable(row1, "Left").size = CELL_SIZE2;
+                    AddTableLable(row1, "Right").size = CELL_SIZE2;
+                    
+                    var lcorner = row2.AddUIComponent<UICornerTextField>();
+                    lcorner.allowNegative = false;
+                    lcorner.size = CELL_SIZE2;
+                    lcorner.GetData = () => SegmentEndData.CorneroffsetRight;
+                    lcorner.SetData = val => SegmentEndData.CorneroffsetRight = val > 0 ? val : 0;
+                    Controls.Add(lcorner);
+
+                    var rcorner = row2.AddUIComponent<UICornerTextField>();
+                    rcorner.allowNegative = false;
+                    rcorner.size = CELL_SIZE2;
+                    rcorner.GetData = () => SegmentEndData.CornerOffsetLeft;
+                    rcorner.SetData = val => SegmentEndData.CornerOffsetLeft = val > 0 ? val : 0;
+                    Controls.Add(rcorner);
+
+                    lcorner.Mirror = rcorner;
+                    rcorner.Mirror = lcorner;
+                }
             }
 
             {
@@ -66,6 +105,36 @@ namespace NodeController.GUI {
                 label.tooltip = "twist road sideways (superelevation)";
                 var slider_ = panel.AddUIComponent<EmbankmentSlider>();
                 Controls.Add(slider_);
+
+                var row2 = panel.AddUIComponent<UIAutoSizePanel>();
+                row2.autoSize = row2.AutoSize2 = true;
+                row2.autoLayoutDirection = LayoutDirection.Horizontal;
+                var col1 = row2.AddUIComponent<UIAutoSizePanel>();
+                col1.AutoSize2 = true;
+                var col2 = row2.AddUIComponent<UIAutoSizePanel>();
+                col1.AutoSize2 = true;
+                var col3 = row2.AddUIComponent<UIAutoSizePanel>();
+                col1.AutoSize2 = true;
+                var col4 = row2.AddUIComponent<UIAutoSizePanel>();
+                col1.AutoSize2 = true;
+
+                var fieldAngle = col1.AddUIComponent<UICornerTextField>();
+                fieldAngle.GetData = () => SegmentEndData.EmbankmentAngleDeg;
+                fieldAngle.SetData = val => SegmentEndData.EmbankmentAngleDeg = Mathf.Clamp(val, -180, +180);
+                Controls.Add(fieldAngle);
+
+                var lbl1 = col2.AddUIComponent<UILabel>();
+                lbl1.autoSize = true;
+                lbl1.text = "degrees  ";
+
+                var fieldPercent = col3.AddUIComponent<UICornerTextField>();
+                fieldPercent.GetData = () => SegmentEndData.EmbankmentPercent;
+                fieldPercent.SetData = val => SegmentEndData.EmbankmentPercent = val;
+                Controls.Add(fieldPercent);
+
+                var lbl2 = col4.AddUIComponent<UILabel>();
+                lbl2.autoSize = true;
+                lbl2.text = "%";
             }
 
             {
@@ -75,6 +144,23 @@ namespace NodeController.GUI {
                 label.tooltip = "+90=>up -90=>down\n";
                 var slider_ = panel.AddUIComponent<SlopeSlider>();
                 Controls.Add(slider_);
+
+                var row2 = panel.AddUIComponent<UIAutoSizePanel>();
+                row2.autoSize = row2.AutoSize2 = true;
+                row2.autoLayoutDirection = LayoutDirection.Horizontal;
+                var col1 = row2.AddUIComponent<UIAutoSizePanel>();
+                col1.AutoSize2 = true;
+                var col2 = row2.AddUIComponent<UIAutoSizePanel>();
+                col1.AutoSize2 = true;
+
+                var fieldAngle = col1.AddUIComponent<UICornerTextField>();
+                fieldAngle.GetData = () => SegmentEndData.SlopeAngleDeg;
+                fieldAngle.SetData = val => SegmentEndData.SlopeAngleDeg = Mathf.Clamp(val, -180, +180);
+                Controls.Add(fieldAngle);
+
+                var lbl1 = col2.AddUIComponent<UILabel>();
+                lbl1.autoSize = true;
+                lbl1.text = "degrees";
             }
 
             {
@@ -131,7 +217,7 @@ namespace NodeController.GUI {
 
 
 
-
+        UIAutoSizePanel cornerPanel_;
         UIAutoSizePanel tableLeft_, tableRight_;
         public void MakeCornerTable(UIPanel container) {
             UICornerTextField lposx, lposy, lposz,
@@ -150,13 +236,13 @@ namespace NodeController.GUI {
 
                 // header :  axis: outward, vertical, backward
                 var row1 = AddTableRow(table);
-                AddTableLable(row1, "axis:");
+                AddTableLable(row1, "axis:", center: false);
                 AddTableLable(row1, "outward");
                 AddTableLable(row1, "backward");
                 AddTableLable(row1, "vertical");
 
                 var row2 = AddTableRow(table);
-                AddTableLable(row2, "pos:");
+                AddTableLable(row2, "pos:", center: false);
 
                 lposx = row2.AddUIComponent<UICornerTextField>();
                 lposx.GetData = () => SegmentEndData.DeltaRightCornerPos.x;
@@ -174,23 +260,23 @@ namespace NodeController.GUI {
                 Controls.Add(lposy);
 
                 var row3 = AddTableRow(table);
-                AddTableLable(row3, "dir:");
+                AddTableLable(row3, "dir:", center: false);
 
                 ldirx = row3.AddUIComponent<UICornerTextField>();
-                ldirx.GetData = () => SegmentEndData.DeltaRightCornerDir.x;
-                ldirx.SetData = val => SegmentEndData.DeltaRightCornerDir.x = val;
+                ldirx.GetData = () => SegmentEndData.RightCornerDir.x;
+                ldirx.SetData = val => SegmentEndData.SetRightCornerDirI(val, 0);
                 ldirx.MouseWheelRatio = 0.1f;
                 Controls.Add(ldirx);
 
                 ldirz = row3.AddUIComponent<UICornerTextField>();
-                ldirz.GetData = () => SegmentEndData.DeltaRightCornerDir.z;
-                ldirz.SetData = val => SegmentEndData.DeltaRightCornerDir.z = val;
+                ldirz.GetData = () => SegmentEndData.RightCornerDir.z;
+                ldirz.SetData = val => SegmentEndData.SetRightCornerDirI(val, 2);
                 ldirz.MouseWheelRatio = 0.1f;
                 Controls.Add(ldirz);
 
                 ldiry = row3.AddUIComponent<UICornerTextField>();
                 ldiry.GetData = () => SegmentEndData.DeltaRightCornerDir.y;
-                ldiry.SetData = val => SegmentEndData.DeltaRightCornerDir.y = val;
+                ldiry.SetData = val => SegmentEndData.SetRightCornerDirI(val, 2);
                 ldiry.MouseWheelRatio = 0.1f;
                 Controls.Add(ldiry);
             }
@@ -206,13 +292,13 @@ namespace NodeController.GUI {
 
                 // header :  axis: outward, vertical, backward
                 var row1 = AddTableRow(table);
-                AddTableLable(row1, "axis:");
+                AddTableLable(row1, "axis:", center: false);
                 AddTableLable(row1, "outward");
                 AddTableLable(row1, "backward");
                 AddTableLable(row1, "vertical");
 
                 var row2 = AddTableRow(table);
-                AddTableLable(row2, "pos:");
+                AddTableLable(row2, "pos:", center: false);
 
                 rposx = row2.AddUIComponent<UICornerTextField>();
                 rposx.GetData = () => SegmentEndData.DeltaLeftCornerPos.x;
@@ -230,23 +316,23 @@ namespace NodeController.GUI {
                 Controls.Add(rposy);
 
                 var row3 = AddTableRow(table);
-                AddTableLable(row3, "dir:");
+                AddTableLable(row3, "dir:", center: false);
 
                 rdirx = row3.AddUIComponent<UICornerTextField>();
-                rdirx.GetData = () => SegmentEndData.DeltaLeftCornerDir.x;
-                rdirx.SetData = val => SegmentEndData.DeltaLeftCornerDir.x = val;
+                rdirx.GetData = () => SegmentEndData.LeftCornerDir.x;
+                rdirx.SetData = val => SegmentEndData.SetLeftCornerDirI(val, 0);
                 rdirx.MouseWheelRatio = 0.1f;
                 Controls.Add(rdirx);
 
                 rdirz = row3.AddUIComponent<UICornerTextField>();
-                rdirz.GetData = () => SegmentEndData.DeltaLeftCornerDir.z;
-                rdirz.SetData = val => SegmentEndData.DeltaLeftCornerDir.z = val;
+                rdirz.GetData = () => SegmentEndData.LeftCornerDir.z;
+                rdirz.SetData = val => SegmentEndData.SetLeftCornerDirI(val, 2);
                 rdirz.MouseWheelRatio = 0.1f;
                 Controls.Add(rdirz);
 
                 rdiry = row3.AddUIComponent<UICornerTextField>();
-                rdiry.GetData = () => SegmentEndData.DeltaLeftCornerDir.y;
-                rdiry.SetData = val => SegmentEndData.DeltaLeftCornerDir.y = val;
+                rdiry.GetData = () => SegmentEndData.LeftCornerDir.y;
+                rdiry.SetData = val => SegmentEndData.SetLeftCornerDirI(val, 1);
                 rdiry.MouseWheelRatio = 0.1f;
                 Controls.Add(rdiry);
             }
@@ -259,17 +345,19 @@ namespace NodeController.GUI {
             ldiry.Mirror = rdiry; rdiry.Mirror = ldiry;
         }
 
-        static public UIPanel AddTableRow(UIPanel container) {
+        static public UIPanel AddTableRow(UIPanel container, int nColumns=4) {
             var panel = container.AddUIComponent<UIPanel>();
             panel.autoLayout = true;
             panel.autoLayoutDirection = LayoutDirection.Horizontal;
-            panel.size = new Vector2(CELL_SIZE.x * 4, CELL_SIZE.y);
+            panel.size = new Vector2(CELL_SIZE.x * nColumns, CELL_SIZE.y);
             return panel;
         }
 
-        static public UILabel AddTableLable(UIPanel container, string text) {
+        static public UILabel AddTableLable(UIPanel container, string text, bool center=true) {
             var lbl = container.AddUIComponent<UILabel>();
             lbl.text = text;
+            if(center)
+                lbl.textAlignment = UIHorizontalAlignment.Center;
             lbl.autoSize = false;
             lbl.size = CELL_SIZE;
             return lbl;
@@ -293,6 +381,7 @@ namespace NodeController.GUI {
         public override void Refresh() {
             tableLeft_.isVisible = tableRight_.isVisible =
                 SegmentEndData?.CanModifyCorners() ?? false;
+            cornerPanel_.isVisible = SegmentEndData?.CanModifyOffset() ?? false;
             base.Refresh();
             Hintbox.Refresh();
         }

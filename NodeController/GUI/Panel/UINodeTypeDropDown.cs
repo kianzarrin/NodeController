@@ -93,7 +93,7 @@ namespace NodeController.GUI {
             if (data == null) return;
             data.NodeType = SelectedItem;
             foreach (var segmentEndData in data.IterateSegmentEndDatas())
-                segmentEndData.UpdateSlopeAngleDeg = true;
+                segmentEndData.DeltaSlopeAngleDeg = 0;
             Assert(!refreshing_, "!refreshing_");
             data.Update();
             (root_ as IDataControllerUI).Refresh();

@@ -6,29 +6,10 @@ namespace NodeController.GUI {
     using UnityEngine;
 
     public abstract class UISliderBase: UISliderExt, IDataControllerUI {
-        UIResetButton resetButton_ => Root?.ResetButton;
+        //UIResetButton resetButton_ => Root?.ResetButton;
         protected UIPanelBase Root;
 
         public float ScrollWheelAmount;
-
-        //#region tooltip workaround
-        //private string tooltip_;
-        //public new virtual string tooltip {
-        //    get => tooltip_;
-        //    set {
-        //        tooltip = null;
-        //        tooltip_ = value;
-        //        RefreshTooltip();
-        //    }
-        //}
-
-        //public new void RefreshTooltip() {
-        //    if (!SlicedSprite) return;
-        //    this.SlicedSprite.tooltip = tooltip_;
-        //    SlicedSprite.RefreshTooltip();
-        //}
-        //#endregion
-
 
         public override void Start() {
             base.Start();
@@ -66,7 +47,8 @@ namespace NodeController.GUI {
                 segEndData.Update();
             }
 
-            resetButton_?.Refresh();
+            Root?.RefreshValues();
+            //resetButton_?.Refresh();
             Refresh();
         }
 

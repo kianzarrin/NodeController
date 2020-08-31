@@ -157,21 +157,26 @@ namespace NodeController.Tool {
             if (SelectedSegmentEndData == null) return;
             bool positionChanged = false;
             if (leftCornerSelected_) {
-                var pos = RaycastMouseLocation(segEnd.CachedLeftCornerPos.y);
-                var delta = segEnd.MoveLeftCornerToAbsolutePos(pos);
-                positionChanged = delta.Equals(Vector3.zero);
-                if (positionChanged && LockMode) {
-                    segEnd.MoveLeftCornerToReltativePos(delta);
+                var pos = RaycastMouseLocation(segEnd.LeftCornerPos.y);
+                var delta = pos - segEnd.LeftCornerPos;
+                positionChanged = delta.sqrMagnitude < 1e-04;
+                if (positionChanged) {
+                    segEnd.LeftCornerPos = pos;
+                    if(LockMode)
+                        segEnd.RightCornerPos += delta;
                 }
             } else if (rightCornerSelected_) {
-                var pos = RaycastMouseLocation(segEnd.CachedRightCornerPos.y);
-                var delta = segEnd.MoveRightCornerToAbsolutePos(pos);
-                positionChanged = delta.Equals(Vector3.zero);
-                if (positionChanged && LockMode) {
-                    segEnd.MoveRightCornerToReltativePos(delta);
+                var pos = RaycastMouseLocation(segEnd.RightCornerPos.y);
+                var delta = pos - segEnd.RightCornerPos;
+                positionChanged = delta.sqrMagnitude < 1e-04;
+                if (positionChanged) {
+                    segEnd.RightCornerPos = pos;
+                    if (LockMode)
+                        segEnd.LeftCornerPos += delta;
                 }
             }
             if (positionChanged) {
+                segEnd.Update();
                 SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
                     SECPanel.RefreshValues();
                 });

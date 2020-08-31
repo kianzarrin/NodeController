@@ -1,6 +1,5 @@
 namespace NodeController.GUI {
     using ColossalFramework.UI;
-    using System.Globalization;
     using UnityEngine;
     using static KianCommons.HelpersExtensions;
     using KianCommons;
@@ -8,7 +7,7 @@ namespace NodeController.GUI {
     using System;
 
     public class UICornerTextField : UITextField, IDataControllerUI {
-        UIResetButton resetButton_;
+        //UIResetButton resetButton_;
         UIPanelBase root_;
         bool started_ = false;
         bool refreshing_ = false;
@@ -55,7 +54,7 @@ namespace NodeController.GUI {
             base.Start();
             Container = Container ?? parent;
             root_ = GetRootContainer() as UIPanelBase;
-            resetButton_ = root_.GetComponentInChildren<UIResetButton>();
+            //resetButton_ = root_.GetComponentInChildren<UIResetButton>();
             started_ = true;
         }
 
@@ -73,7 +72,10 @@ namespace NodeController.GUI {
             float delta = p.wheelDelta * ratio * MouseWheelRatio;
 
             Value += delta;
-            if (LockMode)
+
+            if (Mirror == null)
+                return;
+            else if (LockMode)
                 Mirror.Value += delta;
             else if(InvertLockMode)
                 Mirror.Value -= delta;
@@ -96,6 +98,7 @@ namespace NodeController.GUI {
         }
 
 
+        bool noRefresh_ = false;
         protected override void OnTextChanged() {
             Log.Debug($"UICornerTextField.OnTextChanged() called");
             base.OnTextChanged();
@@ -107,7 +110,15 @@ namespace NodeController.GUI {
                 SetData(value);
                 SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
                 data?.Update();
-                resetButton_?.Refresh();
+                //resetButton_?.Refresh();
+                try {
+                    noRefresh_ = false; // stop being a grammer nazi all the time!
+                    root_?.RefreshValues();
+                }
+                finally {
+                    noRefresh_ = false;
+                }
+                
             }
         }
 
@@ -139,20 +150,26 @@ namespace NodeController.GUI {
 
         public void Refresh() {
             if(VERBOSE)Log.Debug($"UICornerTextField.Refresh()called");
-            refreshing_ = true;
+            try {
+                refreshing_ = true;
 
-            if (root_ is UINodeControllerPanel ncpanel)
-                RefreshNode();
-            else if (root_ is UISegmentEndControllerPanel secpanel)
-                RefreshSegmentEnd();
 
-            Value = GetData();
-            Container.isVisible = isEnabled;
-            Container.Invalidate();
-            Invalidate();
+                if (root_ is UINodeControllerPanel ncpanel)
+                    RefreshNode();
+                else if (root_ is UISegmentEndControllerPanel secpanel)
+                    RefreshSegmentEnd();
 
-            resetButton_?.Refresh();
-            refreshing_ = false;
+                Value = GetData();
+                Container.isVisible = isEnabled;
+                Container.Invalidate();
+                Invalidate();
+
+                //resetButton_?.Refresh();
+                root_?.RefreshValues();
+            }
+            finally {
+                refreshing_ = false;
+            }
         }
 
         public void RefreshNode() {
@@ -170,9 +187,15 @@ namespace NodeController.GUI {
         }
 
         public void RefreshValues() {
-            refreshing_ = true;
-            Value = GetData();
-            refreshing_ = false;
+            if (noRefresh_)
+                return;
+            try {
+                refreshing_ = true;
+                Value = GetData();
+            }
+            finally {
+                refreshing_ = false;
+            }
         }
     }
 }

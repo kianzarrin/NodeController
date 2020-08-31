@@ -12,10 +12,16 @@ namespace NodeController.Patches {
     [UsedImplicitly]
     [HarmonyPatch]
     static class CalculateCornerPatch {
-        static float GetMinCornerOffset(float cornerOffset0, ushort nodeID, ushort segmentID) {
+        /// <param name="leftSide">left side going away from the junction</param>
+        static float GetMinCornerOffset(float cornerOffset0, ushort nodeID, ushort segmentID, bool leftSide) {
             var segmentData = SegmentEndManager.Instance.
                 GetAt(segmentID: segmentID, nodeID: nodeID);
-            return segmentData?.CornerOffset ?? cornerOffset0;
+            if (segmentData == null)
+                return cornerOffset0;
+            if (leftSide)
+                return segmentData.CornerOffsetLeft;
+            else
+                return segmentData.CorneroffsetRight;
         }
 
         [UsedImplicitly]
@@ -42,7 +48,8 @@ namespace NodeController.Patches {
              instructions = FlatJunctionsCommons.ModifyFlatJunctionsTranspiler(instructions, targetMethod_);
 
             CodeInstruction ldarg_startNodeID = GetLDArg(targetMethod_, "startNodeID"); // push startNodeID into stack,
-            CodeInstruction ldarg_segmentID = GetLDArg(targetMethod_, "ignoreSegmentID");  
+            CodeInstruction ldarg_segmentID = GetLDArg(targetMethod_, "ignoreSegmentID");
+            CodeInstruction ldarg_leftSide = GetLDArg(targetMethod_, "leftSide");
             CodeInstruction call_GetMinCornerOffset = new CodeInstruction(OpCodes.Call, mGetMinCornerOffset);
 
             int n = 0;
@@ -54,6 +61,7 @@ namespace NodeController.Patches {
                     n++;
                     yield return ldarg_startNodeID;
                     yield return ldarg_segmentID;
+                    yield return ldarg_leftSide;
                     yield return call_GetMinCornerOffset;
                 }
             }

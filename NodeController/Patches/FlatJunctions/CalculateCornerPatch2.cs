@@ -24,7 +24,7 @@ namespace NodeController.Patches {
 
         public static void FixCornerPos(Vector3 nodePos, Vector3 segmentEndDir, ref Vector3 cornerPos) {
             // NetSegment.FindDirection() calculates segmentEndDir such that lenxz = 1 regardless of y
-            float d = DotXZ(cornerPos - nodePos, segmentEndDir);  
+            float d = DotXZ(cornerPos - nodePos, segmentEndDir);
             cornerPos.y = nodePos.y + d * segmentEndDir.y;
         }
 
@@ -34,7 +34,6 @@ namespace NodeController.Patches {
 
             float acos = DotXZ(cornerDir, neighbourEndDir);
             cornerDir.y = neighbourEndDir.y * acos;
-
         }
 
         /// <param name="segmentID">segment to calculate corner</param>

@@ -21,8 +21,14 @@ namespace NodeController.GUI {
 
         public override void RefreshSegmentEndValues(SegmentEndData data) {
             isEnabled = data.CanModifyOffset();
-            if(isEnabled)
+            if (isEnabled) {
                 value = data.CornerOffset;
+                bool mixed = !data.HasUniformCornerOffset();
+                if (MixedValues != mixed) {
+                    MixedValues = mixed;
+                    Invalidate();
+                }
+            }
         }
     }
 }

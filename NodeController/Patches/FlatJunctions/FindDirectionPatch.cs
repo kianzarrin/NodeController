@@ -4,6 +4,7 @@ namespace NodeController.Patches {
     using System.Collections.Generic;
     using System.Reflection;
     using System.Reflection.Emit;
+    using UnityEngine;
 
     [UsedImplicitly]
     [HarmonyPatch]
