@@ -109,7 +109,6 @@ namespace NodeController.GUI {
             //Update();
             RefreshSizeRecursive();
             Hintbox.width = this.width;
-            Invalidate();
             autoLayout = false;
 
             // calcualte captions position:
@@ -118,6 +117,7 @@ namespace NodeController.GUI {
             lblCaption_.relativePosition = new Vector2(x, 14);
 
             Hintbox?.Refresh();
+            Invalidate();
         }
 
         public virtual void RefreshValues() {

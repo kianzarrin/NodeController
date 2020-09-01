@@ -12,6 +12,8 @@ namespace NodeController.GUI {
         bool started_ = false;
         bool refreshing_ = false;
 
+        public override string ToString() => GetType().Name + $"({name})";
+
         public delegate float GetDataFunc();
         public delegate void SetDataFunc(float data);
         public GetDataFunc GetData;
@@ -97,8 +99,6 @@ namespace NodeController.GUI {
             get => float.Parse(text).RoundToNearest(minStep_);
         }
 
-
-        bool noRefresh_ = false;
         protected override void OnTextChanged() {
             //Log.Debug($"UICornerTextField.OnTextChanged() called");
             base.OnTextChanged();
@@ -108,20 +108,14 @@ namespace NodeController.GUI {
                 // don't update text ... let user type the whole numbrer.
                 // deep refresh is for OnSubmit()
                 SetData(value);
-                SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
+                SegmentEndData data = (root_ as UISegmentEndControllerPanel)?.SegmentEndData;
                 data?.Update();
-                //resetButton_?.Refresh();
-                try {
-                    noRefresh_ = false; // stop being a grammer nazi all the time! refresh the values of other IDataControllerUIs.
-                    root_?.RefreshValues();
-                }
-                finally {
-                    noRefresh_ = false;
-                }
+                root_?.RefreshValues(); // refresh values early
             }
         }
 
         protected override void OnSubmit() {
+            Log.Debug(this + $".OnSubmit() called");
             base.OnSubmit(); // called when focus is lost. deep refresh
             if (TryGetValue(out _)) {
                 Apply();
@@ -136,15 +130,15 @@ namespace NodeController.GUI {
 
         public void Apply() {
             if (refreshing_ || !started_) return;
-            Log.Debug($"UICornerTextField.Apply() called");
+            Log.Debug(this + $".Apply() called");
             if (TryGetValue(out float value)) {
                 Log.Debug($"UICornerTextField.Apply : calling SetData()  ");
                 SetData(value);
             } else {
                 throw new Exception("Unreachable code. this path is handled in OnTextChanged().");
             }
-
-            root_?.Refresh();
+            root_?.RefreshValues();
+            Refresh();
         }
 
         public void Refresh() {
@@ -183,7 +177,7 @@ namespace NodeController.GUI {
         }
 
         public void RefreshValues() {
-            if (noRefresh_)
+            if (containsFocus)
                 return;
             try {
                 refreshing_ = true;

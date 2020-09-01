@@ -262,16 +262,19 @@ namespace NodeController.GUI {
                 lposx = row2.AddUIComponent<UICornerTextField>();
                 lposx.GetData = () => SegmentEndData.DeltaRightCornerPos.x;
                 lposx.SetData = val => SegmentEndData.DeltaRightCornerPos.x = val;
+                lposx.name = "lposx";
                 Controls.Add(lposx);
 
                 lposz = row2.AddUIComponent<UICornerTextField>();
                 lposz.GetData = () => SegmentEndData.DeltaRightCornerPos.z;
                 lposz.SetData = val => SegmentEndData.DeltaRightCornerPos.z = val;
+                lposz.name = "lposz";
                 Controls.Add(lposz);
 
                 lposy = row2.AddUIComponent<UICornerTextField>();
                 lposy.GetData = () => SegmentEndData.DeltaRightCornerPos.y;
                 lposy.SetData = val => SegmentEndData.DeltaRightCornerPos.y = val;
+                lposy.name = "lposy";
                 Controls.Add(lposy);
 
                 var row3 = AddTableRow(table);
@@ -281,18 +284,21 @@ namespace NodeController.GUI {
                 ldirx.GetData = () => SegmentEndData.RightCornerDir.x;
                 ldirx.SetData = val => SegmentEndData.SetRightCornerDirI(val, 0);
                 ldirx.MouseWheelRatio = 0.1f;
+                ldirx.name = "ldrix";
                 Controls.Add(ldirx);
 
                 ldirz = row3.AddUIComponent<UICornerTextField>();
                 ldirz.GetData = () => SegmentEndData.RightCornerDir.z;
                 ldirz.SetData = val => SegmentEndData.SetRightCornerDirI(val, 2);
                 ldirz.MouseWheelRatio = 0.1f;
+                ldirz.name = "ldriz";
                 Controls.Add(ldirz);
 
                 ldiry = row3.AddUIComponent<UICornerTextField>();
                 ldiry.GetData = () => SegmentEndData.RightCornerDir.y;
                 ldiry.SetData = val => SegmentEndData.SetRightCornerDirI(val, 1);
                 ldiry.MouseWheelRatio = 0.1f;
+                ldiry.name = "ldiry";
                 Controls.Add(ldiry);
             }
 
@@ -318,16 +324,19 @@ namespace NodeController.GUI {
                 rposx = row2.AddUIComponent<UICornerTextField>();
                 rposx.GetData = () => SegmentEndData.DeltaLeftCornerPos.x;
                 rposx.SetData = val => SegmentEndData.DeltaLeftCornerPos.x = val;
+                rposx.name = "rposx";
                 Controls.Add(rposx);
 
                 rposz = row2.AddUIComponent<UICornerTextField>();
                 rposz.GetData = () => SegmentEndData.DeltaLeftCornerPos.z;
                 rposz.SetData = val => SegmentEndData.DeltaLeftCornerPos.z = val;
+                rposz.name = "rposz";
                 Controls.Add(rposz);
 
                 rposy = row2.AddUIComponent<UICornerTextField>();
                 rposy.GetData = () => SegmentEndData.DeltaLeftCornerPos.y;
                 rposy.SetData = val => SegmentEndData.DeltaLeftCornerPos.y = val;
+                rposy.name = "rposy";
                 Controls.Add(rposy);
 
                 var row3 = AddTableRow(table);
@@ -337,18 +346,21 @@ namespace NodeController.GUI {
                 rdirx.GetData = () => SegmentEndData.LeftCornerDir.x;
                 rdirx.SetData = val => SegmentEndData.SetLeftCornerDirI(val, 0);
                 rdirx.MouseWheelRatio = 0.1f;
+                rdirx.name = "rdirx";
                 Controls.Add(rdirx);
 
                 rdirz = row3.AddUIComponent<UICornerTextField>();
                 rdirz.GetData = () => SegmentEndData.LeftCornerDir.z;
                 rdirz.SetData = val => SegmentEndData.SetLeftCornerDirI(val, 2);
                 rdirz.MouseWheelRatio = 0.1f;
+                rdirz.name = "rdirz";
                 Controls.Add(rdirz);
 
                 rdiry = row3.AddUIComponent<UICornerTextField>();
                 rdiry.GetData = () => SegmentEndData.LeftCornerDir.y;
                 rdiry.SetData = val => SegmentEndData.SetLeftCornerDirI(val, 1);
                 rdiry.MouseWheelRatio = 0.1f;
+                rdiry.name = "rdiry";
                 Controls.Add(rdiry);
             }
 
@@ -371,6 +383,7 @@ namespace NodeController.GUI {
         static public UILabel AddTableLable(UIPanel container, string text, bool center=true) {
             var lbl = container.AddUIComponent<UILabel>();
             lbl.text = text;
+            lbl.name = text;
             if(center)
                 lbl.textAlignment = UIHorizontalAlignment.Center;
             lbl.autoSize = false;
@@ -394,7 +407,7 @@ namespace NodeController.GUI {
         }
 
         public override void Refresh() {
-            Log.Debug("SegmentEndController.Refresh() called\n" + Environment.StackTrace);
+            Log.Debug("SegmentEndController.Refresh() called\n"/* + Environment.StackTrace*/);
             tableLeft_.isVisible = tableRight_.isVisible =
                 SegmentEndData?.CanModifyCorners() ?? false;
             offsetPanel_.isVisible = SegmentEndData?.CanModifyOffset() ?? false;

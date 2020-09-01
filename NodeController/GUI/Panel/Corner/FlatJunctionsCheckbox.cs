@@ -69,7 +69,7 @@ namespace NodeController.GUI {
         bool refreshing_ = false;
 
         public void Refresh() {
-            Log.Debug("Refresh called()\n"/* + Environment.StackTrace*/);
+            //Log.Debug("Refresh called()\n"/* + Environment.StackTrace*/);
             refreshing_ = true;
 
             RefreshValues();

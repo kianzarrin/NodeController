@@ -66,7 +66,7 @@ namespace NodeController.GUI {
         protected bool Refreshing = false;
         public virtual void Refresh() {
             try {
-                Log.Debug("UISliderBase.Refresh() was called\n" /*+ Environment.StackTrace*/);
+                //Log.Debug("UISliderBase.Refresh() was called\n" /*+ Environment.StackTrace*/);
                 INetworkData data = Root.GetData();
                 RefreshValues();
 

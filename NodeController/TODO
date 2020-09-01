@@ -1,15 +1,7 @@
-- slider tooltips are not updated. (fixed)
-- lock corners while dragging or using mousewheal (fixed)
-- reset button does not update some values (fixed)
-- checkboxes/dropdowns/buttons should call RefreshAndUpdate() then refresh panel (fixed)
-- left corner dir (in GUI).z acts weird when flat junction is unticked (fixed)
-- direction values to be absolute (store the difference show the absolute). (done)
-- text fields remain blue even after you click out of them.
-
 - slope: store the difference show the absolute. (done not tested) (test with move it: raise node)
 
 - direction length field (includences and influenced by values from the other dir fields).
-- improve hint box
+- compelete hint box
 
 - round values
 - assert dx^2+dz^2 is 1 before slope calculations.. at the very list print warning.

@@ -48,7 +48,7 @@ namespace NodeController.GUI {
         }
 
         public void Apply() {
-            Log.Debug("TwistCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
+            //Log.Debug("TwistCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
             var data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
             if (data == null)
                 return;
@@ -63,7 +63,7 @@ namespace NodeController.GUI {
         bool refreshing_ = false;
 
         public void Refresh() {
-            Log.Debug("Refresh called()\n" + Environment.StackTrace);
+            //Log.Debug("Refresh called()\n" + Environment.StackTrace);
             refreshing_ = true;
 
             RefreshValues();
@@ -80,7 +80,7 @@ namespace NodeController.GUI {
 
             parent.Invalidate();
             Invalidate();
-            Log.Debug($"TwistChekbox.Refresh() visible={isVisible}");
+            //Log.Debug($"TwistChekbox.Refresh() visible={isVisible}");
 
             refreshing_ = false;
         }
