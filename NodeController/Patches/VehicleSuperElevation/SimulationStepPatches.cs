@@ -7,22 +7,44 @@ namespace NodeController.Patches.VehicleSuperElevation {
     using UnityEngine;
     using static SuperElevationCommons;
     using System.IO;
+    using System.Reflection.Emit;
+    using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
 
     //public override void SimulationStep(ushort vehicleID, ref Vehicle vehicleData, ref Vehicle.Frame frameData,
     //                                    ushort leaderID, ref Vehicle leaderData, int lodPhysics)
     [HarmonyPatch]
     public static class CarAI_SimulationStepPatch {
         internal static MethodBase TargetMethod() => TargetMethod<CarAI>();
-        internal static void Postfix(ref Vehicle vehicleData, ref Vehicle.Frame frameData) =>
+
+        internal static IEnumerable<CodeInstruction> Transpiler(ILGenerator il, IEnumerable<CodeInstruction> instructions) =>
+            OnRotationUpdatedTranspiler(instructions, TargetMethod() as MethodInfo);
+
+        internal static void Postfix(ref Vehicle vehicleData, ref Vehicle.Frame frameData) {
+            if (!RotationUpdated) return;
+            RotationUpdated = false;
             SuperElevationCommons.Postfix(ref vehicleData, ref frameData);
+        }
     }
 
     [HarmonyPatch]
     public static class CarTrailerAI_SimulationStepPatch {
         internal static MethodBase TargetMethod() => TargetMethod<CarTrailerAI>();
-        static Vehicle[] VehicleBuffer = VehicleManager.instance.m_vehicles.m_buffer;
 
+        internal static IEnumerable<CodeInstruction> Transpiler(ILGenerator il, IEnumerable<CodeInstruction> instructions) =>
+            OnRotationUpdatedTranspiler(instructions, TargetMethod() as MethodInfo);
+
+        static Vehicle[] VehicleBuffer = VehicleManager.instance.m_vehicles.m_buffer;
         internal static void Postfix( ref Vehicle vehicleData, ref Vehicle.Frame frameData) {
+            if (vehicleData.Info.m_leanMultiplier < 0)
+                return; // motor cycle.
+
+            if (!RotationUpdated) {
+                //Log.Debug("CarTrailerAI_SimulationStepPatch rotation was not updated! leadID=" + vehicleData.m_leadingVehicle);
+                return;
+            }
+            RotationUpdated = false;
+
             ref Vehicle leadingVehicle = ref VehicleBuffer[vehicleData.m_leadingVehicle];
             //Vehicle.Frame lastFrameData = leadingVehicle.GetLastFrameData();
             VehicleInfo leadningInfo = leadingVehicle.Info;

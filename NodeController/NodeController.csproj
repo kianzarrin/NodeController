@@ -42,6 +42,7 @@
     <Compile Remove="DecompiledSources\NetAI.cs" />
     <Compile Remove="DecompiledSources\NetNode.cs" />
     <Compile Remove="DecompiledSources\NetSegment2.cs" />
+    <Compile Remove="DecompiledSources\VehicleAI.cs" />
     <Compile Remove="KianCommons\KianCommons\Properties\AssemblyInfo.cs" />
     <Compile Remove="KianCommons\KianCommons\Util\CSURUtil.cs" />
   </ItemGroup>
@@ -109,6 +110,7 @@
     <None Include="DecompiledSources\NetAI.cs" />
     <None Include="DecompiledSources\NetNode.cs" />
     <None Include="DecompiledSources\NetSegment2.cs" />
+    <None Include="DecompiledSources\VehicleAI.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="KianCommons\KianCommons\Properties\" />
