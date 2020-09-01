@@ -11,7 +11,7 @@ namespace NodeController {
     using Log = KianCommons.Log;
     using static KianCommons.HelpersExtensions;
     using KianCommons.Math;
-
+    using NodeController.Tool;
 
     public enum NodeTypeT {
         Middle,
@@ -320,6 +320,11 @@ namespace NodeController {
 
         public void Update() => NetManager.instance.UpdateNode(NodeID);
 
+        public void RefreshAndUpdate() {
+            Refresh();
+            Update();
+        }
+
         public IEnumerable<SegmentEndData> IterateSegmentEndDatas() {
             for (int i = 0; i < 8; ++i) {
                 ushort segmentID = Node.GetSegment(i);
@@ -327,6 +332,10 @@ namespace NodeController {
                 yield return SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: NodeID);
             }
         }
+
+
+        static ushort SelectedNodeID => NodeControllerTool.Instance.SelectedNodeID;
+        public bool IsSelected() => NodeID == SelectedNodeID;
 
         public bool IsDefault() {
             bool isDefault = NodeType == DefaultNodeType;

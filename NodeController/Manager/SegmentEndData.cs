@@ -1,6 +1,7 @@
 namespace NodeController {
     using ColossalFramework;
     using ColossalFramework.Math;
+    using ColossalFramework.UI;
     using CSUtil.Commons;
     using KianCommons;
     using KianCommons.Math;
@@ -56,9 +57,6 @@ namespace NodeController {
         public bool FlatJunctions;
         public bool Twist;
         public float CornerOffsetLeft, CorneroffsetRight; // going away form junction. in GUI its the opposite.
-        public float LeftCornerDirLength, RightCornerDirLength;
-        public bool LeftCornerDirLengthLock, RightCornerDirLengthLock;
-
 
         public float Stretch; //increase width
         public float EmbankmentAngleDeg;
@@ -117,11 +115,12 @@ namespace NodeController {
             }
         }
 
-        /// <summary>
-        /// this will eventually call OnAfterCalculate() and which in case this is the selected node/segmentEnd,
-        /// calls RefreshValues() for the active panel.
-        /// </summary>
         public void Update() => NetManager.instance.UpdateNode(NodeID);
+
+        public void RefreshAndUpdate() {
+            Refresh();
+            Update();
+        }
 
         bool insideAfterCalcualte_ = false;
 
@@ -129,6 +128,7 @@ namespace NodeController {
         /// called after all calculations are done. this is called in order to cache values.
         /// </summary>
         public void OnAfterCalculate() {
+            //Log.Debug("SegmentEndData.OnAfterCalculate() called for " + this);
             insideAfterCalcualte_ = true;
             // left and right is when you go away form junction
             // both in SegmentEndData Cahced* and NetSegment.CalculateCorner()
@@ -147,18 +147,21 @@ namespace NodeController {
             float se = Mathf.Atan2(diff.y, VectorUtils.LengthXZ(diff));
             CachedSuperElevationDeg = se * Mathf.Rad2Deg;
 
-            if (NodeID == NodeControllerTool.Instance.SelectedNodeID) {
-                SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
-                    if (UINodeControllerPanel.Instance.isVisible)
-                        UINodeControllerPanel.Instance.RefreshValues();
-                    if (UISegmentEndControllerPanel.Instance.isVisible &&
-                    NodeControllerTool.Instance.SelectedNodeID == this.SegmentID)
-                        UISegmentEndControllerPanel.Instance.RefreshValues();
-                });
-            }
+            SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
+                var activePanel = UIPanelBase.ActivePanel;
+                if (activePanel.NetworkType == NetworkTypeT.Node && NodeID == SelectedNodeID) {
+                    activePanel.RefreshValues();
+                }
+                if (activePanel.NetworkType == NetworkTypeT.SegmentEnd && this.IsSelected()) {
+                    activePanel.RefreshValues();
+                }
+            });
             insideAfterCalcualte_ = false;
         }
 
+        static ushort SelectedSegmentID => NodeControllerTool.Instance.SelectedSegmentID;
+        static ushort SelectedNodeID => NodeControllerTool.Instance.SelectedNodeID;
+        public bool IsSelected() => NodeID == SelectedNodeID && SegmentID == SelectedSegmentID;
 
         public bool IsDefault() {
             bool ret = Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.1f;
@@ -190,9 +193,9 @@ namespace NodeController {
             NoJunctionTexture = false;
             NoJunctionProps = false;
             NoTLProps = false;
-            DeltaRightCornerPos = DeltaRightCornerDir = DeltaLeftCornerPos = DeltaLeftCornerDir = default;
+            DeltaRightCornerPos = DeltaRightCornerDir = DeltaLeftCornerPos = DeltaLeftCornerDir = Vector3.zero;
             Stretch = EmbankmentAngleDeg = 0;
-            NetManager.instance.UpdateNode(NodeID);
+            RefreshAndUpdate();
         }
 
 
@@ -243,6 +246,7 @@ namespace NodeController {
             }
         }
 
+        // shortcuts
         public void SetLeftCornerDirI(float val, int index) => LeftCornerDir = LeftCornerDir.SetI(val, index);
         public void SetRightCornerDirI(float val, int index) => RightCornerDir = RightCornerDir.SetI(val, index);
 
@@ -330,8 +334,7 @@ namespace NodeController {
 
         /// <param name="leftSide">left side going away from the junction</param>
         public void ApplyCornerAdjustments(ref Vector3 cornerPos, ref Vector3 cornerDir, bool leftSide) {
-            CalculateTransformVectors(dir: cornerDir, left: false, outward: out var rightwardDir, forward: out var forwardDir);
-            Vector3 leftwardDir = -rightwardDir;
+            CalculateTransformVectors(dir: cornerDir, left: leftSide, outward: out var outwardDir, forward: out var forwardDir);
 
             float dirY0 = cornerDir.y;
             float angleDeg = SlopeAngleDeg; // save calculation time.
@@ -379,33 +382,25 @@ namespace NodeController {
             deltaPos.x += hw0 * stretch * cosEmbankmentAngle; // outward
             deltaPos.y += hw0 * stretch * sinEmbankmentAngle; // vertical
 
+            cornerPos += TransformCoordinates(deltaPos, outwardDir, Vector3.up, forwardDir);
+
+            // take a snapshot of pos0/dir0 then apply delta pos/dir
             if (leftSide) {
-                cornerPos += TransformCoordinates(deltaPos, leftwardDir, Vector3.up, forwardDir);
                 if (insideAfterCalcualte_) {
                     LeftCornerDir0 = cornerDir;
                     LeftCornerPos0 = cornerPos;
                 }
 
-                cornerPos += TransformCoordinates(DeltaLeftCornerPos, leftwardDir, Vector3.up, forwardDir);
-                cornerDir += TransformCoordinates(DeltaLeftCornerDir, leftwardDir, Vector3.up, forwardDir);
-                if (LeftCornerDirLengthLock)
-                    cornerDir *= LeftCornerDirLength / cornerDir.magnitude;
-                else if (insideAfterCalcualte_)
-                    LeftCornerDirLength = cornerDir.magnitude;
+                cornerPos += TransformCoordinates(DeltaLeftCornerPos, outwardDir, Vector3.up, forwardDir);
+                cornerDir += TransformCoordinates(DeltaLeftCornerDir, outwardDir, Vector3.up, forwardDir);
             } else {
-                cornerPos += TransformCoordinates(deltaPos, rightwardDir, Vector3.up, forwardDir);
                 if (insideAfterCalcualte_) {
                     RightCornerDir0 = cornerDir;
                     RightCornerPos0 = cornerPos;
                 }
 
-                cornerPos += TransformCoordinates(DeltaRightCornerPos, rightwardDir, Vector3.up, forwardDir);
-                cornerDir += TransformCoordinates(DeltaRightCornerDir, rightwardDir, Vector3.up, forwardDir);
-                if (RightCornerDirLengthLock)
-                    cornerDir *= RightCornerDirLength / cornerDir.magnitude;
-                else if(insideAfterCalcualte_)
-                    RightCornerDirLength = cornerDir.magnitude;
-
+                cornerPos += TransformCoordinates(DeltaRightCornerPos, outwardDir, Vector3.up, forwardDir);
+                cornerDir += TransformCoordinates(DeltaRightCornerDir, outwardDir, Vector3.up, forwardDir);
             }
         }
 

@@ -6,6 +6,7 @@ namespace NodeController.GUI {
     using ColossalFramework;
     using KianCommons;
     using KianCommons.UI;
+    using System;
 
     public abstract class UIPanelBase : UIAutoSizePanel, IDataControllerUI {
         public static UIPanelBase ActivePanel;
@@ -115,9 +116,12 @@ namespace NodeController.GUI {
             float spriteEndX = sprite_.relativePosition.x + sprite_.width;
             float x = spriteEndX + 0.5f * (dragHandle_.width - spriteEndX - lblCaption_.width);
             lblCaption_.relativePosition = new Vector2(x, 14);
+
+            Hintbox?.Refresh();
         }
 
         public virtual void RefreshValues() {
+            //Log.Debug(GetType() + ".RefreshValues() was called\n"+ Environment.StackTrace); // TODO delete
             foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>()) {
                 control?.RefreshValues();
             }

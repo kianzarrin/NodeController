@@ -26,6 +26,20 @@ namespace NodeController {
         bool IsDefault();
 
         void ResetToDefault();
+
+        /// <summary>
+        /// Refreshes node state then marks the node for update.
+        /// After major changes node must be refreshed before update so that the values are corrected. for example if node changes uturn corner offset must be a
+        /// before calling update.
+        /// its possible to call panel.Refresh() right after calling this method. in that case:
+        ///  - RefreshAndUpdate() prepairs node state prepairing it for panel.Refresh()
+        ///  - panel.Refresh() show/hide/enable/disable elements based on the current node state.
+        ///  - then simulation thread recalculates values.
+        ///  - OnAfterCalculate() will then Refreshes panel values.
+        /// </summary>
+        void RefreshAndUpdate();
+
+        bool IsSelected();
     }
 
     public interface INetworkData<T> {

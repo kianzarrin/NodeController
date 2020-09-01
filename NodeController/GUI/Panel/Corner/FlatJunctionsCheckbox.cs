@@ -61,7 +61,7 @@ namespace NodeController.GUI {
                 data.Twist = data.DefaultTwist;
             data.DeltaSlopeAngleDeg = 0;
             Assert(!refreshing_, "!refreshing_");
-            data.Update();
+            data.RefreshAndUpdate();
             root_.Refresh();
         }
 

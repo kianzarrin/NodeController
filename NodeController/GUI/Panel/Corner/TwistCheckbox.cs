@@ -55,7 +55,7 @@ namespace NodeController.GUI {
             data.Twist = this.isChecked;
             data.DeltaSlopeAngleDeg = 0;
             Assert(!refreshing_, "!refreshing_");
-            data.Update();
+            data.RefreshAndUpdate();
             root_.Refresh();
         }
 
@@ -88,13 +88,13 @@ namespace NodeController.GUI {
         public void RefreshValues() {
             INetworkData data = root_?.GetData();
             if (data is SegmentEndData segmentEndData) {
-                bool b = segmentEndData.CanModifyTwist().LogRet("CanModifyTwist->");
+                bool b = segmentEndData.CanModifyTwist();
                 if (b) {
                     this.isChecked = segmentEndData.Twist;
                     isEnabled = segmentEndData.FlatJunctions;
                 }
                 isVisible = parent.isVisible = b;
-                Log.Debug($"TwistChekbox.Refresh() isVisible={isVisible} b={b}");
+                //Log.Debug($"TwistChekbox.Refresh() isVisible={isVisible} b={b}");
             } else if (data is NodeData nodeData) {
                 Hide();
             } else Hide();

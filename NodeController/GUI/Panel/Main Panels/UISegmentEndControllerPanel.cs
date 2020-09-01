@@ -4,6 +4,7 @@ namespace NodeController.GUI {
     using ColossalFramework.UI;
     using KianCommons;
     using KianCommons.UI;
+    using System;
 
     public class UISegmentEndControllerPanel : UIPanelBase {
         #region Instanciation
@@ -289,7 +290,7 @@ namespace NodeController.GUI {
                 Controls.Add(ldirz);
 
                 ldiry = row3.AddUIComponent<UICornerTextField>();
-                ldiry.GetData = () => SegmentEndData.DeltaRightCornerDir.y;
+                ldiry.GetData = () => SegmentEndData.RightCornerDir.y;
                 ldiry.SetData = val => SegmentEndData.SetRightCornerDirI(val, 1);
                 ldiry.MouseWheelRatio = 0.1f;
                 Controls.Add(ldiry);
@@ -379,7 +380,7 @@ namespace NodeController.GUI {
 
         public void ShowSegmentEnd(ushort segmentID, ushort nodeID) {
             if (Instance != this) Log.Error("Assertion Failed: Instance == this");
-            SegmentEndManager.Instance.UpdateData(SegmentID, StartNode); // refresh previous segment data if any.
+            SegmentEndManager.Instance.UpdateData(SegmentID, StartNode); // update previous segment data if any.
             SegmentID = segmentID;
             NodeID = nodeID;
             SegmentEndManager.Instance.UpdateData(SegmentID, StartNode);
@@ -393,11 +394,11 @@ namespace NodeController.GUI {
         }
 
         public override void Refresh() {
+            Log.Debug("SegmentEndController.Refresh() called\n" + Environment.StackTrace);
             tableLeft_.isVisible = tableRight_.isVisible =
                 SegmentEndData?.CanModifyCorners() ?? false;
             offsetPanel_.isVisible = SegmentEndData?.CanModifyOffset() ?? false;
             base.Refresh();
-            Hintbox.Refresh();
         }
     }
 }

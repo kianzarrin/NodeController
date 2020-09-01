@@ -95,8 +95,8 @@ namespace NodeController.GUI {
             foreach (var segmentEndData in data.IterateSegmentEndDatas())
                 segmentEndData.DeltaSlopeAngleDeg = 0;
             Assert(!refreshing_, "!refreshing_");
-            data.Update();
-            (root_ as IDataControllerUI).Refresh();
+            data.RefreshAndUpdate();
+            root_.Refresh();
         }
 
         // protection against unncessary apply/refresh/infinite recursion.

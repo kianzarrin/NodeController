@@ -100,7 +100,7 @@ namespace NodeController.GUI {
 
         bool noRefresh_ = false;
         protected override void OnTextChanged() {
-            Log.Debug($"UICornerTextField.OnTextChanged() called");
+            //Log.Debug($"UICornerTextField.OnTextChanged() called");
             base.OnTextChanged();
             if (refreshing_ || !started_) return;
             if (TryGetValue(out float value)) {
@@ -112,13 +112,12 @@ namespace NodeController.GUI {
                 data?.Update();
                 //resetButton_?.Refresh();
                 try {
-                    noRefresh_ = false; // stop being a grammer nazi all the time!
+                    noRefresh_ = false; // stop being a grammer nazi all the time! refresh the values of other IDataControllerUIs.
                     root_?.RefreshValues();
                 }
                 finally {
                     noRefresh_ = false;
                 }
-                
             }
         }
 
@@ -145,7 +144,7 @@ namespace NodeController.GUI {
                 throw new Exception("Unreachable code. this path is handled in OnTextChanged().");
             }
 
-            Refresh();
+            root_?.Refresh();
         }
 
         public void Refresh() {
@@ -163,9 +162,6 @@ namespace NodeController.GUI {
                 Container.isVisible = isEnabled;
                 Container.Invalidate();
                 Invalidate();
-
-                //resetButton_?.Refresh();
-                root_?.RefreshValues();
             }
             finally {
                 refreshing_ = false;

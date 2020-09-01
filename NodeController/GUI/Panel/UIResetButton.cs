@@ -45,7 +45,8 @@ namespace NodeController.GUI {
 
         public void Apply() {
             if (VERBOSE) Log.Debug("UIResetButton.Apply called()\n" + Environment.StackTrace);
-            root_?.GetData()?.ResetToDefault();
+            var data = root_?.GetData();
+            data?.ResetToDefault(); // also calls RefreshAndUpdate()
             Assert(!refreshing_, "!refreshing_");
             root_.Refresh();
         }

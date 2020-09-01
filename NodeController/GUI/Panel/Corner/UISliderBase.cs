@@ -28,7 +28,9 @@ namespace NodeController.GUI {
 
         protected override void OnValueChanged() {
             base.OnValueChanged();
-            Apply();
+            if (!Refreshing)
+                Apply();
+            UpdateTooltip();
         }
 
         protected override void OnMouseWheel(UIMouseEventParameter p) {
@@ -38,7 +40,7 @@ namespace NodeController.GUI {
         }
 
         public void Apply() {
-            if (Refreshing) return;
+            Assert(!Refreshing);
             object data = Root.GetData();
             if (data is NodeData nodeData) {
                 ApplyNode(nodeData);
@@ -59,6 +61,7 @@ namespace NodeController.GUI {
 
 
         public virtual string TooltipPostfix => "";
+        public bool TooltipVisible=true;
 
         protected bool Refreshing = false;
         public virtual void Refresh() {
@@ -73,14 +76,11 @@ namespace NodeController.GUI {
                 if (isEnabled && data is NodeData nodeData)
                     RefreshNode(nodeData);
 
-                tooltip = value.ToString() + TooltipPostfix;
-                RefreshTooltip();
-
                 parent.isVisible = isEnabled;
                 parent.Invalidate();
-                Invalidate();
-                thumbObject.Invalidate();
-                SlicedSprite.Invalidate();
+                //Invalidate(); // TODO is this redundant?
+                //thumbObject.Invalidate();
+                //SlicedSprite.Invalidate();
                 //Log.Debug($"slider.Refresh: node:{data.NodeID} isEnabled={isEnabled}\n" + Environment.StackTrace);
             }
             finally {
@@ -114,9 +114,18 @@ namespace NodeController.GUI {
                 } else if (data is NodeData nodeData) {
                     RefreshNodeValues(nodeData);
                 } else Disable();
-            }
+           }
             finally {
                 Refreshing = false;
+            }
+        }
+
+        public virtual void UpdateTooltip() {
+            if (TooltipVisible) {
+                tooltip = value.ToString() + TooltipPostfix;
+                RefreshTooltip();
+            } else {
+                tooltip = null;
             }
         }
     }

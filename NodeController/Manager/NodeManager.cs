@@ -160,7 +160,7 @@ namespace NodeController {
 
             buffer[nodeID].Calculate();
 
-            if (!buffer[nodeID].CanChangeTo(buffer[nodeID].NodeType).LogRet("CanChangeTo()->")) {
+            if (!buffer[nodeID].CanChangeTo(buffer[nodeID].NodeType)/*.LogRet("CanChangeTo()->")*/) {
                 ResetNodeToDefault(nodeID);
             }
         }
