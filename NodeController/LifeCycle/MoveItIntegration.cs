@@ -21,12 +21,13 @@ namespace NodeController.LifeCycle {
 
         public override string ID => "CS.Kian.NodeController";
 
-        public override Version DataVersion => new Version(2,0);
+        public override Version DataVersion => new Version(2, 1, 1);
 
         public override object Decode64(string base64Data, Version dataVersion) {
             Log.Debug($"MoveItIntegration.Decode64({base64Data},{dataVersion}) was called");
             if (base64Data == null || base64Data.Length == 0) return null;
             byte [] data = Convert.FromBase64String(base64Data);
+            SerializationUtil.DeserializationVersion = dataVersion;
             return SerializationUtil.Deserialize(data).LogRet("MoveItIntegration.Decode64 ->");
         }
 

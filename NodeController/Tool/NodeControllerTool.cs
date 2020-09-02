@@ -156,27 +156,18 @@ namespace NodeController.Tool {
             SegmentEndData segEnd = SelectedSegmentEndData;
             if (SelectedSegmentEndData == null) return;
             bool positionChanged = false;
-            if (leftCornerSelected_) {
-                var pos = RaycastMouseLocation(segEnd.LeftCornerPos.y);
-                var delta = pos - segEnd.LeftCornerPos;
+            bool selected = leftCornerSelected_ || rightCornerSelected_;
+            if (selected) {
+                ref SegmentEndData.CornerData corner = ref segEnd.Corner(leftCornerSelected_);
+                ref SegmentEndData.CornerData corner2 = ref segEnd.Corner(!leftCornerSelected_);
+                var pos = RaycastMouseLocation(corner.Pos.y);
+                var delta = pos - corner.Pos;
                 positionChanged = delta.sqrMagnitude > 1e-04;
                 if (positionChanged) {
-                    segEnd.LeftCornerPos = pos;
-                    if(LockMode)
-                        segEnd.RightCornerPos += delta;
+                    corner.Pos = pos;
+                    if (LockMode) corner2.Pos += delta;
+                    segEnd.Update(); // this will refresh panel values on update.
                 }
-            } else if (rightCornerSelected_) {
-                var pos = RaycastMouseLocation(segEnd.RightCornerPos.y);
-                var delta = pos - segEnd.RightCornerPos;
-                positionChanged = delta.sqrMagnitude > 1e-04;
-                if (positionChanged) {
-                    segEnd.RightCornerPos = pos;
-                    if (LockMode)
-                        segEnd.LeftCornerPos += delta;
-                }
-            }
-            if (positionChanged) {
-                segEnd.Update(); // this will refresh panel values on update.
             }
         }
 
@@ -328,7 +319,7 @@ namespace NodeController.Tool {
             var segEnd = SelectedSegmentEndData;
             if (segEnd == null || !segEnd.CanModifyCorners()) return null;
 
-            var pos = left ? segEnd.LeftCornerPos : segEnd.RightCornerPos;
+            var pos = segEnd.Corner(left).Pos;
             float terrainY = Singleton<TerrainManager>.instance.SampleDetailHeightSmooth(pos);
             var ret = new CornerMarker {
                 Position = pos,
