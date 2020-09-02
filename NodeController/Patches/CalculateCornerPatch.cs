@@ -18,10 +18,7 @@ namespace NodeController.Patches {
                 GetAt(segmentID: segmentID, nodeID: nodeID);
             if (segmentData == null)
                 return cornerOffset0;
-            if (leftSide)
-                return segmentData.CornerOffsetLeft;
-            else
-                return segmentData.CorneroffsetRight;
+            return segmentData.Corner(leftSide).Offset;
         }
 
         [UsedImplicitly]

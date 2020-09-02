@@ -8,6 +8,7 @@ namespace NodeController.LifeCycle
 
     [Serializable]
     public class NCState {
+        public string Version = "2.1.1";
         public static NCState Instance;
         public byte[] NodeManagerData;
         public byte[] SegmentEndManagerData;
@@ -27,6 +28,10 @@ namespace NodeController.LifeCycle
             } else {
                 Log.Debug($"NCState.Deserialize(data): data.Length={data?.Length}");
                 Instance = SerializationUtil.Deserialize(data) as NCState;
+                if (Instance?.Version != null)
+                    SerializationUtil.DeserializationVersion = new Version(Instance.Version);
+                else
+                    SerializationUtil.DeserializationVersion = new Version(2, 0);
             }
             SegmentEndManager.Deserialize(Instance.SegmentEndManagerData);
             NodeManager.Deserialize(Instance.NodeManagerData);
@@ -56,6 +61,7 @@ namespace NodeController.LifeCycle
                 data = serializableDataManager.LoadData(DATA_ID1)
                     ?? serializableDataManager.LoadData(DATA_ID0);
                 NodeManager.Deserialize(data);
+                SerializationUtil.DeserializationVersion = new Version(1,0);
             }
         }
 

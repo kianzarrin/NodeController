@@ -1,3 +1,5 @@
+//#define CORNER_LEGACY
+
 namespace NodeController {
     using ColossalFramework;
     using ColossalFramework.Math;
@@ -8,15 +10,46 @@ namespace NodeController {
     using NodeController.GUI;
     using NodeController.Tool;
     using System;
-    using System.Diagnostics;
-    using System.Security.Policy;
-    using TrafficManager.Geometry.Impl;
+    using System.Runtime.Serialization;
     using UnityEngine;
     using CSURUtil = Util.CSURUtil;
     using Log = KianCommons.Log;
 
     [Serializable]
-    public class SegmentEndData: INetworkData, INetworkData<SegmentEndData> {
+    public class SegmentEndData : INetworkData, INetworkData<SegmentEndData>, ISerializable {
+        #region serialization
+        //serialization
+        public void GetObjectData(SerializationInfo info, StreamingContext context) =>
+            SerializationUtil.GetObjectFields(info, this);
+
+        /// <summary>clone</summary>
+        private SegmentEndData(SegmentEndData template) =>
+            HelpersExtensions.CopyProperties(this, template);
+
+        public SegmentEndData Clone() => new SegmentEndData(this);
+        #endregion
+
+        // deserialization
+        public SegmentEndData() { } // so that the code compiles
+
+        public SegmentEndData(SerializationInfo info, StreamingContext context) {
+            SerializationUtil.SetObjectFields(info, this);
+
+            // corner offset and slope angle deg
+            SerializationUtil.SetObjectProperties(info, this);
+
+            if (SerializationUtil.DeserializationVersion < new Version(2, 1, 1)) {
+                LeftCorner.Left = true;
+                RightCorner.Left = false;
+
+                LeftCorner.DeltaPos = info.GetVector3("DeltaLeftCornerPos");
+                LeftCorner.DeltaDir = info.GetVector3("DeltaLeftCornerDir");
+                RightCorner.DeltaPos = info.GetVector3("DeltaRightCornerPos");
+                RightCorner.DeltaDir = info.GetVector3("DeltaRightCornerDir");
+            }
+            Update();
+        }
+
         // intrinsic
         public ushort NodeID;
         public ushort SegmentID;
@@ -25,12 +58,6 @@ namespace NodeController {
         public override string ToString() {
             return GetType().Name + $"(segment:{SegmentID} node:{NodeID})";
         }
-
-        /// <summary>clone</summary>
-        private SegmentEndData(SegmentEndData template) =>
-            HelpersExtensions.CopyProperties(this, template);
-
-        public SegmentEndData Clone() => new SegmentEndData(this);
 
         // defaults
         public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(NodeID);
@@ -42,10 +69,9 @@ namespace NodeController {
         public bool HasPedestrianLanes;
         public float CurveRaduis0;
         public int PedestrianLaneCount;
-        public Vector3Serializable CachedLeftCornerPos, CachedLeftCornerDir, CachedRightCornerPos, CachedRightCornerDir;// left and right is when you go away form junction
-        // corner pos/dir after CornerOffset, FlatJunctions, Slope, Stretch, and EmbankmentAngle, but before DeltaLeft/RighCornerDir/Pos are applied.
-        public Vector3Serializable LeftCornerDir0, RightCornerDir0, LeftCornerPos0, RightCornerPos0;
         public float CachedSuperElevationDeg; // rightward rotation of the road when going away from the junction.
+
+
 
         // Configurable
         public bool NoCrossings;
@@ -53,11 +79,8 @@ namespace NodeController {
         public bool NoJunctionTexture;
         public bool NoJunctionProps; // excluding TL
         public bool NoTLProps;
-        public Vector3Serializable DeltaLeftCornerPos, DeltaLeftCornerDir, DeltaRightCornerPos, DeltaRightCornerDir; // left and right is when you go away form junction
         public bool FlatJunctions;
         public bool Twist;
-        public float CornerOffsetLeft, CorneroffsetRight; // going away form junction. in GUI its the opposite.
-
         public float Stretch; //increase width
         public float EmbankmentAngleDeg;
         public float DeltaSlopeAngleDeg;
@@ -138,10 +161,10 @@ namespace NodeController {
             Segment.CalculateCorner(SegmentID, true, IsStartNode, leftSide: false,
                 cornerPos: out var rpos, cornerDirection: out var rdir, out _);
 
-            CachedLeftCornerPos = lpos;
-            CachedRightCornerPos = rpos;
-            CachedLeftCornerDir = ldir;
-            CachedRightCornerDir = rdir;
+            LeftCorner.CachedPos = lpos;
+            RightCorner.CachedPos = rpos;
+            LeftCorner.CachedDir = ldir;
+            RightCorner.CachedDir = rdir;
 
             Vector3 diff = rpos - lpos;
             float se = Mathf.Atan2(diff.y, VectorUtils.LengthXZ(diff));
@@ -173,10 +196,8 @@ namespace NodeController {
             ret &= NoJunctionTexture == false;
             ret &= NoJunctionProps == false;
             ret &= NoTLProps == false;
-            ret &= DeltaRightCornerPos == Vector3.zero;
-            ret &= DeltaRightCornerDir == Vector3.zero;
-            ret &= DeltaLeftCornerPos == Vector3.zero;
-            ret &= DeltaLeftCornerDir == Vector3.zero;
+            ret &= LeftCorner.IsDefault();
+            ret &= RightCorner.IsDefault();
             ret &= Stretch == 0;
             ret &= EmbankmentAngleDeg == 0;
 
@@ -193,23 +214,24 @@ namespace NodeController {
             NoJunctionTexture = false;
             NoJunctionProps = false;
             NoTLProps = false;
-            DeltaRightCornerPos = DeltaRightCornerDir = DeltaLeftCornerPos = DeltaLeftCornerDir = Vector3.zero;
             Stretch = EmbankmentAngleDeg = 0;
+            LeftCorner.ResetToDefault();
+            RightCorner.ResetToDefault();
             RefreshAndUpdate();
         }
 
 
         #region GUI Data Conversions
         public float CornerOffset {
-            get => (CornerOffsetLeft + CorneroffsetRight) * 0.5f;
-            set => CornerOffsetLeft = CorneroffsetRight = value;
+            get => (LeftCorner.Offset + RightCorner.Offset) * 0.5f;
+            set => LeftCorner.Offset = RightCorner.Offset = value;
         }
 
-        public bool HasUniformCornerOffset() => CornerOffsetLeft == CorneroffsetRight;
+        public bool HasUniformCornerOffset() => LeftCorner.Offset == RightCorner.Offset;
 
         public float EmbankmentPercent {
-            get => Mathf.Tan(EmbankmentAngleDeg*Mathf.Deg2Rad) * 100;
-            set => EmbankmentAngleDeg = Mathf.Atan(value * 0.01f) *Mathf.Rad2Deg;
+            get => Mathf.Tan(EmbankmentAngleDeg * Mathf.Deg2Rad) * 100;
+            set => EmbankmentAngleDeg = Mathf.Atan(value * 0.01f) * Mathf.Rad2Deg;
         }
 
         public float SlopeAngleDeg {
@@ -217,83 +239,90 @@ namespace NodeController {
             set => DeltaSlopeAngleDeg = value - EndDirSlopeAngleDeg;
         }
 
-        /// <summary>
-        /// reverse transformed coordinates.
-        /// </summary>
-        public Vector3 LeftCornerDir {
-            get {
-                CalculateTransformVectors(LeftCornerDir0, true, out var outward, out var forward);
-                return ReverseTransformCoordinats(CachedLeftCornerDir, outward, Vector3.up, forward);
-            }
-            set {
-                CalculateTransformVectors(LeftCornerDir0, true, out var outward, out var forward);
-                DeltaLeftCornerDir = value - ReverseTransformCoordinats( LeftCornerDir0, outward, Vector3.up, forward);
-                CachedLeftCornerDir = LeftCornerDir0 + TransformCoordinates(DeltaLeftCornerDir, outward, Vector3.up, forward);
-                Update();
-            }
-        }
-
-        public Vector3 RightCornerDir {
-            get {
-                CalculateTransformVectors(RightCornerDir0, false, out var outward, out var forward);
-                return ReverseTransformCoordinats(CachedRightCornerDir, outward, Vector3.up, forward);
-            }
-            set {
-                CalculateTransformVectors(RightCornerDir0, false, out var outward, out var forward);
-                DeltaRightCornerDir = value - ReverseTransformCoordinats(RightCornerDir0, outward, Vector3.up, forward);
-                CachedRightCornerDir = RightCornerDir0 + TransformCoordinates(DeltaRightCornerDir, outward, Vector3.up, forward);
-                Update();
-            }
-        }
-
-        // shortcuts
-        public void SetLeftCornerDirI(float val, int index) => LeftCornerDir = LeftCornerDir.SetI(val, index);
-        public void SetRightCornerDirI(float val, int index) => RightCornerDir = RightCornerDir.SetI(val, index);
-
-        public Vector3 RightCornerPos {
-            get => CachedRightCornerPos;
-            set {
-                CalculateTransformVectors(RightCornerDir0, left: false, outward: out var outwardDir, forward: out var forwardDir);
-                CachedRightCornerPos = value;
-                DeltaRightCornerPos = ReverseTransformCoordinats(value - RightCornerPos0, outwardDir, Vector3.up, forwardDir);
-                Update();
-            }
-        }
-
-        public Vector3 LeftCornerPos {
-            get => CachedLeftCornerPos;
-            set {
-                CalculateTransformVectors(LeftCornerDir0, left: true, outward: out var outwardDir, forward: out var forwardDir);
-                CachedLeftCornerPos = value;
-                DeltaLeftCornerPos = ReverseTransformCoordinats(value - LeftCornerPos0, outwardDir, Vector3.up, forwardDir);
-                Update();
-            }
-        }
-
-        /// <summary>
-        /// all directions going away fromt he junction
-        /// </summary>
-        public void CalculateTransformVectors(Vector3 dir, bool left, out Vector3 outward, out Vector3 forward) {
-            Vector3 rightward = Vector3.Cross(Vector3.up, dir).normalized; // going away from the junction
-            Vector3 leftward = -rightward;
-            forward = new Vector3(dir.x, 0, dir.z).normalized; // going away from the junction
-            outward = left ? leftward : rightward;
-        }
-
-        /// <summary>
-        /// tranforms input vector from relative (to x y z inputs) coordinate to absulute coodinate.
-        /// </summary>
-        public static Vector3 TransformCoordinates(Vector3 v, Vector3 x, Vector3 y, Vector3 z)
-            => v.x * x + v.y * y + v.z * z;
-
-        public static Vector3 ReverseTransformCoordinats(Vector3 v, Vector3 x, Vector3 y, Vector3 z) {
-            Vector3 ret = default;
-            ret.x = Vector3.Dot(v, x);
-            ret.y = Vector3.Dot(v, y);
-            ret.z = Vector3.Dot(v, z);
-            return ret;
-        }
         #endregion
+        public ref CornerData Corner(bool left) {
+            if (left)
+                return ref LeftCorner;
+            else
+                return ref RightCorner;
+        }
+
+        // left and right going away from the junction.
+        public CornerData LeftCorner = new CornerData { Left = true };
+        public CornerData RightCorner = new CornerData { Left = false };
+
+        [Serializable]
+        public struct CornerData {
+            public bool Left;
+
+            public bool IsDefault() {
+                return DeltaPos == Vector3.zero && DeltaDir == Vector3.zero;
+            }
+
+            public void ResetToDefault() {
+                DeltaPos = DeltaDir = Vector3.zero;
+            }
+
+            public Vector3Serializable CachedPos, CachedDir;
+            public Vector3Serializable Dir0, Pos0;
+            public Vector3Serializable DeltaPos, DeltaDir;
+            public float Offset;
+
+            public void SetDirI(float val, int index) => Dir = Dir.SetI(val, index);
+
+            public Vector3 Dir {
+                get {
+                    CalculateTransformVectors(Dir0, Left, out var outward, out var forward);
+                    return ReverseTransformCoordinats(CachedDir, outward, Vector3.up, forward);
+                }
+                set {
+                    CalculateTransformVectors(Dir0, Left, out var outward, out var forward);
+                    DeltaDir = value - ReverseTransformCoordinats(Dir0, outward, Vector3.up, forward);
+                    CachedDir = Dir0 + TransformCoordinates(DeltaDir, outward, Vector3.up, forward);
+                    //Update();
+                }
+            }
+
+            public Vector3 Pos {
+                get => CachedPos;
+                set {
+                    CalculateTransformVectors(Dir0, left: Left, outward: out var outwardDir, forward: out var forwardDir);
+                    CachedPos = value;
+                    DeltaPos = ReverseTransformCoordinats(value - Pos0, outwardDir, Vector3.up, forwardDir);
+                    //Update();
+                }
+            }
+
+            /// <summary>
+            /// all directions going away fromt he junction
+            /// </summary>
+            public static void CalculateTransformVectors(Vector3 dir, bool left, out Vector3 outward, out Vector3 forward) {
+                Vector3 rightward = Vector3.Cross(Vector3.up, dir).normalized; // going away from the junction
+                Vector3 leftward = -rightward;
+                forward = new Vector3(dir.x, 0, dir.z).normalized; // going away from the junction
+                outward = left ? leftward : rightward;
+            }
+
+            /// <summary>
+            /// tranforms input vector from relative (to x y z inputs) coordinate to absulute coodinate.
+            /// </summary>
+            public static Vector3 TransformCoordinates(Vector3 v, Vector3 x, Vector3 y, Vector3 z)
+                => v.x * x + v.y * y + v.z * z;
+
+            /// <summary>
+            /// reverse transformed coordinates.
+            /// </summary>
+            public static Vector3 ReverseTransformCoordinats(Vector3 v, Vector3 x, Vector3 y, Vector3 z) {
+                Vector3 ret = default;
+                ret.x = Vector3.Dot(v, x);
+                ret.y = Vector3.Dot(v, y);
+                ret.z = Vector3.Dot(v, z);
+                return ret;
+            }
+        }
+
+
+
 
         bool CrossingIsRemoved() =>
             HideCrosswalks.Patches.CalculateMaterialCommons.
@@ -316,7 +345,7 @@ namespace NodeController {
             var segEnd1 = SegmentEndManager.Instance.GetOrCreate(segmentID1, NodeID);
             var segEnd2 = SegmentEndManager.Instance.GetOrCreate(segmentID2, NodeID);
 
-            Log.Debug($"{this}.CanModifyTwist() flatjunctions: {segEnd1.FlatJunctions} {segEnd2.FlatJunctions}" );
+            Log.Debug($"{this}.CanModifyTwist() flatjunctions: {segEnd1.FlatJunctions} {segEnd2.FlatJunctions}");
             bool slope1 = !segEnd1.FlatJunctions;
             bool slope2 = !segEnd2.FlatJunctions;
             return slope1 || slope2;
@@ -326,21 +355,23 @@ namespace NodeController {
             if (NodeData == null) return true;
             return NodeData.NodeType == NodeTypeT.Custom;
         }
-
-
         #endregion
 
         public float EndDirSlopeAngleDeg => Mathf.Atan(Direction.y) * Mathf.Rad2Deg;
 
         /// <param name="leftSide">left side going away from the junction</param>
         public void ApplyCornerAdjustments(ref Vector3 cornerPos, ref Vector3 cornerDir, bool leftSide) {
-            CalculateTransformVectors(dir: cornerDir, left: leftSide, outward: out var outwardDir, forward: out var forwardDir);
+            CornerData.CalculateTransformVectors(
+                dir: cornerDir,
+                left: leftSide,
+                outward: out var outwardDir,
+                forward: out var forwardDir);
 
             float dirY0 = cornerDir.y;
             float angleDeg = SlopeAngleDeg; // save calculation time.
             float angleRad = angleDeg * Mathf.Deg2Rad;
 
-            if ( 89 <= angleDeg && angleDeg <= 91) {
+            if (89 <= angleDeg && angleDeg <= 91) {
                 cornerDir.x = cornerDir.z = 0;
                 cornerDir.y = 1;
             } else if (-89 >= angleDeg && angleDeg >= -91) {
@@ -355,7 +386,7 @@ namespace NodeController {
             }
             if (!Node.m_flags.IsFlagSet(NetNode.Flags.Middle)) {
                 float d = VectorUtils.DotXZ(cornerPos - Node.m_position, cornerDir);
-                cornerPos.y += d * (cornerDir.y - dirY0); 
+                cornerPos.y += d * (cornerDir.y - dirY0);
             }
 
             // this must be done after readjusting cornerPos.y
@@ -374,7 +405,7 @@ namespace NodeController {
             float cosEmbankmentAngle = Mathf.Cos(embankmentAngleRad);
             float hw0 = Info.m_halfWidth;
             float stretch = Stretch * 0.01f;
-            float hw_total = hw0 * (1+ stretch);
+            float hw_total = hw0 * (1 + stretch);
             deltaPos.x += -hw_total * (1 - cosEmbankmentAngle); // outward
             deltaPos.y = hw_total * sinEmbankmentAngle;
 
@@ -382,26 +413,18 @@ namespace NodeController {
             deltaPos.x += hw0 * stretch * cosEmbankmentAngle; // outward
             deltaPos.y += hw0 * stretch * sinEmbankmentAngle; // vertical
 
-            cornerPos += TransformCoordinates(deltaPos, outwardDir, Vector3.up, forwardDir);
+            cornerPos += CornerData.TransformCoordinates(deltaPos, outwardDir, Vector3.up, forwardDir);
 
-            // take a snapshot of pos0/dir0 then apply delta pos/dir
-            if (leftSide) {
-                if (insideAfterCalcualte_) {
-                    LeftCornerDir0 = cornerDir;
-                    LeftCornerPos0 = cornerPos;
-                }
+            ref CornerData corner = ref Corner(leftSide);
 
-                cornerPos += TransformCoordinates(DeltaLeftCornerPos, outwardDir, Vector3.up, forwardDir);
-                cornerDir += TransformCoordinates(DeltaLeftCornerDir, outwardDir, Vector3.up, forwardDir);
-            } else {
-                if (insideAfterCalcualte_) {
-                    RightCornerDir0 = cornerDir;
-                    RightCornerPos0 = cornerPos;
-                }
-
-                cornerPos += TransformCoordinates(DeltaRightCornerPos, outwardDir, Vector3.up, forwardDir);
-                cornerDir += TransformCoordinates(DeltaRightCornerDir, outwardDir, Vector3.up, forwardDir);
+            if (insideAfterCalcualte_) {
+                // take a snapshot of pos0/dir0 then apply delta pos/dir
+                corner.Dir0 = cornerDir;
+                corner.Pos0 = cornerPos;
             }
+
+            cornerPos += CornerData.TransformCoordinates(corner.DeltaPos, outwardDir, Vector3.up, forwardDir);
+            cornerDir += CornerData.TransformCoordinates(corner.DeltaDir, outwardDir, Vector3.up, forwardDir);
         }
 
         #region External Mods
@@ -412,6 +435,7 @@ namespace NodeController {
                 return TernaryBool.True; // always hide
             return TernaryBool.Undefined; // default.
         }
+
         #endregion
     }
 }

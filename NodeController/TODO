@@ -3,6 +3,9 @@
 
 - test serialization.
 
+- trains turn the wrong way on super elevated highways.
+
+
 - test selecting nodes on top of another road (FRT + anarchy +  moveIT). (can't reproduce)
 - when I select another segment end, values from the previously selected segment end are copied
   probabely because UI elements remember their old values. (can't reproduce)
