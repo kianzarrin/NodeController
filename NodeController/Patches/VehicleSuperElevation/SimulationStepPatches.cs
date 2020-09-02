@@ -51,13 +51,14 @@ namespace NodeController.Patches.VehicleSuperElevation {
             if (!leadingVehicle.GetCurrentPathPos(out var pathPos)) return;
             uint laneID = PathManager.GetLaneID(pathPos);
 
+            // Calculate trailer lane offset based on how far the trailer is from the car its attached to.
             bool inverted = leadingVehicle.m_flags.IsFlagSet(Vehicle.Flags.Inverted);
             float deltaPos = inverted ? leadningInfo.m_attachOffsetBack : leadningInfo.m_attachOffsetFront;
             float deltaOffset = deltaPos / laneID.ToLane().m_length;
             float offset = leadingVehicle.m_lastPathOffset * (1f / 255f) - deltaOffset;
             offset = Mathf.Clamp(offset, 0, 1);
 
-            float se = GetCurrentSE(pathPos, offset);
+            float se = GetCurrentSE(pathPos, offset, ref vehicleData);
             var rot = Quaternion.Euler(0, 0f, se);
             frameData.m_rotation *= rot;
         }

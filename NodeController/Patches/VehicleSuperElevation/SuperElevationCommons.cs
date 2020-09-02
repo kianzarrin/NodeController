@@ -29,7 +29,9 @@ namespace NodeController.Patches.VehicleSuperElevation {
             if (!vehicleData.GetCurrentPathPos(out var pathPos))
                 return;
 
-            float se = GetCurrentSE(pathPos, vehicleData.m_lastPathOffset*(1f/255f));
+            float se = GetCurrentSE(pathPos, vehicleData.m_lastPathOffset*(1f/255f), ref vehicleData);
+
+
             var rot = Quaternion.Euler(0, 0f, se);
             frameData.m_rotation *= rot;
         }
@@ -43,7 +45,7 @@ namespace NodeController.Patches.VehicleSuperElevation {
         internal static NetInfo.Lane GetLaneInfo(this ref PathUnit.Position pathPos) =>
             pathPos.m_segment.ToSegment().Info.m_lanes[pathPos.m_lane];
 
-        internal static float GetCurrentSE(PathUnit.Position pathPos, float offset) {
+        internal static float GetCurrentSE(PathUnit.Position pathPos, float offset, ref Vehicle vehicleData) {
             // bezier is always from start to end node regardless of direction.
             SegmentEndData segStart = SegmentEndManager.Instance.GetAt(pathPos.m_segment, true);
             SegmentEndData segEnd = SegmentEndManager.Instance.GetAt(pathPos.m_segment, false);
@@ -51,10 +53,20 @@ namespace NodeController.Patches.VehicleSuperElevation {
             float endSE = segEnd == null ? 0f : -segEnd.CachedSuperElevationDeg;
             float se = startSE * (1-offset) + endSE * offset;
            
-
             bool invert = pathPos.m_segment.ToSegment().m_flags.IsFlagSet(NetSegment.Flags.Invert);
             bool backward = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.Backward;
-            if (invert^backward) se = -se;
+            bool reversed = vehicleData.m_flags.IsFlagSet(Vehicle.Flags.Reversed);
+
+            bool bidirectional = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.Both;
+            bool avoidForward = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.AvoidForward;
+            bool avoidBackward = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.AvoidBackward;
+            bool avoid = avoidForward | avoidBackward;
+
+            if (invert) se = -se;
+            if (backward) se = -se;
+            if (reversed & !avoid) se = -se;
+
+            //if (bidirectional) se = 0; // is this necessary?
             return se;
         }
 
