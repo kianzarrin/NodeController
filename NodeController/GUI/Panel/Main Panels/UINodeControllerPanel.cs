@@ -1,7 +1,8 @@
 namespace NodeController.GUI {
     using ColossalFramework.UI;
     using KianCommons;
-    using NodeController.Tool;
+    using KianCommons.UI;
+    using UnityEngine;
 
     public class UINodeControllerPanel : UIPanelBase {
         #region Instanciation
@@ -32,6 +33,8 @@ namespace NodeController.GUI {
             }
         }
 
+        UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_;
+
         public override void Awake() {
             base.Awake();
             Instance = this;
@@ -53,42 +56,81 @@ namespace NodeController.GUI {
                 Controls.Add(dropdown_);
             }
 
-            {
-                var panel = AddPanel();
-
-                var label = panel.AddUIComponent<UILabel>();
+            const bool extendedSlider = true;
+            { // offset
+                offsetPanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
                 label.text = "Corner smoothness";
                 label.tooltip = "Adjusts Corner offset for smooth junction transition.";
-
-                var slider_ = panel.AddUIComponent<UIOffsetSlider>();
+                if (extendedSlider) panel0.width += CELL_SIZE2.x;
+                var slider_ = panel0.AddUIComponent<UIOffsetSlider>();
                 Controls.Add(slider_);
+
+                var corner = row2.AddUIComponent<UICornerTextField>();
+                if (extendedSlider) corner.size = CELL_SIZE2;
+                corner.allowNegative = false;
+                corner.name = "NoedCornerOffset";
+                corner.GetData = () => NodeData.CornerOffset;
+                corner.SetData = val => NodeData.CornerOffset = val > 0 ? val : 0;
+                corner.IsMixed = () => !NodeData.HasUniformCornerOffset();
+                Controls.Add(corner);
             }
 
-            {
-                var panel = AddPanel();
-                var label = panel.AddUIComponent<UILabel>();
+            { // embankment
+                embankmentPanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
                 label.text = "Embankment";
                 label.tooltip = "twist road sideways (superelevation)";
-                var slider_ = panel.AddUIComponent<EmbankmentSlider>();
+                var slider_ = panel0.AddUIComponent<EmbankmentSlider>();
                 Controls.Add(slider_);
+
+                var fieldAngle = row2.AddUIComponent<UICornerTextField>();
+                fieldAngle.size = CELL_SIZE2;
+                fieldAngle.GetData = () => NodeData.EmbankmentPercent;
+                fieldAngle.SetData = val => NodeData.EmbankmentPercent = Mathf.Clamp(val, -180, +180);
+                fieldAngle.IsMixed = () => !NodeData.HasUniformEmbankmentAngle();
+                fieldAngle.PostFix = "°";
+                Controls.Add(fieldAngle);
+
+                var fieldPercent = row2.AddUIComponent<UICornerTextField>();
+                fieldPercent.size = CELL_SIZE2;
+                fieldPercent.GetData = () => NodeData.EmbankmentPercent;
+                fieldPercent.SetData = val => NodeData.EmbankmentPercent = val;
+                fieldPercent.IsMixed = () => !NodeData.HasUniformEmbankmentAngle();
+                fieldPercent.PostFix = "%";
+                Controls.Add(fieldPercent);
             }
 
-            {
-                var panel = AddPanel();
-                var label = panel.AddUIComponent<UILabel>();
+            { // slope
+                slopePanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
                 label.text = "Slope";
                 label.tooltip = "+90=>up -90=>down\n";
-                var slider_ = panel.AddUIComponent<SlopeSlider>();
+                if (extendedSlider) panel0.width += CELL_SIZE2.x;
+                var slider_ = panel0.AddUIComponent<SlopeSlider>();
                 Controls.Add(slider_);
+
+                var fieldAngle = row2.AddUIComponent<UICornerTextField>();
+                if (extendedSlider) fieldAngle.size = CELL_SIZE2;
+                fieldAngle.GetData = () => NodeData.SlopeAngleDeg;
+                fieldAngle.SetData = val => NodeData.SlopeAngleDeg = Mathf.Clamp(val, -180, +180);
+                fieldAngle.IsMixed = () => !NodeData.HasUniformSlopeAngle();
+                fieldAngle.PostFix = "°";
+                Controls.Add(fieldAngle);
             }
 
-            {
-                var panel = AddPanel();
-                var label = panel.AddUIComponent<UILabel>();
+            { // Stretch
+                stretchPanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
                 label.text = "Stretch";
-                label.tooltip = "-100%=>size nullified -90=>down\n";
-                var slider_ = panel.AddUIComponent<StretchSlider>();
+                label.tooltip = "change the width of the segment end";
+                if (extendedSlider) panel0.width += CELL_SIZE2.x;
+                var slider_ = panel0.AddUIComponent<StretchSlider>();
                 Controls.Add(slider_);
+
+                var fieldPercent = row2.AddUIComponent<UICornerTextField>();
+                if (extendedSlider) fieldPercent.size = CELL_SIZE2;
+                fieldPercent.GetData = () => NodeData.Stretch;
+                fieldPercent.SetData = val => NodeData.Stretch = val;
+                fieldPercent.IsMixed = () => !NodeData.HasUniformStretch();
+                fieldPercent.PostFix = "%";
+                Controls.Add(fieldPercent);
             }
 
             AddPanel().name = "Space";
@@ -122,5 +164,14 @@ namespace NodeController.GUI {
             NodeID = 0;
             base.Close();
         }
+
+        public override void Refresh() {
+            offsetPanel_.isVisible = NodeData?.CanModifyOffset() ?? false;
+            slopePanel_.isVisible = stretchPanel_.isVisible = embankmentPanel_.isVisible =
+                 NodeData?.CanMassEditNodeCorners() ?? false;
+
+            base.Refresh();
+        }
     }
 }
+

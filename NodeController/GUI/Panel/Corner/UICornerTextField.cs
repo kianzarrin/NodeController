@@ -27,7 +27,10 @@ namespace NodeController.GUI {
         }
 
         public delegate float GetDataFunc();
+        public delegate bool IsMixedFunc();
         public delegate void SetDataFunc(float data);
+
+        public IsMixedFunc IsMixed;
         public GetDataFunc GetData;
         public SetDataFunc SetData;
         public UIComponent Container; // that will be set visible or invisible.
@@ -89,7 +92,12 @@ namespace NodeController.GUI {
         public override void Update() {
             base.Update();
             var c = GetColor();
-            color = Color.Lerp(c, Color.white, 0.70f);
+            if(!MixedValues)
+                color = Color.Lerp(c, Color.white, 0.70f);
+            else {
+                color = Color.Lerp(c, Color.grey, 0.70f);
+                opacity = 0.2f;
+            }
         }
 
         public override void Start() {
@@ -151,8 +159,7 @@ namespace NodeController.GUI {
                 // don't update text ... let user type the whole numbrer.
                 // deep refresh is for OnSubmit()
                 SetData(value);
-                SegmentEndData data = (root_ as UISegmentEndControllerPanel)?.SegmentEndData;
-                data?.Update();
+                root_?.GetData()?.Update();
                 root_?.RefreshValues(); // refresh values early
             }
         }
@@ -189,13 +196,24 @@ namespace NodeController.GUI {
             try {
                 refreshing_ = true;
 
+                var data = root_?.GetData();
+                //data?.Update();
+                if (data is NodeData nodeData) {
+                    if (name == "NoedCornerOffset")
+                        isEnabled = nodeData.CanModifyOffset();
+                    else
+                        isEnabled = nodeData.CanMassEditNodeCorners();
+                } else if (data is SegmentEndData segEndData)
+                    isEnabled = segEndData.CanModifyCorners();
+                else
+                    Disable();
 
-                if (root_ is UINodeControllerPanel ncpanel)
-                    RefreshNode();
-                else if (root_ is UISegmentEndControllerPanel secpanel)
-                    RefreshSegmentEnd();
+                if (isEnabled) {
+                    Value = GetData();
+                    if (IsMixed != null)
+                        MixedValues = IsMixed();
+                }
 
-                Value = GetData();
                 Container.isVisible = isEnabled;
                 Container.Invalidate();
                 Invalidate();
@@ -205,30 +223,20 @@ namespace NodeController.GUI {
             }
         }
 
-        public void RefreshNode() {
-            throw new NotImplementedException();
-        }
-
-        public void RefreshSegmentEnd() {
-            SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
-            if (data == null) {
-                Disable();
-                return;
-            }
-            data.Update();
-            isEnabled = data.CanModifyCorners();
-        }
-
         public void RefreshValues() {
             if (containsFocus)
                 return;
             try {
                 refreshing_ = true;
                 Value = GetData();
+                if (IsMixed != null)
+                    MixedValues = IsMixed();
             }
             finally {
                 refreshing_ = false;
             }
         }
+
+        public bool MixedValues = false;
     }
 }

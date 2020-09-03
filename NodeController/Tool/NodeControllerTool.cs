@@ -458,12 +458,13 @@ namespace NodeController.Tool {
             if (!IsHoverValid || handleHovered_ || CornerFocusMode)
                 return;
             Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
-            if (AltIsPressed) {
+            if (AltIsPressed ) {
                 if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)) {
                     SelectedSegmentID = HoveredSegmentId;
                     SelectedNodeID = HoveredNodeId;
-                    SECPanel.
-                        ShowSegmentEnd(segmentID: SelectedSegmentID, nodeID: SelectedNodeID);
+                    SECPanel.ShowSegmentEnd(
+                        segmentID: SelectedSegmentID,
+                        nodeID: SelectedNodeID);
                 }
                 return;
             }
@@ -478,6 +479,13 @@ namespace NodeController.Tool {
                     return;
                 }
                 SelectedNodeID = c.m_node;
+                if (SelectedNodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.End)) {
+                    // for end node just show segment end panel.
+                    SelectedSegmentID = SelectedNodeID.ToNode().GetFirstSegment();
+                    SECPanel.ShowSegmentEnd(
+                        segmentID: SelectedSegmentID,
+                        nodeID: SelectedNodeID);
+                }
                 SelectedSegmentID = 0;
                 NCPanel.ShowNode(SelectedNodeID);
             } else if (c.m_segment != 0) {

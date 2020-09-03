@@ -174,6 +174,22 @@ namespace NodeController {
             }
         }
 
+        public float EmbankmentPercent {
+            get {
+                Assert(CanMassEditNodeCorners());
+                Assert(SegmentCount == 2);
+                float ret = SegmentEnd1.EmbankmentPercent - SegmentEnd2.EmbankmentPercent;
+                ret = ret * 0.5f; //average
+                return ret;
+            }
+            set {
+                Assert(CanMassEditNodeCorners());
+                Assert(SegmentCount == 2);
+                SegmentEnd1.EmbankmentPercent = value;
+                SegmentEnd2.EmbankmentPercent = -value;
+            }
+        }
+
         public bool HasUniformEmbankmentAngle() {
             Assert(CanMassEditNodeCorners());
             Assert(SegmentCount == 2);

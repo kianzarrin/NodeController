@@ -378,7 +378,8 @@ namespace NodeController {
         /// Precondition: cornerDir.LenXZ = 1
         /// <param name="leftSide">left side going away from the junction</param>
         public void ApplyCornerAdjustments(ref Vector3 cornerPos, ref Vector3 cornerDir, bool leftSide) {
-            if (VectorUtils.LengthSqrXZ(cornerDir) > 1) {
+            if (VectorUtils.LengthSqrXZ(cornerDir) > 1.001f) {
+                // assumption for slope adjustments.
                 Log.Error("Warning: ApplyCornerAdjustments() expects cornerDir.LenXZ == 1 got:" +
                     VectorUtils.LengthXZ(cornerDir));
             }

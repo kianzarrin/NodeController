@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using HarmonyLib;
+using ColossalFramework;
 
 namespace NodeController.Patches._NetManager
 {

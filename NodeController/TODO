@@ -1,19 +1,12 @@
-- stretch text field. (done)
-- text fields in the same row.(done)
-- dir.y is scaled down to 2. (done)
-- direction length field + lock (done)
-- bug: node slider tooltip refreshes to zero.(fixed)
-- when I select another segment end, the modified text field from the previously selected segment end are copied (fixed)
- 
-- update segment should retain data.
-- text fields in node controller panel.
+- update segment should retain data (fixed)
+- text fields in node controller panel (done)
+- bug: sliders don't show for end node. (fixed)
 
 - compelete hint box.
 - round values.
-- open and close left and right table.
-- bug: sliders don't show for end node.
-- new Corner table organisation
 
+- open and close left and right table.
+- new Corner table organisation
 
 - test selecting nodes on top of another road (FRT + anarchy +  moveIT). (can't reproduce)
 
