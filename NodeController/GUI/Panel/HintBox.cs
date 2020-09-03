@@ -18,13 +18,37 @@ namespace NodeController.GUI {
             padding = new RectOffset(5, 5, 5, 5);
         }
 
+        public float width {
+            get => base.width;
+            set {
+                base.width = value;
+                this.minimumSize = new Vector2(value, 0);
+                this.maximumSize = new Vector2(value, height);
+            }
+        }
+
+        public float height {
+            get => base.height;
+            set {
+                base.height = value;
+                this.maximumSize = new Vector2(width, value);
+            }
+        }
+
+        public Vector2 size {
+            get => base.size;
+            set {
+                base.size = value;
+                this.minimumSize = new Vector2(width, 0);
+                this.maximumSize = size;
+            }
+        }
+
         public override void Start() {
             base.Start();
             this.relativePosition = new Vector2(0, 1f);
             this.backgroundSprite = "GenericPanel";
-            this.size = new Vector2(parent.width, 10);
-            this.minimumSize = new Vector2(parent.width, 0);
-            this.maximumSize = new Vector2(parent.width, 200);
+            this.size = new Vector2(parent.width, 200);
             this.autoSize = true;
             Log.Debug($"size={size} minsize={minimumSize} maxsize={maximumSize}");
             Invalidate();

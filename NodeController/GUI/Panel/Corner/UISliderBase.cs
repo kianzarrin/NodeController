@@ -126,6 +126,7 @@ namespace NodeController.GUI {
                 RefreshTooltip();
             } else {
                 tooltip = null;
+                RefreshTooltip();
             }
         }
     }

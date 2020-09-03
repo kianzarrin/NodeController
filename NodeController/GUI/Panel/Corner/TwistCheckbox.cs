@@ -13,12 +13,12 @@ namespace NodeController.GUI {
             base.Awake();
             Instance = this;
             name = nameof(TwistCheckbox);
-            height = 30f;
+            height = 20f;
             clipChildren = true;
 
             UISprite sprite = UncheckedSprite = AddUIComponent<UISprite>();
             sprite.spriteName = "ToggleBase";
-            sprite.size = new Vector2(19f, 19f);
+            sprite.size = new Vector2(20f, 20f);
             sprite.relativePosition = new Vector2(0, (height - sprite.height) / 2);
 
             checkedBoxObject = CheckedSprite = sprite.AddUIComponent<UISprite>();

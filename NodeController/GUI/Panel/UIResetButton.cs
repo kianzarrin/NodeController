@@ -16,6 +16,8 @@ namespace NodeController.GUI {
             name = nameof(UIResetButton);
 
             height = 30f;
+            width = 200;
+
             textScale = 0.9f;
             normalBgSprite = "ButtonMenu";
             hoveredBgSprite = "ButtonMenuHovered";
@@ -30,7 +32,6 @@ namespace NodeController.GUI {
 
         public override void Start() {
             base.Start();
-            width = parent.width;
             root_ = GetRootContainer() as UIPanelBase;
             if (root_.NetworkType == NetworkTypeT.Node)
                 tooltip += "including segment ends.";

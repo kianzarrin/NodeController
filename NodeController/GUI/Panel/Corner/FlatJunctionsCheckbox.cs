@@ -7,18 +7,15 @@ namespace NodeController.GUI {
 
 
     public class UIFlatJunctionsCheckbox : UICheckBox, IDataControllerUI {
-        public static UIFlatJunctionsCheckbox Instance { get; private set; }
-
         public override void Awake() {
             base.Awake();
-            Instance = this;
             name = nameof(UIFlatJunctionsCheckbox);
-            height = 30f;
+            height = 20f;
             clipChildren = true;
 
             UISprite sprite = AddUIComponent<UISprite>();
             sprite.spriteName = "ToggleBase";
-            sprite.size = new Vector2(19f, 19f);
+            sprite.size = new Vector2(20f, 20f);
             sprite.relativePosition = new Vector2(0, (height-sprite.height)/2 );
 
             checkedBoxObject = sprite.AddUIComponent<UISprite>();
@@ -27,7 +24,7 @@ namespace NodeController.GUI {
             checkedBoxObject.relativePosition = Vector3.zero;
 
             label = AddUIComponent<UILabel>();
-            label.text = "Flat junctions";
+            label.text = "Flatten junction";
             label.textScale = 0.9f;
             label.relativePosition = new Vector2(sprite.width+5f, (height- label.height)/2+1);
             tooltip = "If turned off, junctions could have slope. Useful for highway intersections.\n" +

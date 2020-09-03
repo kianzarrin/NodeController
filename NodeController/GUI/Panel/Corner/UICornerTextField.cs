@@ -5,6 +5,7 @@ namespace NodeController.GUI {
     using KianCommons;
     using KianCommons.UI;
     using System;
+    using ColossalFramework;
 
     public class UICornerTextField : UITextField, IDataControllerUI {
         //UIResetButton resetButton_;
@@ -14,6 +15,17 @@ namespace NodeController.GUI {
 
         public override string ToString() => GetType().Name + $"({name})";
 
+        private string _postfix = "";
+        public string PostFix {
+            get => _postfix;
+            set {
+                if (value.IsNullOrWhiteSpace())
+                    _postfix = "";
+                else
+                    _postfix = value;
+            }
+        }
+
         public delegate float GetDataFunc();
         public delegate void SetDataFunc(float data);
         public GetDataFunc GetData;
@@ -21,13 +33,13 @@ namespace NodeController.GUI {
         public UIComponent Container; // that will be set visible or invisible.
 
         public UICornerTextField Mirror;
-        public bool LockMode => ControlIsPressed && !AltIsPressed;
-        public bool InvertLockMode => ControlIsPressed && AltIsPressed;
+        public static bool LockMode => ControlIsPressed && !AltIsPressed;
+        public static bool InvertLockMode => ControlIsPressed && AltIsPressed;
 
         public override void Awake() {
             base.Awake();
             atlas = TextureUtil.GetAtlas("Ingame");
-            size = UISegmentEndControllerPanel.CELL_SIZE;
+            size = UIPanelBase.CELL_SIZE;
             padding = new RectOffset(4, 4, 3, 3);
             builtinKeyNavigation = true;
             isInteractive = true;
@@ -50,6 +62,34 @@ namespace NodeController.GUI {
             numericalOnly = true;
             allowFloats = true;
             allowNegative = true;
+        }
+
+
+        Color GetColor() {
+            if (containsMouse) {
+                if (LockMode || InvertLockMode)
+                    return Color.green;
+                else
+                    return Color.white;
+            }
+
+            if (Mirror != null && Mirror.containsMouse) {
+                if (LockMode)
+                    return Color.green;
+                else if (InvertLockMode)
+                    return Color.Lerp(Color.blue, Color.cyan,0.3f);
+            }
+
+            if (containsFocus)
+                return Color.white;
+
+            return Color.Lerp(Color.grey, Color.white, 0.60f);
+        }
+
+        public override void Update() {
+            base.Update();
+            var c = GetColor();
+            color = Color.Lerp(c, Color.white, 0.70f);
         }
 
         public override void Start() {
@@ -83,20 +123,23 @@ namespace NodeController.GUI {
                 Mirror.Value -= delta;
         }
 
+        public string StrippedText => PostFix != "" ? text.Replace(PostFix, "") : text;
+
         public bool TryGetValue(out float value) {
-            if (text == "") {
+            string text2 = StrippedText;
+            if (text2 == "") {
                 value = 0;
                 return true;
             }
 
-            var ret = float.TryParse(text, out value);
+            var ret = float.TryParse(text2, out value);
             value = value.RoundToNearest(minStep_);
             return ret;
         }
 
         public float Value {
-            set => text = value.RoundToNearest(minStep_).ToString("0.######");
-            get => float.Parse(text).RoundToNearest(minStep_);
+            set => text = value.RoundToNearest(minStep_).ToString("0.######") + PostFix;
+            get => float.Parse(StrippedText).RoundToNearest(minStep_);
         }
 
         protected override void OnTextChanged() {

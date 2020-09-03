@@ -1,21 +1,19 @@
 namespace NodeController.Patches {
-    using KianCommons;
+    using ColossalFramework;
     using HarmonyLib;
     using JetBrains.Annotations;
-    using System;
+    using KianCommons;
     using System.Reflection;
     using UnityEngine;
-
     using static ColossalFramework.Math.VectorUtils;
-    using ColossalFramework;
 
     [UsedImplicitly]
     [HarmonyPatch]
     static class CalculateCornerPatch2 {
         [UsedImplicitly]
         static MethodBase TargetMethod() {
-    // public void CalculateCorner(ushort segmentID, bool heightOffset, bool start, bool leftSide,
-    // out Vector3 cornerPos, out Vector3 cornerDirection, out bool smooth)
+            // public void CalculateCorner(ushort segmentID, bool heightOffset, bool start, bool leftSide,
+            // out Vector3 cornerPos, out Vector3 cornerDirection, out bool smooth)
             return typeof(NetSegment).GetMethod(
                     nameof(NetSegment.CalculateCorner),
                     BindingFlags.Public | BindingFlags.Instance) ??
@@ -41,8 +39,7 @@ namespace NodeController.Patches {
         /// <param name="leftSide">going away from the node</param>
         public static void Postfix(
             ushort segmentID, bool start, bool leftSide,
-            ref Vector3 cornerPos, ref Vector3 cornerDirection)
-        {
+            ref Vector3 cornerPos, ref Vector3 cornerDirection) {
             SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
             ushort nodeID = segmentID.ToSegment().GetNode(start);
             bool middle = nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle);
@@ -63,7 +60,12 @@ namespace NodeController.Patches {
 
                     bool neighbourFlatJunctions = neighbourData?.FlatJunctions ?? neighbourSegmentID.ToSegment().Info.m_flatJunctions;
                     bool neighbourslope = !neighbourFlatJunctions;
-                    bool twist = data?.Twist ?? segmentID.ToSegment().Info.m_twistSegmentEnds;
+                    bool twist;
+                    if (data != null)
+                        twist = data.Twist;
+                    else
+                        twist = segmentID.ToSegment().Info.m_twistSegmentEnds
+                            || segmentID.ToSegment().Info.m_flatJunctions; // work around: most roads don't have this. 
                     if (twist && neighbourslope) {
                         FixCornerPosMinor(
                             nodePos: nodeID.ToNode().m_position,
@@ -73,9 +75,18 @@ namespace NodeController.Patches {
                     }
                 }
             }
-            //Log.DebugWait($"flat junction is {FlatJunctions} at {this}", seconds: 0.1f);
-            // manual adjustments:
-            data?.ApplyCornerAdjustments(ref cornerPos, ref cornerDirection, leftSide);
+            if (data != null) {
+                // manual adjustments:
+                data.ApplyCornerAdjustments(ref cornerPos, ref cornerDirection, leftSide);
+            } else {
+                // if vector dir is not limitted inside ApplyCornerAdjustments then do it here.
+                // this must NOT be done before ApplyCornerAdjustments().
+                float absY = Mathf.Abs(cornerDirection.y);
+                if (absY > 2) {
+                    // fix dir length so that y is 2:
+                    cornerDirection *= 2 / absY;
+                }
+            }
         }
     }
 }

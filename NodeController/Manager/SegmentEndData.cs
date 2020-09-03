@@ -62,7 +62,7 @@ namespace NodeController {
         // defaults
         public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(NodeID);
         public bool DefaultFlatJunctions => Info.m_flatJunctions;
-        public bool DefaultTwist => Info.m_twistSegmentEnds;
+        public bool DefaultTwist => Info.m_twistSegmentEnds || Info.m_flatJunctions;
         public NetSegment.Flags DefaultFlags;
 
         // cache
@@ -256,17 +256,23 @@ namespace NodeController {
             public bool Left;
 
             public bool IsDefault() {
-                return DeltaPos == Vector3.zero && DeltaDir == Vector3.zero;
+                bool ret = DeltaPos == Vector3.zero && DeltaDir == Vector3.zero;
+                ret &= Offset == 0;
+                ret &= LockLength == false;
+                return ret;
             }
 
             public void ResetToDefault() {
                 DeltaPos = DeltaDir = Vector3.zero;
+                Offset = 0;
+                LockLength = false;
             }
 
             public Vector3Serializable CachedPos, CachedDir;
             public Vector3Serializable Dir0, Pos0;
             public Vector3Serializable DeltaPos, DeltaDir;
             public float Offset;
+            public bool LockLength;
 
             public void SetDirI(float val, int index) => Dir = Dir.SetI(val, index);
 
@@ -276,9 +282,22 @@ namespace NodeController {
                     return ReverseTransformCoordinats(CachedDir, outward, Vector3.up, forward);
                 }
                 set {
+                    if (LockLength)
+                        value *= DirLength/value.magnitude;
                     CalculateTransformVectors(Dir0, Left, out var outward, out var forward);
                     DeltaDir = value - ReverseTransformCoordinats(Dir0, outward, Vector3.up, forward);
                     CachedDir = Dir0 + TransformCoordinates(DeltaDir, outward, Vector3.up, forward);
+                    //Update();
+                }
+            }
+
+            public float DirLength {
+                get => ((Vector3)CachedDir).magnitude;
+                set {
+                    bool prevLockLength = LockLength;
+                    LockLength = false;
+                    Dir *= Mathf.Clamp(value,0.001f,1000) / DirLength;
+                    LockLength = prevLockLength;
                     //Update();
                 }
             }
@@ -321,9 +340,6 @@ namespace NodeController {
             }
         }
 
-
-
-
         bool CrossingIsRemoved() =>
             HideCrosswalks.Patches.CalculateMaterialCommons.
             ShouldHideCrossing(NodeID, SegmentID);
@@ -359,8 +375,14 @@ namespace NodeController {
 
         public float EndDirSlopeAngleDeg => Mathf.Atan(Direction.y) * Mathf.Rad2Deg;
 
+        /// Precondition: cornerDir.LenXZ = 1
         /// <param name="leftSide">left side going away from the junction</param>
         public void ApplyCornerAdjustments(ref Vector3 cornerPos, ref Vector3 cornerDir, bool leftSide) {
+            if (VectorUtils.LengthSqrXZ(cornerDir) > 1) {
+                Log.Error("Warning: ApplyCornerAdjustments() expects cornerDir.LenXZ == 1 got:" +
+                    VectorUtils.LengthXZ(cornerDir));
+            }
+
             CornerData.CalculateTransformVectors(
                 dir: cornerDir,
                 left: leftSide,
@@ -391,9 +413,11 @@ namespace NodeController {
 
             // this must be done after readjusting cornerPos.y
             // make sure direction vector is not too big.
-            float maxY = Mathf.Max(dirY0, 2);
-            if (cornerDir.y > maxY)
-                cornerDir *= maxY / cornerDir.y;
+            float absY = Mathf.Abs(cornerDir.y);
+            if (absY > 2) {
+                // fix dir length so that y is 2:
+                cornerDir *= 2 / absY;
+            }
 
 
             Vector3 deltaPos = Vector3.zero;
@@ -425,6 +449,12 @@ namespace NodeController {
 
             cornerPos += CornerData.TransformCoordinates(corner.DeltaPos, outwardDir, Vector3.up, forwardDir);
             cornerDir += CornerData.TransformCoordinates(corner.DeltaDir, outwardDir, Vector3.up, forwardDir);
+
+            if (corner.LockLength) {
+                float prevSqrmagnitiude = ((Vector3)corner.CachedDir).sqrMagnitude;
+                float newSqrmagnitiude = cornerDir.sqrMagnitude;
+                cornerDir *= Mathf.Sqrt(prevSqrmagnitiude / newSqrmagnitiude);
+            }
         }
 
         #region External Mods

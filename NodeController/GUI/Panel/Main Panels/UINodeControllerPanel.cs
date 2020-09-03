@@ -110,6 +110,7 @@ namespace NodeController.GUI {
         }
 
         public void ShowNode(ushort nodeID) {
+            Unfocus();
             NodeManager.Instance.UpdateData(NodeID); // refresh previous node data if any.
             NodeID = nodeID;
             NodeManager.Instance.UpdateData(nodeID); // refresh current node data

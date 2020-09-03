@@ -1,10 +1,8 @@
 namespace NodeController.GUI {
-    using System.Linq;
-    using UnityEngine;
     using ColossalFramework.UI;
     using KianCommons;
     using KianCommons.UI;
-    using System;
+    using UnityEngine;
 
     public class UISegmentEndControllerPanel : UIPanelBase {
         #region Instanciation
@@ -26,8 +24,6 @@ namespace NodeController.GUI {
         public ushort SegmentID { get; private set; }
         public ushort NodeID { get; private set; }
         public bool StartNode => NetUtil.IsStartNode(segmentId: SegmentID, nodeId: NodeID);
-        public static Vector2 CELL_SIZE = new Vector2(100, 20);
-        public static Vector2 CELL_SIZE2 = new Vector2(60, 20); // corner table
 
         public SegmentEndData SegmentEndData {
             get {
@@ -52,154 +48,102 @@ namespace NodeController.GUI {
             name = "UISegmentEndControllerPanel";
             Caption = "Segment End Controller";
 
-            {
-                offsetPanel_ = AddUIComponent<UIAutoSizePanel>();
-                offsetPanel_.autoLayoutDirection = LayoutDirection.Horizontal;
-                offsetPanel_.AutoSize2 = true;
-                offsetPanel_.padding = new RectOffset(5, 5, 5, 5);
-                offsetPanel_.autoLayoutPadding = new RectOffset(0, 4, 0, 0);
-                {
-                    var panel = offsetPanel_.AddUIComponent<UIAutoSizePanel>();
-                    panel.AutoSize2 = false;
-                    panel.width = 290; // set slider width
-                    var label = panel.AddUIComponent<UILabel>();
-                    label.text = "Corner smoothness";
-                    label.tooltip = "Adjusts Corner offset for smooth junction transition.";
-                    var slider_ = panel.AddUIComponent<UIOffsetSlider>();
-                    Controls.Add(slider_);
-                }
-                {
-                    var table = offsetPanel_.AddUIComponent<UIAutoSizePanel>();
-                    table.name = "offset_table";
-                    table.autoLayoutDirection = LayoutDirection.Vertical;
-                    table.AutoSize2 = true;
-                    var row1 = AddTableRow(table);
-                    var row2 = AddTableRow(table);
-                    row1.width = row2.width = CELL_SIZE2.x * 2;
-
-                    AddTableLable(row1, "Left").size = CELL_SIZE2;
-                    AddTableLable(row1, "Right").size = CELL_SIZE2;
-                    
-                    var lcorner = row2.AddUIComponent<UICornerTextField>();
-                    lcorner.allowNegative = false;
-                    lcorner.size = CELL_SIZE2;
-                    lcorner.GetData = () => SegmentEndData.RightCorner.Offset;
-                    lcorner.SetData = val => SegmentEndData.RightCorner.Offset = val > 0 ? val : 0;
-                    Controls.Add(lcorner);
-
-                    var rcorner = row2.AddUIComponent<UICornerTextField>();
-                    rcorner.allowNegative = false;
-                    rcorner.size = CELL_SIZE2;
-                    rcorner.GetData = () => SegmentEndData.LeftCorner.Offset;
-                    rcorner.SetData = val => SegmentEndData.LeftCorner.Offset = val > 0 ? val : 0;
-                    Controls.Add(rcorner);
-
-                    lcorner.Mirror = rcorner;
-                    rcorner.Mirror = lcorner;
-                }
-            }
-
-            {
-                var panel = AddPanel();
-                {
-                    var panel0 = panel.AddUIComponent<UIAutoSizePanel>();
-                    panel0.width = panel.width;
-                    var label = panel0.AddUIComponent<UILabel>();
-                    label.text = "Embankment";
-                    label.tooltip = "twist road sideways (superelevation)";
-                    var slider_ = panel0.AddUIComponent<EmbankmentSlider>();
-                    Controls.Add(slider_);
-                }
-                {
-                    var row2 = panel.AddUIComponent<UIAutoSizePanel>();
-                    row2.autoSize = row2.AutoSize2 = true;
-                    row2.autoLayoutDirection = LayoutDirection.Horizontal;
-                    var col1 = row2.AddUIComponent<UIAutoSizePanel>();
-                    col1.AutoSize2 = true;
-                    var col2 = row2.AddUIComponent<UIAutoSizePanel>();
-                    col2.AutoSize2 = true;
-                    var col3 = row2.AddUIComponent<UIAutoSizePanel>();
-                    col3.AutoSize2 = true;
-                    var col4 = row2.AddUIComponent<UIAutoSizePanel>();
-                    col4.AutoSize2 = true;
-
-                    var fieldAngle = col1.AddUIComponent<UICornerTextField>();
-                    fieldAngle.GetData = () => SegmentEndData.EmbankmentAngleDeg;
-                    fieldAngle.SetData = val => SegmentEndData.EmbankmentAngleDeg = Mathf.Clamp(val, -180, +180);
-                    Controls.Add(fieldAngle);
-
-                    var lbl1 = col2.AddUIComponent<UILabel>();
-                    lbl1.autoSize = true;
-                    lbl1.text = "degrees  ";
-                    lbl1.padding = new RectOffset(0, 0, 4, 0);
-
-
-                    var fieldPercent = col3.AddUIComponent<UICornerTextField>();
-                    fieldPercent.GetData = () => SegmentEndData.EmbankmentPercent;
-                    fieldPercent.SetData = val => SegmentEndData.EmbankmentPercent = val;
-                    Controls.Add(fieldPercent);
-
-                    var lbl2 = col4.AddUIComponent<UILabel>();
-                    lbl2.autoSize = true;
-                    lbl2.text = "%";
-                    lbl2.padding = new RectOffset(0, 0, 4, 0);
-                }
-            }
-
-            {
-                var panel = AddPanel();
-                {
-                    var panel0 = panel.AddUIComponent<UIAutoSizePanel>();
-                    panel0.width = panel.width;
-                    var label = panel0.AddUIComponent<UILabel>();
-                    label.text = "Slope";
-                    label.tooltip = "+90=>up -90=>down\n";
-                    var slider_ = panel0.AddUIComponent<SlopeSlider>();
-                    Controls.Add(slider_);
-                }
-                {
-                    var row2 = panel.AddUIComponent<UIAutoSizePanel>();
-                    row2.autoSize = row2.AutoSize2 = true;
-                    row2.autoLayoutDirection = LayoutDirection.Horizontal;
-                    var col1 = row2.AddUIComponent<UIAutoSizePanel>();
-                    col1.AutoSize2 = true;
-                    var col2 = row2.AddUIComponent<UIAutoSizePanel>();
-                    col2.AutoSize2 = true;
-
-                    var fieldAngle = col1.AddUIComponent<UICornerTextField>();
-                    fieldAngle.GetData = () => SegmentEndData.SlopeAngleDeg;
-                    fieldAngle.SetData = val => SegmentEndData.SlopeAngleDeg = Mathf.Clamp(val, -180, +180);
-                    Controls.Add(fieldAngle);
-
-                    var lbl1 = col2.AddUIComponent<UILabel>();
-                    lbl1.autoSize = true;
-                    lbl1.text = "degrees";
-                    lbl1.padding = new RectOffset(0, 0, 4, 0);
-                }
-            }
-
-            {
-                var panel = AddPanel();
-                var label = panel.AddUIComponent<UILabel>();
-                label.text = "Stretch";
-                label.tooltip = "-100%=>size nullified -90=>down\n";
-                var slider_ = panel.AddUIComponent<StretchSlider>();
+            { // offset
+                offsetPanel_ = MakeSliderSection(this,out var label,out var panel0, out var row1, out var row2);
+                label.text = "Corner smoothness";
+                label.tooltip = "Adjusts Corner offset for smooth junction transition.";
+                var slider_ = panel0.AddUIComponent<UIOffsetSlider>();
                 Controls.Add(slider_);
+
+                AddTableLable(row1, "Left").size = CELL_SIZE2;
+                AddTableLable(row1, "Right").size = CELL_SIZE2;
+
+                var lcorner = row2.AddUIComponent<UICornerTextField>();
+                lcorner.allowNegative = false;
+                lcorner.size = CELL_SIZE2;
+                lcorner.GetData = () => SegmentEndData.RightCorner.Offset;
+                lcorner.SetData = val => SegmentEndData.RightCorner.Offset = val > 0 ? val : 0;
+                Controls.Add(lcorner);
+
+                var rcorner = row2.AddUIComponent<UICornerTextField>();
+                rcorner.allowNegative = false;
+                rcorner.size = CELL_SIZE2;
+                rcorner.GetData = () => SegmentEndData.LeftCorner.Offset;
+                rcorner.SetData = val => SegmentEndData.LeftCorner.Offset = val > 0 ? val : 0;
+                Controls.Add(rcorner);
+
+                lcorner.Mirror = rcorner;
+                rcorner.Mirror = lcorner;
+                
+            }
+
+            { // embankment
+                embankmentPanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
+                label.text = "Embankment";
+                label.tooltip = "twist road sideways (superelevation)";
+                var slider_ = panel0.AddUIComponent<EmbankmentSlider>();
+                Controls.Add(slider_);
+
+
+                var fieldAngle = row2.AddUIComponent<UICornerTextField>();
+                fieldAngle.size = CELL_SIZE2;
+                fieldAngle.GetData = () => SegmentEndData.EmbankmentAngleDeg;
+                fieldAngle.SetData = val => SegmentEndData.EmbankmentAngleDeg = Mathf.Clamp(val, -180, +180);
+                fieldAngle.PostFix = "°";
+                Controls.Add(fieldAngle);
+
+                var fieldPercent = row2.AddUIComponent<UICornerTextField>();
+                fieldPercent.size = CELL_SIZE2;
+                fieldPercent.GetData = () => SegmentEndData.EmbankmentPercent;
+                fieldPercent.SetData = val => SegmentEndData.EmbankmentPercent = val;
+                fieldPercent.PostFix = "%";
+                Controls.Add(fieldPercent);
+            }
+
+            const bool extendedSlider = true;
+            { // slope
+                slopePanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
+                label.text = "Slope";
+                label.tooltip = "+90=>up -90=>down\n";
+                if(extendedSlider) panel0.width += CELL_SIZE2.x; 
+                var slider_ = panel0.AddUIComponent<SlopeSlider>();
+                Controls.Add(slider_);
+
+                var fieldAngle = row2.AddUIComponent<UICornerTextField>();
+                if(extendedSlider) fieldAngle.size = CELL_SIZE2;
+                fieldAngle.GetData = () => SegmentEndData.SlopeAngleDeg;
+                fieldAngle.SetData = val => SegmentEndData.SlopeAngleDeg = Mathf.Clamp(val, -180, +180);
+                fieldAngle.PostFix = "°";
+                Controls.Add(fieldAngle);
+            }
+
+            { // Stretch
+                stretchPanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
+                label.text = "Stretch";
+                label.tooltip = "change the width of the segment end";
+                if (extendedSlider) panel0.width += CELL_SIZE2.x;
+                var slider_ = panel0.AddUIComponent<StretchSlider>();
+                Controls.Add(slider_);
+
+                var fieldPercent = row2.AddUIComponent<UICornerTextField>();
+                if (extendedSlider) fieldPercent.size = CELL_SIZE2;
+                fieldPercent.GetData = () => SegmentEndData.Stretch;
+                fieldPercent.SetData = val => SegmentEndData.Stretch = val;
+                fieldPercent.PostFix = "%";
+                Controls.Add(fieldPercent);
             }
 
             {
                 var panel = AddPanel();
+                panel.padding = new RectOffset(10, 10, 5, 5);
+                panel.autoLayoutPadding = default;
                 var checkBox = panel.AddUIComponent<UIFlatJunctionsCheckbox>();
-                var padding = panel.autoLayoutPadding;
-                padding.bottom = 0;
-                panel.autoLayoutPadding = padding;
                 Controls.Add(checkBox);
 
                 var panel2 = panel.AddUIComponent<UIAutoSizePanel>();
-                panel2.padding = new RectOffset(50, 5, 0, 5);
+                panel2.padding = new RectOffset(20, 0, 4, 0);
                 var checkBox2 = panel2.AddUIComponent<TwistCheckbox>();
                 Controls.Add(checkBox2);
-
             }
 
             {
@@ -230,13 +174,50 @@ namespace NodeController.GUI {
             Disable();
         }
 
-        UIAutoSizePanel offsetPanel_;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="container">container to add section to</param>
+        /// <param name="label">label of the section</param>
+        /// <param name="panel0">add slider to this</param>
+        /// <param name="row1">add text field labels here if any</param>
+        /// <param name="row2">add text fields here</param>
+        /// <returns>top contianer of the section. hide this to hide the section</returns>
+        public static UIAutoSizePanel MakeSliderSection(UIPanel container,
+            out UILabel label, out UIAutoSizePanel panel0, out UIPanel row1, out UIPanel row2) {
+            UIAutoSizePanel section = container.AddUIComponent<UIAutoSizePanel>();
+            section.autoLayoutDirection = LayoutDirection.Horizontal;
+            section.AutoSize2 = true;
+            section.padding = new RectOffset(5, 5, 5, 5);
+            section.autoLayoutPadding = new RectOffset(0, 4, 0, 0);
+            section.name = "section";
+            {
+                panel0 = section.AddUIComponent<UIAutoSizePanel>();
+                panel0.AutoSize2 = false;
+                panel0.width = 290; // set slider width
+                label = panel0.AddUIComponent<UILabel>();
+            }
+            {
+                var table = section.AddUIComponent<UIAutoSizePanel>();
+                table.name = "table";
+                table.autoLayoutDirection = LayoutDirection.Vertical;
+                table.AutoSize2 = true;
+                row1 = AddTableRow(table);
+                row2 = AddTableRow(table);
+                row1.width = row2.width = CELL_SIZE2.x * 2;
+            }
+            return section;
+        }
+
+        UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_;
         UIAutoSizePanel tableLeft_, tableRight_;
         public void MakeCornerTable(UIPanel container) {
             UICornerTextField lposx, lposy, lposz,
                               rposx, rposy, rposz,
                               ldirx, ldiry, ldirz,
-                              rdirx, rdiry, rdirz;
+                              rdirx, rdiry, rdirz,
+                              llen, rlen;
+            LockDirCheckbox llock, rlock;
 
             {
                 UIAutoSizePanel table = tableLeft_ = container.AddUIComponent<UIAutoSizePanel>();
@@ -298,6 +279,24 @@ namespace NodeController.GUI {
                 ldiry.MouseWheelRatio = 0.1f;
                 ldiry.name = "ldiry";
                 Controls.Add(ldiry);
+
+                var row4 = AddTableRow(table);
+                row4.padding = new RectOffset(0, 0, 4, 0);
+                AddTableLable(row4, "dir length:", center: false);
+
+                llen = row4.AddUIComponent<UICornerTextField>();
+                llen.GetData = () => SegmentEndData.RightCorner.DirLength;
+                llen.SetData = val => SegmentEndData.RightCorner.DirLength = val; //clamped by setter.
+                llen.name = "llen";
+                Controls.Add(llen);
+
+                var row4panel = row4.AddUIComponent<UIAutoSizePanel>();
+                row4panel.padding = new RectOffset(10, 0, 0, 0);
+                row4panel.AutoSize2 = true;
+                llock = row4panel.AddUIComponent<LockDirCheckbox>();
+                llock.size = CELL_SIZE;
+                llock.Left = false; // ui left is the opposite of backend left.
+                Controls.Add(llock);
             }
 
             {
@@ -360,6 +359,24 @@ namespace NodeController.GUI {
                 rdiry.MouseWheelRatio = 0.1f;
                 rdiry.name = "rdiry";
                 Controls.Add(rdiry);
+
+                var row4 = AddTableRow(table);
+                row4.padding = new RectOffset(0, 0, 4, 0);
+                AddTableLable(row4, "dir length:", center: false);
+
+                rlen = row4.AddUIComponent<UICornerTextField>();
+                rlen.GetData = () => SegmentEndData.LeftCorner.DirLength;
+                rlen.SetData = val => SegmentEndData.LeftCorner.DirLength = val;
+                rlen.name = "rlen";
+                Controls.Add(rlen);
+
+                var row4panel = row4.AddUIComponent<UIAutoSizePanel>();
+                row4panel.padding = new RectOffset(10, 0, 0, 0);
+                row4panel.AutoSize2 = true;
+                rlock = row4panel.AddUIComponent<LockDirCheckbox>();
+                rlock.size = CELL_SIZE;
+                rlock.Left = true; // ui left is the opposite of backend left.
+                Controls.Add(rlock);
             }
 
             lposx.Mirror = rposx; rposx.Mirror = lposx;
@@ -368,29 +385,13 @@ namespace NodeController.GUI {
             ldirz.Mirror = rdirz; rdirz.Mirror = ldirz;
             lposy.Mirror = rposy; rposy.Mirror = lposy;
             ldiry.Mirror = rdiry; rdiry.Mirror = ldiry;
-        }
-
-        static public UIPanel AddTableRow(UIPanel container, int nColumns=4) {
-            var panel = container.AddUIComponent<UIPanel>();
-            panel.autoLayout = true;
-            panel.autoLayoutDirection = LayoutDirection.Horizontal;
-            panel.size = new Vector2(CELL_SIZE.x * nColumns, CELL_SIZE.y);
-            return panel;
-        }
-
-        static public UILabel AddTableLable(UIPanel container, string text, bool center=true) {
-            var lbl = container.AddUIComponent<UILabel>();
-            lbl.text = text;
-            lbl.name = text;
-            if(center)
-                lbl.textAlignment = UIHorizontalAlignment.Center;
-            lbl.autoSize = false;
-            lbl.size = CELL_SIZE;
-            return lbl;
+            llen.Mirror = rlen; rlen.Mirror = llen;
+            llock.Mirror = rlock; rlock.Mirror = llock;
         }
 
         public void ShowSegmentEnd(ushort segmentID, ushort nodeID) {
             if (Instance != this) Log.Error("Assertion Failed: Instance == this");
+            Unfocus();
             SegmentEndManager.Instance.UpdateData(SegmentID, StartNode); // update previous segment data if any.
             SegmentID = segmentID;
             NodeID = nodeID;
@@ -409,6 +410,9 @@ namespace NodeController.GUI {
             tableLeft_.isVisible = tableRight_.isVisible =
                 SegmentEndData?.CanModifyCorners() ?? false;
             offsetPanel_.isVisible = SegmentEndData?.CanModifyOffset() ?? false;
+            slopePanel_.isVisible = stretchPanel_.isVisible = embankmentPanel_.isVisible =
+                 SegmentEndData?.CanModifyCorners() ?? false;
+
             base.Refresh();
         }
     }

@@ -1,15 +1,22 @@
-- trains turn the wrong way on super elevated tracks. (fixed)
-- node slider tooltip refreshes to zero.
+- stretch text field. (done)
+- text fields in the same row.(done)
+- dir.y is scaled down to 2. (done)
+- direction length field + lock (done)
+- bug: node slider tooltip refreshes to zero.(fixed)
+- when I select another segment end, the modified text field from the previously selected segment end are copied (fixed)
+ 
+- update segment should retain data.
+- text fields in node controller panel.
+
+- compelete hint box.
+- round values.
+- open and close left and right table.
+- bug: sliders don't show for end node.
+- new Corner table organisation
+
 
 - test selecting nodes on top of another road (FRT + anarchy +  moveIT). (can't reproduce)
-- when I select another segment end, values from the previously selected segment end are sometimes copied
-  probabely because UI elements remember their old values. (can't reproduce reliably)
 
-- direction length field (influences and is influenced by values from the other dir fields).
-- compelete hint box
-
-- round values
-- assert dx^2+dz^2 is 1 before slope calculations.. at the very list print warning.
 
 - corner offset to increase chances of train track connection.
 - fix the orientation of asym road
