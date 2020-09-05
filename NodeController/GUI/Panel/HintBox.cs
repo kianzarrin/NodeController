@@ -2,10 +2,17 @@ namespace NodeController.GUI {
     using ColossalFramework.UI;
     using ColossalFramework;
     using KianCommons;
-    using KianCommons.UI;
     using UnityEngine;
+    using System.Collections.Generic;
+    using System;
+    using NodeController.Tool;
 
     public class HintBox : UILabel {
+        UIPanelBase root_;
+        IEnumerable<IDataControllerUI> controlls_ => root_?.Controls;
+        NodeControllerTool tool_;
+        NodeControllerTool Tool => tool_ = tool_ ?? NodeControllerTool.Instance;
+
         public override void Awake() {
             base.Awake();
             this.relativePosition = Vector2.zero;
@@ -18,7 +25,7 @@ namespace NodeController.GUI {
             padding = new RectOffset(5, 5, 5, 5);
         }
 
-        public float width {
+        public new float width {
             get => base.width;
             set {
                 base.width = value;
@@ -27,7 +34,7 @@ namespace NodeController.GUI {
             }
         }
 
-        public float height {
+        public new float height {
             get => base.height;
             set {
                 base.height = value;
@@ -35,7 +42,7 @@ namespace NodeController.GUI {
             }
         }
 
-        public Vector2 size {
+        public new Vector2 size {
             get => base.size;
             set {
                 base.size = value;
@@ -50,11 +57,17 @@ namespace NodeController.GUI {
             this.backgroundSprite = "GenericPanel";
             this.size = new Vector2(parent.width, 200);
             this.autoSize = true;
+
+            root_ = GetRootContainer() as UIPanelBase;
             Log.Debug($"size={size} minsize={minimumSize} maxsize={maximumSize}");
             Invalidate();
         }
 
         public string hint1_, hint2_, hint3_;
+
+        /// <summary>
+        /// Controller hotkeys
+        /// </summary>
         public string Hint1 {
             get => hint1_;
             set {
@@ -64,6 +77,8 @@ namespace NodeController.GUI {
                 }
             }
         }
+
+        // Controller description
         public string Hint2 {
             get => hint2_;
             set {
@@ -73,6 +88,8 @@ namespace NodeController.GUI {
                 }
             }
         }
+
+        // tool 
         public string Hint3 {
             get => hint3_;
             set {
@@ -83,7 +100,38 @@ namespace NodeController.GUI {
             }
         }
 
+        public override void Update() {
+            base.Update();
+            try {
+                //string rootname = root_?.GetType()?.Name ?? "null";
+                //var version = this?.VersionOf()?.ToString() ?? "null";
+                //string id = $"{rootname} V{this.VersionOf()}";
+                //Log.DebugWait($"HintBox.Update() called", id);
+
+                if (root_ == null || !root_.isVisible)
+                    return;
+
+                string h1 = null, h2 = null;
+                foreach (IDataControllerUI c in controlls_) {
+                    bool hovered = (c as UIComponent).containsMouse;
+                    if (hovered) {
+                        h1 = c.HintHotkeys;
+                        h2 = c.HintDescription;
+                    }
+                }
+                // TODO get h3 from tool.
+                Hint1 = h1;
+                Hint2 = h2;
+                Hint3 = Tool?.Hint;
+                //Refresh();
+                //Log.DebugWait("update sucessfull.","P2:"+rootname);
+            }catch(Exception e) {
+                Hint1 = e.ToString();
+            }
+        }
+
         public void Refresh() {
+            //Log.Debug($"Refresh called" + Environment.StackTrace);
             bool h1 = !Hint1.IsNullOrWhiteSpace();
             bool h2 = !Hint2.IsNullOrWhiteSpace();
             bool h3 = !Hint3.IsNullOrWhiteSpace();
@@ -99,9 +147,5 @@ namespace NodeController.GUI {
             text = t;
             isVisible = h1 || h2 || h3;
         }
-
-
-
-
     }
 }

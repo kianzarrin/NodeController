@@ -40,6 +40,10 @@ namespace NodeController.GUI {
             base.Awake();
             Instance = this;
         }
+        public override void OnDestroy() {
+            Instance = null;
+            base.OnDestroy();
+        }
 
         public override void Start() {
             base.Start();
@@ -50,7 +54,7 @@ namespace NodeController.GUI {
 
             { // offset
                 offsetPanel_ = MakeSliderSection(this,out var label,out var panel0, out var row1, out var row2);
-                label.text = "Corner smoothness";
+                label.text = "Corner offset";
                 label.tooltip = "Adjusts Corner offset for smooth junction transition.";
                 var slider_ = panel0.AddUIComponent<UIOffsetSlider>();
                 Controls.Add(slider_);
@@ -171,7 +175,7 @@ namespace NodeController.GUI {
             MakeHintBox();
 
             AutoSize2 = true;
-            Disable();
+            Close();
         }
 
         /// <summary>
@@ -391,6 +395,7 @@ namespace NodeController.GUI {
 
         public void ShowSegmentEnd(ushort segmentID, ushort nodeID) {
             if (Instance != this) Log.Error("Assertion Failed: Instance == this");
+            gameObject.SetActive(true);
             Unfocus();
             SegmentEndManager.Instance.UpdateData(SegmentID, StartNode); // update previous segment data if any.
             SegmentID = segmentID;

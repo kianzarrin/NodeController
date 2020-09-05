@@ -9,6 +9,13 @@ namespace NodeController.GUI {
     public class UIHideMarkingsCheckbox : UICheckBox, IDataControllerUI {
         public static UIHideMarkingsCheckbox Instance { get; private set; }
 
+        public string HintHotkeys => throw new NotImplementedException();
+
+        public string HintDescription =>
+            "Removes crossing texture for all segment ends. " +
+            "does not influence whether or not pedestrians can cross";
+
+
         UIPanelBase root_;
         public override void Awake() {
             base.Awake();
@@ -31,15 +38,19 @@ namespace NodeController.GUI {
             label.text = "No junction markings";
             label.textScale = 0.9f;
             label.relativePosition = new Vector2(sprite.width+5f, (height- label.height)/2+1);
-            tooltip = "Removes defuse texture for all segment ends";
 
-            eventCheckChanged += (component, value) => {
-                if (VERBOSE) Log.Debug($"UIHideMarkingsCheckbox.eventCheckChanged called refreshing_={refreshing_}");
-                if (!refreshing_)
-                    Apply();
-            };
+            eventCheckChanged += OnCheckChanged;
+        }
 
+        void OnCheckChanged(UIComponent component, bool value) {
+            if (refreshing_)
+                return;
+            Apply();
+        }
 
+        public override void OnDestroy() {
+            eventCheckChanged -= OnCheckChanged;
+            base.OnDestroy();
         }
 
         public override void Start() {

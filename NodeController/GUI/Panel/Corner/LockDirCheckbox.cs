@@ -3,14 +3,18 @@ namespace NodeController.GUI {
     using static KianCommons.HelpersExtensions;
     using KianCommons.UI;
     using UnityEngine;
+    using ColossalFramework.UI;
 
     public class LockDirCheckbox :UICheckBoxExt, IDataControllerUI {
         public override void Awake() {
             base.Awake();
             name = nameof(LockDirCheckbox);
             label.text = "lock";
-            tooltip = "Control : lock left and right";
         }
+
+        public string HintHotkeys => "control + click => link both lock dir toggles";
+
+        public string HintDescription => null;
 
         static bool LockMode => ControlIsPressed && !AltIsPressed;
         Color GetColor() {
@@ -32,7 +36,8 @@ namespace NodeController.GUI {
             label.textColor = Color.Lerp(c, Color.white, 0.70f);
         }
 
-        public override void OnCheckedChanged() {
+        public override void OnCheckChanged(UIComponent component, bool value) {
+            base.OnCheckChanged(component, value);
             if (refreshing_) return;
             Apply();
         }
@@ -49,7 +54,7 @@ namespace NodeController.GUI {
 
         public void Apply() {
             Assert(!refreshing_, "!refreshing_");
-            Log.Debug("LockDirCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
+        Log.Debug("LockDirCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
 
             SegmentEndData data = root_?.GetData() as SegmentEndData;
             if (data == null) return;

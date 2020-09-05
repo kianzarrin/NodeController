@@ -15,8 +15,9 @@ namespace NodeController.GUI {
 
         public override void RefreshNodeValues(NodeData data) {
             isEnabled = data.CanModifyOffset();
-            if (isEnabled)
+            if (isEnabled) {
                 value = data.CornerOffset;
+            }
         }
 
         public override void RefreshSegmentEndValues(SegmentEndData data) {

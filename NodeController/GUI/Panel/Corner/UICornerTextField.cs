@@ -11,7 +11,7 @@ namespace NodeController.GUI {
         //UIResetButton resetButton_;
         UIPanelBase root_;
         bool started_ = false;
-        bool refreshing_ = false;
+        bool refreshing_ = false, refreshingValues = false;
 
         public override string ToString() => GetType().Name + $"({name})";
 
@@ -25,6 +25,21 @@ namespace NodeController.GUI {
                     _postfix = value;
             }
         }
+
+        public string HintHotkeys {
+            get {
+                string ret = "mousewheel => increment.\n" + "shift + mousewheel => large increment.";
+                if (Mirror != null) {
+                    ret += "\n";
+                    ret += "control + mousewheel => link corresponding field\n";
+                    ret += "control + alt + mousewheel => invert link correspinding field";
+                }
+                return ret;
+            }
+        }
+
+        public string HintDescription { get; set; }
+
 
         public delegate float GetDataFunc();
         public delegate bool IsMixedFunc();
@@ -58,7 +73,6 @@ namespace NodeController.GUI {
             textScale = 0.9f;
             useDropShadow = true;
             text = "0";
-            tooltip = "mousewheal => increment.\n" + "shift + mousewheal => large increment.";
 
             submitOnFocusLost = true;
             selectOnFocus = true;
@@ -70,7 +84,7 @@ namespace NodeController.GUI {
 
         Color GetColor() {
             if (containsMouse) {
-                if (LockMode || InvertLockMode)
+                if (Mirror !=null && LockMode || InvertLockMode)
                     return Color.green;
                 else
                     return Color.white;
@@ -227,13 +241,20 @@ namespace NodeController.GUI {
             if (containsFocus)
                 return;
             try {
-                refreshing_ = true;
-                Value = GetData();
-                if (IsMixed != null)
-                    MixedValues = IsMixed();
+                refreshingValues = refreshing_ = true;
+                if (isEnabled && isVisible) {
+                    Value = GetData();
+                    if (IsMixed != null) {
+                        bool mixed = IsMixed();
+                        if (mixed != MixedValues) {
+                            MixedValues = IsMixed();
+                            Invalidate();
+                        }
+                    }
+                }
             }
             finally {
-                refreshing_ = false;
+                refreshingValues = refreshing_ = false;
             }
         }
 

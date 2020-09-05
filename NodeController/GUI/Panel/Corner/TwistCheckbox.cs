@@ -9,6 +9,10 @@ namespace NodeController.GUI {
         public static TwistCheckbox Instance { get; private set; }
         public UISprite UncheckedSprite, CheckedSprite;
 
+        public string HintHotkeys => null;
+        public string HintDescription =>
+            "twists the segment end sideways where it meets a sloped intersection so that it matches the slope of the intersection.";
+
         public override void Awake() {
             base.Awake();
             Instance = this;
@@ -30,15 +34,21 @@ namespace NodeController.GUI {
             label.text = "Twist segment ends";
             label.textScale = 0.9f;
             label.relativePosition = new Vector2(sprite.width + 5f, (height - label.height) / 2 + 1);
-            tooltip = "If turned off, junctions could have slope. Useful for highway intersections.\n" +
-                "the two bigger segments should have flat junctions turned off. minor roads joining a tilted junction might need some manual sideway twisting.";
 
-            eventCheckChanged += (component, value) => {
-                if (refreshing_)
-                    return;
-                Apply();
-            };
+            eventCheckChanged += OnCheckChanged;
         }
+
+        void OnCheckChanged(UIComponent component, bool value) {
+            if (refreshing_)
+                return;
+            Apply();
+        }
+
+        public override void OnDestroy() {
+            eventCheckChanged -= OnCheckChanged;
+            base.OnDestroy();
+        }
+
 
         UIPanelBase root_;
         public override void Start() {

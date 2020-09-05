@@ -31,5 +31,10 @@ namespace NodeController.GUI {
         /// however it does not resize panel, change elements visibility, or invalidate.
         /// </summary>
         void RefreshValues();
+
+
+        string HintHotkeys { get; }
+
+        string HintDescription { get; }
     }
 }

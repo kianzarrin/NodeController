@@ -313,6 +313,30 @@ namespace NodeController.DecompiledSources {
                 cornerPos.y += (float)instance.m_nodes.m_buffer[(int)startNodeID].m_heightOffset * 0.015625f;
             }
         }
-
+        public static void CalculateMiddlePoints(Vector3 startPos, Vector3 startDir, Vector3 endPos, Vector3 endDir, bool smoothStart, bool smoothEnd, out Vector3 middlePos1, out Vector3 middlePos2, out float distance) {
+            if (NetSegment.IsStraight(startPos, startDir, endPos, endDir, out distance)) {
+                middlePos1 = startPos + startDir * (distance * ((!smoothStart) ? 0.15f : 0.3f));
+                middlePos2 = endPos + endDir * (distance * ((!smoothEnd) ? 0.15f : 0.3f));
+            } else {
+                float dotxz = VectorUtils.DotXZ(startDir, endDir);
+                if (dotxz >= -0.999f &&
+                    Line2.Intersect(
+                        VectorUtils.XZ(startPos),
+                        VectorUtils.XZ(startPos + startDir),
+                        VectorUtils.XZ(endPos),
+                        VectorUtils.XZ(endPos + endDir),
+                        out float u,
+                        out float v)) {
+                    u = Mathf.Clamp(u, distance * 0.1f, distance);
+                    v = Mathf.Clamp(v, distance * 0.1f, distance);
+                    float uv = u + v;
+                    middlePos1 = startPos + startDir * Mathf.Min(u, uv * 0.3f);
+                    middlePos2 = endPos + endDir * Mathf.Min(v, uv * 0.3f);
+                } else {
+                    middlePos1 = startPos + startDir * (distance * 0.3f);
+                    middlePos2 = endPos + endDir * (distance * 0.3f);
+                }
+            }
+        }
     }
 }

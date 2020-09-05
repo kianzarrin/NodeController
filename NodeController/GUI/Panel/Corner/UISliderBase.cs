@@ -12,10 +12,14 @@ namespace NodeController.GUI {
 
         public float ScrollWheelAmount;
 
+        public string HintHotkeys => "mousewheel => increment\nshift+mousewheel => large increment";
+
+        public string HintDescription => null;
+
         public override void Start() {
             base.Start();
             Root = GetRootContainer() as UIPanelBase;
-
+            tooltip = null;
             stepSize = 0.5f;
             ScrollWheelAmount = 0.5f;
             //Log.Debug($"UISliderBase.Start() was called " +
@@ -28,9 +32,14 @@ namespace NodeController.GUI {
 
         protected override void OnValueChanged() {
             base.OnValueChanged();
-            if (!Refreshing)
+            if (RefreshingValues && Root?.GetData() is NodeData nodeData) {
+                bool mixed = MixedValues;
+                RefreshNode(nodeData);
+                if(mixed != MixedValues)
+                    Invalidate();
+            }else if (!Refreshing)
                 Apply();
-            UpdateTooltip();
+            //UpdateTooltip();
         }
 
         protected override void OnMouseWheel(UIMouseEventParameter p) {
@@ -105,9 +114,10 @@ namespace NodeController.GUI {
         /// </summary>
         public abstract void RefreshSegmentEndValues(SegmentEndData data);
 
+        bool RefreshingValues;
         public virtual void RefreshValues() {
             try {
-                Refreshing = true;
+                RefreshingValues = Refreshing = true;
                 INetworkData data = Root?.GetData();
                 if (data is SegmentEndData segmentEndData) {
                     RefreshSegmentEndValues(segmentEndData);
@@ -116,7 +126,7 @@ namespace NodeController.GUI {
                 } else Disable();
            }
             finally {
-                Refreshing = false;
+                RefreshingValues = Refreshing = false;
             }
         }
 

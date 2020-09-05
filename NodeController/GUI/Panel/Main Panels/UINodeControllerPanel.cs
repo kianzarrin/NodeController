@@ -39,6 +39,10 @@ namespace NodeController.GUI {
             base.Awake();
             Instance = this;
         }
+        public override void OnDestroy() {
+            Instance = null;
+            base.OnDestroy();
+        }
 
         public override void Start() {
             base.Start();
@@ -59,7 +63,7 @@ namespace NodeController.GUI {
             const bool extendedSlider = true;
             { // offset
                 offsetPanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
-                label.text = "Corner smoothness";
+                label.text = "Corner offset";
                 label.tooltip = "Adjusts Corner offset for smooth junction transition.";
                 if (extendedSlider) panel0.width += CELL_SIZE2.x;
                 var slider_ = panel0.AddUIComponent<UIOffsetSlider>();
@@ -147,8 +151,8 @@ namespace NodeController.GUI {
             }
 
             MakeHintBox();
-            Disable();
             AutoSize2 = true;
+            Close();
         }
 
         public void ShowNode(ushort nodeID) {
@@ -166,6 +170,7 @@ namespace NodeController.GUI {
         }
 
         public override void Refresh() {
+            Log.Debug("UINodeControllerPanel.Refresh() called offsetPanel_=" + offsetPanel_ ?? "null");
             offsetPanel_.isVisible = NodeData?.CanModifyOffset() ?? false;
             slopePanel_.isVisible = stretchPanel_.isVisible = embankmentPanel_.isVisible =
                  NodeData?.CanMassEditNodeCorners() ?? false;

@@ -172,11 +172,12 @@ namespace NodeController {
 
             SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
                 var activePanel = UIPanelBase.ActivePanel;
-                if (activePanel.NetworkType == NetworkTypeT.Node && NodeID == SelectedNodeID) {
-                    activePanel.RefreshValues();
-                }
-                if (activePanel.NetworkType == NetworkTypeT.SegmentEnd && this.IsSelected()) {
-                    activePanel.RefreshValues();
+                if (activePanel != null) {
+                    if (activePanel.NetworkType == NetworkTypeT.Node && NodeID == SelectedNodeID) {
+                        activePanel.RefreshValues();
+                    }else if (activePanel.NetworkType == NetworkTypeT.SegmentEnd && this.IsSelected()) {
+                        activePanel.RefreshValues();
+                    }
                 }
             });
             insideAfterCalcualte_ = false;

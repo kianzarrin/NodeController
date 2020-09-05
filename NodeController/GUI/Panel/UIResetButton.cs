@@ -5,9 +5,18 @@ namespace NodeController.GUI {
     using static KianCommons.HelpersExtensions;
     using KianCommons;
 
-
     public class UIResetButton : UIButton, IDataControllerUI {
         public static UIResetButton Instance { get; private set; }
+        public string HintHotkeys => null;
+
+        public string HintDescription {
+            get {
+                string ret = "Clears all customization. ";
+                if (root_.NetworkType == NetworkTypeT.Node)
+                    ret += "including segment ends.";
+                return ret;
+            }
+        }
 
         UIPanelBase root_;
         public override void Awake() {
@@ -27,14 +36,11 @@ namespace NodeController.GUI {
             canFocus = false;
 
             text = "Reset to default";
-            tooltip = "Clears all customization.";
         }
 
         public override void Start() {
             base.Start();
             root_ = GetRootContainer() as UIPanelBase;
-            if (root_.NetworkType == NetworkTypeT.Node)
-                tooltip += "including segment ends.";
         }
 
         protected override void OnClick(UIMouseEventParameter p) {

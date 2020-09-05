@@ -39,7 +39,8 @@ namespace NodeController.Tool {
         private CursorInfo CursorInsert, CursorInsertCrossing,
             CursorEdit, CursorSearching, CursorError, CursorMoveCorner;
 
-        ref SegmentEndData SelectedSegmentEndData => ref SegmentEndManager.Instance.GetAt(segmentID: SelectedSegmentID, nodeID: SelectedNodeID);
+        ref SegmentEndData SelectedSegmentEndData => ref SegmentEndManager.Instance
+            .GetAt(segmentID: SelectedSegmentID, nodeID: SelectedNodeID);
 
         protected override void Awake() {
             Log.Debug("NodeControllerTool.Awake() called");
@@ -118,11 +119,18 @@ namespace NodeController.Tool {
 
             Button?.Hide();
             Destroy(Button);
-            NCPanel?.Hide();
-            SECPanel?.Hide();
-            Destroy(SECPanel);
-            Destroy(NCPanel);
+            if (NCPanel) {
+                NCPanel?.Hide();
+                NCPanel.enabled = false;
+                Destroy(NCPanel);
+            }
+            if (SECPanel) {
+                SECPanel.Hide();
+                SECPanel.enabled = false;
+                Destroy(SECPanel);
+            }
             base.OnDestroy();
+
         }
 
         protected override void OnEnable() {
@@ -130,10 +138,6 @@ namespace NodeController.Tool {
             Log.Debug(Button?.ToString());
             base.OnEnable();
             Button?.Activate();
-            SECPanel?.Enable();
-            NCPanel?.Enable();
-            NCPanel?.Close();
-            SECPanel?.Close();
             SelectedNodeID = 0;
             SelectedSegmentID = 0;
             handleHovered_ = false;
@@ -142,14 +146,13 @@ namespace NodeController.Tool {
         protected override void OnDisable() {
             Log.Debug($"NodeControllerTool.OnDisable()");
             ToolCursor = null;
+            Hint = null;
             base.OnDisable();
             Button?.Deactivate();
             SelectedNodeID = 0;
             SelectedSegmentID = 0;
             NCPanel?.Close();
-            NCPanel?.Disable();
             SECPanel?.Close();
-            SECPanel?.Disable();
         }
 
         void DragCorner() {
@@ -206,6 +209,73 @@ namespace NodeController.Tool {
             finally {
                 Monitor.Exit(this.m_cacheLock);
             }
+        }
+
+
+        public string GetHint() {
+            // A)modify node: green pen
+            // B)insert middle (highway) green node
+            // C)insert pedestrian : green pedestrian
+            // D)searching(mouse is not hovering over road) grey geerbox
+            // E)fail insert red geerbox
+            // F)fail modify (end node) red geerbox.
+            // G)inside panel: normal
+
+            if (!this.enabled || !m_mouseRayValid || handleHovered_) // G
+                return null;
+
+            if (CornerFocusMode)
+                return "drag => move corner\n"+"control + drag => move both corners";
+
+            bool fail = false;
+            bool insert = false;
+            bool searching = false;
+            bool edit = false;
+            bool crossing = false;
+
+            ToolErrors error = m_cachedErrors;
+            if (IsHoverValid && m_prefab != null) {
+                NetTool.ControlPoint controlPoint = m_cachedControlPoint;
+                ushort nodeID = controlPoint.m_node;
+                edit = nodeID != 0;
+                insert = controlPoint.m_segment != 0;
+                if (edit) {
+                    fail = !NodeData.IsSupported(nodeID);
+                } else if (AltIsPressed) {
+                    searching = true;
+                } else if (insert) {
+                    bool isRoad = !NetUtil.IsCSUR(m_prefab);
+                    error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
+                    fail = error != ToolErrors.None || !isRoad;
+                    crossing = m_prefab.CountPedestrianLanes() >= 2;
+                }
+            } else
+                searching = true;
+            string hotkeys = "click to select/insert node\nalt click to select segment end\n";
+
+            if (searching)
+                return "hover over a network to select/insert node";
+
+            if (fail) {
+                string ret = "cannot insert node here ";
+                if (m_cachedErrors != ToolErrors.None)
+                    ret += "because of " + error;
+                else 
+                    ret += $"because cannot insert node on a CSUR road";
+                return ret;
+            }
+
+            if (insert && crossing)
+                return "click => insert crossing\n" + "alt + click select => segment end";
+
+
+            if (insert && !crossing)
+                return "click => insert new middle node\n" + "alt + click select => segment end";
+
+            if (edit)
+                return "click => select node\n" + "alt + click select => segment end";
+
+            return null; // race condition
         }
 
         CursorInfo GetCursor() {
@@ -266,9 +336,12 @@ namespace NodeController.Tool {
             return null; // race condition
         }
 
+        public string Hint;
+
         protected override void OnToolUpdate() {
             base.OnToolUpdate();
             ToolCursor = GetCursor();
+            Hint = GetHint();
 
             while (!Monitor.TryEnter(this.m_cacheLock, SimulationManager.SYNCHRONIZE_TIMEOUT)) {
             }

@@ -1,9 +1,12 @@
-- update segment should retain data (fixed)
-- text fields in node controller panel (done)
-- bug: sliders don't show for end node. (fixed)
-
 - compelete hint box.
 - round values.
+- slope junction checkbox.
+- ignore NetInfo.twistSegmentEnd. always on by default.
+
+- options for default universal behaviours:
+    - limit dir.y to 2
+    - sloped junction
+    - auto embankment for curved segments.
 
 - open and close left and right table.
 - new Corner table organisation

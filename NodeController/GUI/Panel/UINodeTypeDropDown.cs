@@ -7,11 +7,9 @@ namespace NodeController.GUI {
     using KianCommons.UI;
 
     public class UINodeTypeDropDown : UIDropDown, IDataControllerUI{
-        public static UINodeTypeDropDown Instance { get; private set; }
-
+        bool awakened_ = false;
         public override void Awake() {
             base.Awake();
-            Instance = this;
             atlas = TextureUtil.GetAtlas("Ingame");
             size = new Vector2(120f, 30);
             listBackground = "GenericPanelLight";
@@ -58,14 +56,18 @@ namespace NodeController.GUI {
             button.zOrder = 0;
             button.textScale = 0.8f;
 
-            eventSizeChanged += new PropertyChangedEventHandler<Vector2>((c, t) => {
-                button.size = t;
-                listWidth = (int)t.x; // TODO put in override.
-            });
-
             foreach (var item in Enum.GetNames(typeof(NodeTypeT))) {
                 AddItem(item);
             }
+            listWidth = (int)width;
+            awakened_ = true;
+        }
+
+        protected override void OnSizeChanged() {
+            base.OnSizeChanged();
+            if (!awakened_) return;
+            triggerButton.size = size;
+            listWidth = (int)width;
         }
 
         UINodeControllerPanel root_;
@@ -78,6 +80,15 @@ namespace NodeController.GUI {
         public NodeTypeT SelectedItem {
             get => (NodeTypeT)String2Enum<NodeTypeT>(selectedValue);
             set => selectedValue = value.ToString();
+        }
+
+        public string HintHotkeys => null;
+
+        public string HintDescription {
+            get {
+                var data = root_?.GetData() as NodeData;
+                return data?.ToolTip(data.NodeType);
+            }
         }
 
         protected override void OnSelectedIndexChanged() {
@@ -124,7 +135,6 @@ namespace NodeController.GUI {
 
             Repopulate();
             SelectedItem = data.NodeType;
-            tooltip = data.ToolTip(data.NodeType);
 
             parent.isVisible = isVisible = triggerButton.isEnabled = this.isEnabled = items.Length > 1;
             parent.Invalidate();

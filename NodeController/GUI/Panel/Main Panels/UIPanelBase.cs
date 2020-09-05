@@ -29,9 +29,14 @@ namespace NodeController.GUI {
         UILabel lblCaption_;
         UISprite sprite_;
         UIDragHandle dragHandle_;
+        bool Started => sprite_ != null;
 
         public abstract NetworkTypeT NetworkType { get; }
-                
+
+        public string HintHotkeys => throw new NotImplementedException();
+
+        public string HintDescription => throw new NotImplementedException();
+
         /// <summary>
         /// if data id is 0, returns null. otherwise calls *Manager.GetORCreateData(...)
         /// </summary>
@@ -71,7 +76,6 @@ namespace NodeController.GUI {
                 sprite_.atlas = TextureUtil.GetAtlas(NodeControllerButton.AtlasName);
                 sprite_.spriteName = NodeControllerButton.NodeControllerIconActive;
             }
-            Disable();
         }
 
         protected virtual UIAutoSizePanel AddPanel() {
@@ -130,22 +134,50 @@ namespace NodeController.GUI {
             }
         }
 
+        public override void OnEnable() {
+            Log.Debug($"UIPanelBase.OnEnable called for {GetType().Name} V{this.VersionOf()} at\n " + Environment.StackTrace);
+            base.OnEnable();
+        }
+
+        public override void OnDisable() {
+            Log.Debug($"UIPanelBase.OnDisable called for {GetType().Name} V{this.VersionOf()}at\n " + Environment.StackTrace);
+            base.OnDisable();
+        }
+
+        public override void OnDestroy() {
+            Log.Debug($"UIPanelBase.OnDestroy called for {GetType().Name} V{this.VersionOf()}at\n " + Environment.StackTrace);
+            Close();
+            gameObject.SetActive(false);
+            base.OnDestroy();
+            if (this) {
+                Log.Error($"Failed to destroy object {GetType().Name} V{this.VersionOf()}");
+            } else {
+                Log.Debug($"Sucessfully destroyed object {GetType().Name} V{this.VersionOf()}");
+            }
+        }
+
+        // base.Open and base.Closed should be called at the end of Show()/Close()
         public virtual void Close() {
+            if (!Started)
+                return;
             Unfocus();// unfocus text fields
             Hide();
-            Disable();
+            //gameObject.SetActive(false);
             if (ActivePanel == this)
                 ActivePanel = null;
         }
 
+        // base.Open and base.Closed should be called at the end of Display/Close
         public virtual void Open() {
             if(ActivePanel!=this)
                 ActivePanel?.Close();
-            Unfocus(); // preven selected text field value to get copied when I select a new panel
+            gameObject.SetActive(true);
             Enable();
+            Unfocus(); // preven selected text field value to get copied when I select a new panel
             Show();
             ActivePanel = this;
             Refresh();
+            Log.Debug($"UIPanelBase.Open(): isEnabled = {isEnabled} for {GetType().Name} V{this.VersionOf()}");
         }
 
         public HintBox Hintbox;
