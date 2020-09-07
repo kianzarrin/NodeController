@@ -123,7 +123,7 @@ namespace NodeController.GUI {
             float x = spriteEndX + 0.5f * (dragHandle_.width - spriteEndX - lblCaption_.width);
             lblCaption_.relativePosition = new Vector2(x, 14);
 
-            Hintbox?.Refresh();
+            Hintbox?.RefreshValues();
             Invalidate();
         }
 
@@ -134,32 +134,33 @@ namespace NodeController.GUI {
             }
         }
 
-        public override void OnEnable() {
-            Log.Debug($"UIPanelBase.OnEnable called for {GetType().Name} V{this.VersionOf()} at\n " + Environment.StackTrace);
-            base.OnEnable();
-        }
+        //public override void OnEnable() {
+        //    Log.Debug($"UIPanelBase.OnEnable called for {GetType().Name} V{this.VersionOf()} at\n " + Environment.StackTrace);
+        //    base.OnEnable();
+        //}
 
-        public override void OnDisable() {
-            Log.Debug($"UIPanelBase.OnDisable called for {GetType().Name} V{this.VersionOf()}at\n " + Environment.StackTrace);
-            base.OnDisable();
-        }
+        //public override void OnDisable() {
+        //    Log.Debug($"UIPanelBase.OnDisable called for {GetType().Name} V{this.VersionOf()}at\n " + Environment.StackTrace);
+        //    base.OnDisable();
+        //}
 
         public override void OnDestroy() {
             Log.Debug($"UIPanelBase.OnDestroy called for {GetType().Name} V{this.VersionOf()}at\n " + Environment.StackTrace);
             Close();
             gameObject.SetActive(false);
             base.OnDestroy();
-            if (this) {
-                Log.Error($"Failed to destroy object {GetType().Name} V{this.VersionOf()}");
-            } else {
-                Log.Debug($"Sucessfully destroyed object {GetType().Name} V{this.VersionOf()}");
-            }
+            //if (this) {
+            //    Log.Error($"Failed to destroy object {GetType().Name} V{this.VersionOf()}");
+            //} else {
+            //    Log.Debug($"Sucessfully destroyed object {GetType().Name} V{this.VersionOf()}");
+            //}
         }
 
         // base.Open and base.Closed should be called at the end of Show()/Close()
         public virtual void Close() {
             if (!Started)
                 return;
+            Disable(); //Disable before unfocus to prevent OnSubmit from text fields
             Unfocus();// unfocus text fields
             Hide();
             //gameObject.SetActive(false);
@@ -171,9 +172,9 @@ namespace NodeController.GUI {
         public virtual void Open() {
             if(ActivePanel!=this)
                 ActivePanel?.Close();
-            gameObject.SetActive(true);
-            Enable();
+            //gameObject.SetActive(true);
             Unfocus(); // preven selected text field value to get copied when I select a new panel
+            Enable(); // enable after unfocus to prevent OnSubmit from text fields
             Show();
             ActivePanel = this;
             Refresh();

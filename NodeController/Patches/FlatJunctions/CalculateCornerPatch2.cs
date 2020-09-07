@@ -64,8 +64,8 @@ namespace NodeController.Patches {
                     if (data != null)
                         twist = data.Twist;
                     else
-                        twist = segmentID.ToSegment().Info.m_twistSegmentEnds
-                            || segmentID.ToSegment().Info.m_flatJunctions; // work around: most roads don't have this. 
+                        twist = segmentID.ToSegment().Info.m_flatJunctions;
+                        //twist |= segmentID.ToSegment().Info.m_flatJunctions; 
                     if (twist && neighbourslope) {
                         FixCornerPosMinor(
                             nodePos: nodeID.ToNode().m_position,

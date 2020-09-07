@@ -6,6 +6,21 @@ namespace NodeController.GUI {
             maxValue = 180;
         }
 
+        public override void ResetToDefaultValue() {
+            var data = Root?.GetData();
+            if (data == null) return;
+
+            if (data is SegmentEndData segmentEndData) {
+                segmentEndData.DeltaSlopeAngleDeg = 0;
+            } else if (data is NodeData nodeData) {
+                foreach (var segEndData in nodeData.IterateSegmentEndDatas()) {
+                    segEndData.DeltaSlopeAngleDeg = 0;
+                }
+            }
+            data.Update();
+            Root.Refresh();
+        }
+
         public override void ApplyNode(NodeData data)
             => data.SlopeAngleDeg = value;
 

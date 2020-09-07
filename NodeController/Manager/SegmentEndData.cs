@@ -10,6 +10,7 @@ namespace NodeController {
     using NodeController.GUI;
     using NodeController.Tool;
     using System;
+    using System.Diagnostics;
     using System.Runtime.Serialization;
     using UnityEngine;
     using CSURUtil = Util.CSURUtil;
@@ -62,7 +63,7 @@ namespace NodeController {
         // defaults
         public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(NodeID);
         public bool DefaultFlatJunctions => Info.m_flatJunctions;
-        public bool DefaultTwist => Info.m_twistSegmentEnds || Info.m_flatJunctions;
+        public bool DefaultTwist => Info.m_flatJunctions /*|| Info.m_twistSegmentEnds*/ ;
         public NetSegment.Flags DefaultFlags;
 
         // cache
@@ -70,8 +71,6 @@ namespace NodeController {
         public float CurveRaduis0;
         public int PedestrianLaneCount;
         public float CachedSuperElevationDeg; // rightward rotation of the road when going away from the junction.
-
-
 
         // Configurable
         public bool NoCrossings;
@@ -138,7 +137,12 @@ namespace NodeController {
             }
         }
 
-        public void Update() => NetManager.instance.UpdateNode(NodeID);
+        public void Update() {
+            var st = new StackTrace(fNeedFileInfo: true);
+            Log.Debug(this + "\n" + st.ToStringPretty());
+
+            NetManager.instance.UpdateNode(NodeID);
+        }
 
         public void RefreshAndUpdate() {
             Refresh();
@@ -292,6 +296,11 @@ namespace NodeController {
                 }
             }
 
+            public Vector3 GetTransformedDir0() {
+                CalculateTransformVectors(Dir0, Left, out var outward, out var forward);
+                return ReverseTransformCoordinats(Dir0, outward, Vector3.up, forward);
+            }
+
             public float DirLength {
                 get => ((Vector3)CachedDir).magnitude;
                 set {
@@ -362,7 +371,6 @@ namespace NodeController {
             var segEnd1 = SegmentEndManager.Instance.GetOrCreate(segmentID1, NodeID);
             var segEnd2 = SegmentEndManager.Instance.GetOrCreate(segmentID2, NodeID);
 
-            Log.Debug($"{this}.CanModifyTwist() flatjunctions: {segEnd1.FlatJunctions} {segEnd2.FlatJunctions}");
             bool slope1 = !segEnd1.FlatJunctions;
             bool slope2 = !segEnd2.FlatJunctions;
             return slope1 || slope2;

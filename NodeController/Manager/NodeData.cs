@@ -12,6 +12,7 @@ namespace NodeController {
     using static KianCommons.HelpersExtensions;
     using KianCommons.Math;
     using NodeController.Tool;
+    using System.Diagnostics;
 
     public enum NodeTypeT {
         Middle,
@@ -334,7 +335,12 @@ namespace NodeController {
             }
         }
 
-        public void Update() => NetManager.instance.UpdateNode(NodeID);
+        public void Update() {
+            var st = new StackTrace(fNeedFileInfo: true);
+            Log.Debug(this + "\n" + st.ToStringPretty());
+            
+            NetManager.instance.UpdateNode(NodeID);
+        }
 
         public void RefreshAndUpdate() {
             Refresh();
@@ -369,7 +375,7 @@ namespace NodeController {
             NodeType = DefaultNodeType;
             foreach (var segEnd in IterateSegmentEndDatas())
                 segEnd?.ResetToDefault();
-            NetManager.instance.UpdateNode(NodeID);
+            Update();
         }
 
         public static bool IsSupported(ushort nodeID) {

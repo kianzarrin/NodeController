@@ -393,9 +393,8 @@ namespace NodeController.GUI {
             llock.Mirror = rlock; rlock.Mirror = llock;
         }
 
-        public void ShowSegmentEnd(ushort segmentID, ushort nodeID) {
+        public void Display(ushort segmentID, ushort nodeID) {
             if (Instance != this) Log.Error("Assertion Failed: Instance == this");
-            gameObject.SetActive(true);
             Unfocus();
             SegmentEndManager.Instance.UpdateData(SegmentID, StartNode); // update previous segment data if any.
             SegmentID = segmentID;

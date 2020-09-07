@@ -68,37 +68,14 @@ namespace NodeController.GUI {
         /// <summary>
         /// Controller hotkeys
         /// </summary>
-        public string Hint1 {
-            get => hint1_;
-            set {
-                if (hint1_ != value) {
-                    hint1_ = value;
-                    Refresh();
-                }
-            }
-        }
+        public string Hint1;
 
         // Controller description
-        public string Hint2 {
-            get => hint2_;
-            set {
-                if (hint2_ != value) {
-                    hint2_ = value;
-                    Refresh();
-                }
-            }
-        }
+        public string Hint2;
 
         // tool 
-        public string Hint3 {
-            get => hint3_;
-            set {
-                if (hint3_ != value) {
-                    hint3_ = value;
-                    Refresh();
-                }
-            }
-        }
+        public string Hint3;
+
 
         public override void Update() {
             base.Update();
@@ -110,6 +87,8 @@ namespace NodeController.GUI {
 
                 if (root_ == null || !root_.isVisible)
                     return;
+                if (containsMouse)
+                    return; // prevent flickering on mouse hover
 
                 string h1 = null, h2 = null;
                 foreach (IDataControllerUI c in controlls_) {
@@ -120,17 +99,24 @@ namespace NodeController.GUI {
                     }
                 }
                 // TODO get h3 from tool.
+                var prev_h1 = Hint1;
+                var prev_h2 = Hint2;
+                var prev_h3 = Hint3;
+
                 Hint1 = h1;
                 Hint2 = h2;
                 Hint3 = Tool?.Hint;
-                //Refresh();
-                //Log.DebugWait("update sucessfull.","P2:"+rootname);
-            }catch(Exception e) {
+
+                if (Hint1 != prev_h1 || Hint2 != prev_h2 || Hint3 != prev_h3) {
+                    RefreshValues();
+                }
+            }
+            catch(Exception e) {
                 Hint1 = e.ToString();
             }
         }
 
-        public void Refresh() {
+        public void RefreshValues() {
             //Log.Debug($"Refresh called" + Environment.StackTrace);
             bool h1 = !Hint1.IsNullOrWhiteSpace();
             bool h2 = !Hint2.IsNullOrWhiteSpace();
@@ -145,7 +131,7 @@ namespace NodeController.GUI {
             if (h3) t += Hint3;
 
             text = t;
-            isVisible = h1 || h2 || h3;
+            isVisible = t != "";
         }
     }
 }

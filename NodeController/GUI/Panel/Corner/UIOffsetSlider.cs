@@ -5,6 +5,19 @@ namespace NodeController.GUI {
         public override void ApplyNode(NodeData data) =>
             data.CornerOffset = value;
 
+        public override void ResetToDefaultValue() {
+            var data = Root?.GetData();
+            if (data is SegmentEndData segmentEndData) {
+                value = segmentEndData.DefaultCornerOffset;
+            } else if (data is NodeData nodeData) {
+                foreach (var segEndData in nodeData.IterateSegmentEndDatas()) {
+                    segEndData.CornerOffset = segEndData.DefaultCornerOffset;
+                }
+                data?.Update();
+                Root?.Refresh();
+            }
+        }
+
         public override void ApplySegmentEnd(SegmentEndData data) =>
             data.CornerOffset = value;
 

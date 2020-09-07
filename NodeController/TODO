@@ -1,18 +1,24 @@
-- compelete hint box.
-- round values.
+I unset stepSize = 0 to see if that fixes anything.
+
+
+- fix step sizes (done).
+- del => reset/0 (done)
+- ignore NetInfo.twistSegmentEnd. always on by default. (done)
+
+- Text fields should ignore arrow hotkeys if selected.
+
 - slope junction checkbox.
-- ignore NetInfo.twistSegmentEnd. always on by default.
 
 - options for default universal behaviours:
     - limit dir.y to 2
     - sloped junction
     - auto embankment for curved segments.
+    - if segment count=2, only one side should have zebra crossing by default
 
 - open and close left and right table.
 - new Corner table organisation
 
 - test selecting nodes on top of another road (FRT + anarchy +  moveIT). (can't reproduce)
-
 
 - corner offset to increase chances of train track connection.
 - fix the orientation of asym road

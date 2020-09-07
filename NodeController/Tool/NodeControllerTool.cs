@@ -119,16 +119,8 @@ namespace NodeController.Tool {
 
             Button?.Hide();
             Destroy(Button);
-            if (NCPanel) {
-                NCPanel?.Hide();
-                NCPanel.enabled = false;
-                Destroy(NCPanel);
-            }
-            if (SECPanel) {
-                SECPanel.Hide();
-                SECPanel.enabled = false;
-                Destroy(SECPanel);
-            }
+            Destroy(NCPanel);
+            Destroy(SECPanel);
             base.OnDestroy();
 
         }
@@ -213,15 +205,14 @@ namespace NodeController.Tool {
 
 
         public string GetHint() {
-            // A)modify node: green pen
-            // B)insert middle (highway) green node
-            // C)insert pedestrian : green pedestrian
-            // D)searching(mouse is not hovering over road) grey geerbox
-            // E)fail insert red geerbox
-            // F)fail modify (end node) red geerbox.
-            // G)inside panel: normal
+            // A)modify node: 
+            // B)insert middle (highway) 
+            // C)insert pedestrian
+            // D)searching(mouse is not hovering over road) 
+            // E)fail insert 
+            // G)inside panel 
 
-            if (!this.enabled || !m_mouseRayValid || handleHovered_) // G
+            if (!this.enabled || !m_mouseRayValid || handleHovered_) 
                 return null;
 
             if (CornerFocusMode)
@@ -251,31 +242,30 @@ namespace NodeController.Tool {
                 }
             } else
                 searching = true;
-            string hotkeys = "click to select/insert node\nalt click to select segment end\n";
+
+            string ret = "";
 
             if (searching)
-                return "hover over a network to select/insert node";
-
-            if (fail) {
-                string ret = "cannot insert node here ";
+                ret = "hover over a network to select/insert node";
+            else if (fail) {
+                ret = "alt + click => select segment end.\ncannot insert node here ";
                 if (m_cachedErrors != ToolErrors.None)
-                    ret += "because of " + error;
-                else 
-                    ret += $"because cannot insert node on a CSUR road";
-                return ret;
-            }
+                    ret = "alt + click => select segment end.\ncannot insert node here because of " + error;
+                else
+                    ret += "alt + click => select segment end.\ncannot insert node here ";
+            } else if (insert && crossing)
+                ret = "click => insert crossing\n" + "alt + click select => segment end";
+            else if (insert && !crossing)
+                ret = "click => insert new middle node\n" + "alt + click select => segment end";
+            else if (edit)
+                ret = "click => select node\n" + "alt + click  => select segment end";
+            else
+                return null;
 
-            if (insert && crossing)
-                return "click => insert crossing\n" + "alt + click select => segment end";
+            if (ShouldDrawSigns())
+                ret += "\ncontrol => hide TMPE overlay";
 
-
-            if (insert && !crossing)
-                return "click => insert new middle node\n" + "alt + click select => segment end";
-
-            if (edit)
-                return "click => select node\n" + "alt + click select => segment end";
-
-            return null; // race condition
+            return ret;
         }
 
         CursorInfo GetCursor() {
@@ -341,7 +331,7 @@ namespace NodeController.Tool {
         protected override void OnToolUpdate() {
             base.OnToolUpdate();
             ToolCursor = GetCursor();
-            Hint = GetHint();
+            //Hint = GetHint();
 
             while (!Monitor.TryEnter(this.m_cacheLock, SimulationManager.SYNCHRONIZE_TIMEOUT)) {
             }
@@ -504,6 +494,15 @@ namespace NodeController.Tool {
             }
         }
 
+        /// <summary>
+        /// does not take into account the control key (useful for hint).
+        /// it takes into account the segment count, node type, and options state.
+        /// </summary>
+        bool ShouldDrawSigns() {
+            NodeData nodeData = NodeManager.Instance.buffer[SelectedNodeID];
+            return !Hide_TMPE_Overlay || (nodeData != null && nodeData.SegmentCount <= 2);
+        }
+
         bool handleHovered_;
         private void DrawSigns() {
             Vector3 camPos = Singleton<SimulationManager>.instance.m_simulationView.m_position;
@@ -516,9 +515,7 @@ namespace NodeController.Tool {
                         nodeData.NodeID, 0, camPos: ref camPos, out _);
                 }
             } else {
-                NodeData nodeData = NodeManager.Instance.buffer[SelectedNodeID];
-                bool draw = !Hide_TMPE_Overlay || (nodeData != null && nodeData.SegmentCount <= 2);
-                if (draw) {
+                if (ShouldDrawSigns()) {
                     TrafficRulesOverlay overlay =
                         new TrafficRulesOverlay(handleClick: true);
                     handleHovered_ = overlay.DrawSignHandles(
@@ -535,7 +532,7 @@ namespace NodeController.Tool {
                 if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)) {
                     SelectedSegmentID = HoveredSegmentId;
                     SelectedNodeID = HoveredNodeId;
-                    SECPanel.ShowSegmentEnd(
+                    SECPanel.Display(
                         segmentID: SelectedSegmentID,
                         nodeID: SelectedNodeID);
                 }
@@ -555,12 +552,12 @@ namespace NodeController.Tool {
                 if (SelectedNodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.End)) {
                     // for end node just show segment end panel.
                     SelectedSegmentID = SelectedNodeID.ToNode().GetFirstSegment();
-                    SECPanel.ShowSegmentEnd(
+                    SECPanel.Display(
                         segmentID: SelectedSegmentID,
                         nodeID: SelectedNodeID);
                 }
                 SelectedSegmentID = 0;
-                NCPanel.ShowNode(SelectedNodeID);
+                NCPanel.Display(SelectedNodeID);
             } else if (c.m_segment != 0) {
                 if (!NetUtil.IsCSUR(m_prefab)) {
                     SimulationManager.instance.AddAction(delegate () {
@@ -568,7 +565,7 @@ namespace NodeController.Tool {
                         if (nodeData != null) {
                             SelectedNodeID = nodeData.NodeID;
                             SelectedSegmentID = 0;
-                            NCPanel.ShowNode(SelectedNodeID);
+                            NCPanel.Display(SelectedNodeID);
                         }
                     });
                 }

@@ -7,10 +7,8 @@ namespace NodeController.GUI {
     public class StretchSlider : UISliderBase {
         public override void Start() {
             base.Start();
-            minValue = -100;
-            maxValue = 1000;
-            stepSize = 1;
-            ScrollWheelAmount = 1;
+            minValue = 0;
+            maxValue = +200;
         }
 
         public override void ApplyNode(NodeData data) 

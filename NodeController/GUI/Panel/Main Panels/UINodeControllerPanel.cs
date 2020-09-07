@@ -155,7 +155,7 @@ namespace NodeController.GUI {
             Close();
         }
 
-        public void ShowNode(ushort nodeID) {
+        public void Display(ushort nodeID) {
             Unfocus();
             NodeManager.Instance.UpdateData(NodeID); // refresh previous node data if any.
             NodeID = nodeID;

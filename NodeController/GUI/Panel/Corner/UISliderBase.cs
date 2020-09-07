@@ -10,25 +10,24 @@ namespace NodeController.GUI {
         //UIResetButton resetButton_ => Root?.ResetButton;
         protected UIPanelBase Root;
 
-        public float ScrollWheelAmount;
+        public override void Awake() {
+            base.Awake();
+            tooltip = null;
+            //stepSize = 0f; // no quantization while reading.
+        }
 
-        public string HintHotkeys => "mousewheel => increment\nshift+mousewheel => large increment";
+        public string HintHotkeys => "mousewheel/keypad arrows => increment/decrement\n" +
+            "shift + mousewheel/keypad arrows => fine increment/decrement\n" +
+            "del => reset to default";
 
         public string HintDescription => null;
 
         public override void Start() {
             base.Start();
             Root = GetRootContainer() as UIPanelBase;
-            tooltip = null;
-            stepSize = 0.5f;
-            ScrollWheelAmount = 0.5f;
-            //Log.Debug($"UISliderBase.Start() was called " +
-            //    $"this.version={this.VersionOf()} " +
-            //    $"root.version={root_.VersionOf()} " +
-            //    $"ncpanel.instance.version={UINodeControllerPanel.Instance.VersionOf()} " +
-            //    $"UINodeControllerPanel.version={typeof(UINodeControllerPanel).VersionOf()} "+
-            //    $"UISliderBase.version={typeof(UISliderBase).VersionOf()} ");
         }
+
+        #region Scroll/Drag step/rounding size
 
         protected override void OnValueChanged() {
             base.OnValueChanged();
@@ -42,11 +41,47 @@ namespace NodeController.GUI {
             //UpdateTooltip();
         }
 
+        public virtual bool CourseMode => ShiftIsPressed;
+
+        public float LargeScrollStep = 10;
+        public float CourseScrollStep = 2;
+        public float LargeDragStep = 5;
+        public float CourseDragStep = 1;
+        // step size is read step.
+
+        float ScrollStep => CourseMode ? CourseScrollStep : LargeScrollStep;
+        float DragStep => CourseMode ? CourseDragStep : LargeDragStep;
+
+#if false
         protected override void OnMouseWheel(UIMouseEventParameter p) {
-            scrollWheelAmount = ScrollWheelAmount;
-            if (ShiftIsPressed) scrollWheelAmount *= 10;
-            base.OnMouseWheel(p);
+            Log.Debug(GetType().Name + "\n" + Environment.StackTrace);
+            scrollWheelAmount = ScrollStep;
+            this.value += UISliderExt.Quantize(scrollWheelAmount * p.wheelDelta, scrollWheelAmount);
+            p.Use();
         }
+
+        protected override void OnMouseDown(UIMouseEventParameter p) {
+            base.OnMouseDown(p);
+            QuantizeValue(DragStep);
+        }
+
+        protected override void OnMouseMove(UIMouseEventParameter p) {
+            base.OnMouseMove(p);
+            QuantizeValue(DragStep);
+        }
+
+        protected override void OnKeyDown(UIKeyEventParameter p) {
+            scrollWheelAmount = ScrollStep;
+            base.OnKeyDown(p);
+            bool arrowkey = p.keycode == KeyCode.LeftArrow || p.keycode == KeyCode.RightArrow
+                || p.keycode == KeyCode.UpArrow || p.keycode == KeyCode.DownArrow;
+            if (arrowkey)
+                QuantizeValue(ScrollStep);
+            if (p.keycode == KeyCode.Delete)
+                ResetToDefaultValue();
+        }
+#endif
+        #endregion
 
         public void Apply() {
             Assert(!Refreshing);
@@ -70,7 +105,8 @@ namespace NodeController.GUI {
 
 
         public virtual string TooltipPostfix => "";
-        public bool TooltipVisible=true;
+
+        public virtual void ResetToDefaultValue() => value = 0;
 
         protected bool Refreshing = false;
         public virtual void Refresh() {
@@ -130,14 +166,15 @@ namespace NodeController.GUI {
             }
         }
 
-        public virtual void UpdateTooltip() {
-            if (TooltipVisible) {
-                tooltip = value.ToString() + TooltipPostfix;
-                RefreshTooltip();
-            } else {
-                tooltip = null;
-                RefreshTooltip();
-            }
-        }
+        //public bool TooltipVisible = false;
+        //public virtual void UpdateTooltip() {
+        //    if (TooltipVisible) {
+        //        tooltip = value.ToString() + TooltipPostfix;
+        //        RefreshTooltip();
+        //    } else {
+        //        tooltip = null;
+        //        RefreshTooltip();
+        //    }
+        //}
     }
 }

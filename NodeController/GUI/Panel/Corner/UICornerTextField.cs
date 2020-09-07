@@ -1,11 +1,11 @@
 namespace NodeController.GUI {
+    using ColossalFramework;
     using ColossalFramework.UI;
-    using UnityEngine;
-    using static KianCommons.HelpersExtensions;
     using KianCommons;
     using KianCommons.UI;
     using System;
-    using ColossalFramework;
+    using UnityEngine;
+    using static KianCommons.HelpersExtensions;
 
     public class UICornerTextField : UITextField, IDataControllerUI {
         //UIResetButton resetButton_;
@@ -28,17 +28,20 @@ namespace NodeController.GUI {
 
         public string HintHotkeys {
             get {
-                string ret = "mousewheel => increment.\n" + "shift + mousewheel => large increment.";
+                if (containsFocus)
+                    return null;
+                string ret = "mousewheel/keypad arrows => increment/decrement.\n" +
+                    "shift + mousewheel/keypad arrows => large increment/decrement.";
                 if (Mirror != null) {
                     ret += "\n";
-                    ret += "control + mousewheel => link corresponding field\n";
-                    ret += "control + alt + mousewheel => invert link correspinding field";
+                    ret += "control + mousewheel/keypad arrows => link corresponding text field\n";
+                    ret += "control + alt + mousewheel/keypad arrows => invert link correspinding text field";
                 }
                 return ret;
             }
         }
 
-        public string HintDescription { get; set; }
+        public string HintDescription { get; set; } = null;
 
 
         public delegate float GetDataFunc();
@@ -47,8 +50,11 @@ namespace NodeController.GUI {
 
         public IsMixedFunc IsMixed;
         public GetDataFunc GetData;
+        public GetDataFunc GetDefault;
         public SetDataFunc SetData;
         public UIComponent Container; // that will be set visible or invisible.
+        public void ResetToDefault() => Value = GetDefault != null ? GetDefault() : 0f;
+
 
         public UICornerTextField Mirror;
         public static bool LockMode => ControlIsPressed && !AltIsPressed;
@@ -84,7 +90,7 @@ namespace NodeController.GUI {
 
         Color GetColor() {
             if (containsMouse) {
-                if (Mirror !=null && LockMode || InvertLockMode)
+                if (Mirror != null && LockMode || InvertLockMode)
                     return Color.green;
                 else
                     return Color.white;
@@ -94,7 +100,7 @@ namespace NodeController.GUI {
                 if (LockMode)
                     return Color.green;
                 else if (InvertLockMode)
-                    return Color.Lerp(Color.blue, Color.cyan,0.3f);
+                    return Color.Lerp(Color.blue, Color.cyan, 0.3f);
             }
 
             if (containsFocus)
@@ -106,7 +112,7 @@ namespace NodeController.GUI {
         public override void Update() {
             base.Update();
             var c = GetColor();
-            if(!MixedValues)
+            if (!MixedValues)
                 color = Color.Lerp(c, Color.white, 0.70f);
             else {
                 color = Color.Lerp(c, Color.grey, 0.70f);
@@ -127,23 +133,58 @@ namespace NodeController.GUI {
             // change width to match parent?
         }
 
+        public float minStep_ => MouseWheelRatio * 0.005f; // round to this.
         public float MouseWheelRatio = 1; // set to 0.1 for dir vectors.
-        public float minStep_ => MouseWheelRatio * 0.01f; // round to this.
+        public bool CourseMode => ShiftIsPressed;
+        float ScrollStep => (CourseMode ? 0.2f : 1f) * MouseWheelRatio;
 
+#if false
         protected override void OnMouseWheel(UIMouseEventParameter p) {
             base.OnMouseWheel(p);
-            float ratio = HelpersExtensions.ShiftIsPressed ? 1f: 0.2f;
-            float delta = p.wheelDelta * ratio * MouseWheelRatio;
+            AddDelta(p.wheelDelta * ScrollStep, ScrollStep);
+        }
 
+        protected override void OnKeyDown(UIKeyEventParameter p) {
+            if (!containsFocus && base.builtinKeyNavigation) {
+                if (p.keycode == KeyCode.LeftArrow || p.keycode == KeyCode.DownArrow) {
+                    AddDelta(-ScrollStep, ScrollStep);
+                    p.Use();
+                    return;
+                } else if (p.keycode == KeyCode.RightArrow || p.keycode == KeyCode.UpArrow) {
+                    AddDelta(+ScrollStep, ScrollStep);
+                    p.Use();
+                    return;
+                } else if(p.keycode == KeyCode.Delete) {
+                    ResetToDefault();
+                    if (Mirror != null && LockMode)
+                        Mirror.ResetToDefault();
+                    p.Use();
+                    return;
+                }
+            }
+            base.OnKeyDown(p);
+        }
+#endif
+        /// <summary>
+        /// adds delta to Value rounding to step.
+        /// also modifies the mirror.
+        /// </summary>
+        /// <returns>final delta in Value after rounding</returns>
+        public float AddDelta(float delta, float step) {
+            Log.Debug(Environment.StackTrace);
+            delta = Value - (Value + delta).RoundToNearest(step); // we need final detla for Mirror values.
             Value += delta;
 
             if (Mirror == null)
-                return;
+                ; // nothing
             else if (LockMode)
                 Mirror.Value += delta;
-            else if(InvertLockMode)
+            else if (InvertLockMode)
                 Mirror.Value -= delta;
+
+            return delta;
         }
+
 
         public string StrippedText => PostFix != "" ? text.Replace(PostFix, "") : text;
 
@@ -193,7 +234,7 @@ namespace NodeController.GUI {
         //}
 
         public void Apply() {
-            if (refreshing_ || !started_) return;
+            if (!isEnabled || refreshing_ || !started_) return;
             Log.Debug(this + $".Apply() called");
             if (TryGetValue(out float value)) {
                 Log.Debug($"UICornerTextField.Apply : calling SetData()  ");
@@ -206,7 +247,7 @@ namespace NodeController.GUI {
         }
 
         public void Refresh() {
-            if(VERBOSE)Log.Debug($"UICornerTextField.Refresh()called");
+            if (VERBOSE) Log.Debug($"UICornerTextField.Refresh()called");
             try {
                 refreshing_ = true;
 
