@@ -11,7 +11,7 @@ namespace NodeController.GUI {
         //UIResetButton resetButton_;
         UIPanelBase root_;
         bool started_ = false;
-        bool refreshing_ = false, refreshingValues = false;
+        bool refreshing_ = false, refreshingValues_ = false;
 
         public override string ToString() => GetType().Name + $"({name})";
 
@@ -30,14 +30,14 @@ namespace NodeController.GUI {
             get {
                 if (containsFocus)
                     return null;
-                string ret = "mousewheel/keypad arrows => increment/decrement.\n" +
-                    "shift + mousewheel/keypad arrows => large increment/decrement.\n" +
+                string ret = "mousewheel => increment/decrement.\n" +
+                    "shift + mousewheel => large increment/decrement.\n" +
                     "del => reset hovered value to default";
 
                 if (Mirror != null) {
                     ret += "\n";
-                    ret += "control + mousewheel/keypad arrows => link corresponding text field\n";
-                    ret += "control + alt + mousewheel/keypad arrows => invert link correspinding text field";
+                    ret += "control + mousewheel => link corresponding text field\n";
+                    ret += "control + alt + mousewheel => invert link correspinding text field";
                 }
                 return ret;
             }
@@ -136,14 +136,14 @@ namespace NodeController.GUI {
             // change width to match parent?
         }
 
-        public float minStep_ => MouseWheelRatio * 0.005f; // round to this.
+        public float minStep_ => MouseWheelRatio * 0.01f; // round to this.
         public float MouseWheelRatio = 1; // set to 0.1 for dir vectors.
         public bool CourseMode => ShiftIsPressed;
         float ScrollStep => (CourseMode ? 0.2f : 1f) * MouseWheelRatio;
 
         protected override void OnMouseWheel(UIMouseEventParameter p) {
             base.OnMouseWheel(p);
-            AddDelta(p.wheelDelta * ScrollStep, ScrollStep);
+            AddDelta(-p.wheelDelta * ScrollStep, ScrollStep);
         }
 
         public void Reset() {
@@ -299,7 +299,7 @@ namespace NodeController.GUI {
             if (containsFocus)
                 return;
             try {
-                refreshingValues = refreshing_ = true;
+                refreshingValues_ = refreshing_ = true;
                 if (isEnabled && isVisible) {
                     Value = GetData();
                     if (IsMixed != null) {
@@ -312,7 +312,7 @@ namespace NodeController.GUI {
                 }
             }
             finally {
-                refreshingValues = refreshing_ = false;
+                refreshingValues_ = refreshing_ = false;
             }
         }
 

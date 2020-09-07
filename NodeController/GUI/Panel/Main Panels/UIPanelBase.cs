@@ -17,7 +17,7 @@ namespace NodeController.GUI {
             "PanelY", Settings.FileName, 58, true);
 
         public static Vector2 CELL_SIZE = new Vector2(100, 20);
-        public static Vector2 CELL_SIZE2 = new Vector2(60, 20); // corner table
+        public static Vector2 CELL_SIZE2 = new Vector2(70, 20); // corner table
 
         public List<IDataControllerUI> Controls;
         public UIResetButton ResetButton;
@@ -113,7 +113,6 @@ namespace NodeController.GUI {
             autoLayout = true;
             foreach (IDataControllerUI control in Controls ?? Enumerable.Empty<IDataControllerUI>())
                 control.Refresh();
-            //Update();
             RefreshSizeRecursive();
             Hintbox.width = Hintbox.parent.width = this.width;
             autoLayout = false;
@@ -134,26 +133,11 @@ namespace NodeController.GUI {
             }
         }
 
-        //public override void OnEnable() {
-        //    Log.Debug($"UIPanelBase.OnEnable called for {GetType().Name} V{this.VersionOf()} at\n " + Environment.StackTrace);
-        //    base.OnEnable();
-        //}
-
-        //public override void OnDisable() {
-        //    Log.Debug($"UIPanelBase.OnDisable called for {GetType().Name} V{this.VersionOf()}at\n " + Environment.StackTrace);
-        //    base.OnDisable();
-        //}
-
         public override void OnDestroy() {
             Log.Debug($"UIPanelBase.OnDestroy called for {GetType().Name} V{this.VersionOf()}at\n " + Environment.StackTrace);
             Close();
             gameObject.SetActive(false);
             base.OnDestroy();
-            //if (this) {
-            //    Log.Error($"Failed to destroy object {GetType().Name} V{this.VersionOf()}");
-            //} else {
-            //    Log.Debug($"Sucessfully destroyed object {GetType().Name} V{this.VersionOf()}");
-            //}
         }
 
         // base.Open and base.Closed should be called at the end of Show()/Close()
@@ -181,14 +165,30 @@ namespace NodeController.GUI {
             Log.Debug($"UIPanelBase.Open(): isEnabled = {isEnabled} for {GetType().Name} V{this.VersionOf()}");
         }
 
+        public IDataControllerUI GethoveredController() {
+            foreach (IDataControllerUI c in this.Controls) {
+                UIComponent component = c as UIComponent;
+                if (!component.isVisible)
+                    continue;
+                bool hovered = component.containsMouse;
+                if (!hovered && component is NodeTypeDropDown dd)
+                    hovered = dd.Popup?.containsMouse ?? false;
+
+                if (hovered)
+                    return c;
+            }
+            return null;
+        }
+
         public override void Update() {
             base.Update();
             var del = Input.GetKeyDown(KeyCode.Delete);
-            if (del && UIInput.hoveredComponent is IDataControllerUI controler) {
-                controler.Reset();
+            if (del) {
+                IDataControllerUI control = GethoveredController();
+                //Log.Debug("calling reset for " + control.GetType());
+                control.Reset();
                 GetData()?.Update();
             }
-
         }
 
         public new void Reset() { } // do nothing.
@@ -203,9 +203,6 @@ namespace NodeController.GUI {
             Hintbox.Hint3 = "Alt + Click : select segment end\nClick : select/insert node\nControl : Hide TMPE signs";
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="container">container to add section to</param>
         /// <param name="label">label of the section</param>
         /// <param name="panel0">add slider to this</param>

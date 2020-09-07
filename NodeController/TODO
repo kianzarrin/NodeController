@@ -1,11 +1,6 @@
-I unset stepSize = 0 to see if that fixes anything.
-
-
 - fix step sizes (done).
 - del => reset/0 (done)
 - ignore NetInfo.twistSegmentEnd. always on by default. (done)
-
-- Text fields should ignore arrow hotkeys if selected.
 
 - slope junction checkbox.
 

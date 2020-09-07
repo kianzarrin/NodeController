@@ -3,7 +3,6 @@ namespace NodeController.GUI {
     using KianCommons;
     using ColossalFramework.UI;
     using static KianCommons.HelpersExtensions;
-    using UnityEngine;
     using System;
 
     public abstract class UISliderBase: UISliderExt, IDataControllerUI {
@@ -13,11 +12,11 @@ namespace NodeController.GUI {
         public override void Awake() {
             base.Awake();
             tooltip = null;
-            stepSize = 0.01f; // no quantization while reading.
+            stepSize = 0f; // no quantization while reading.
         }
 
-        public string HintHotkeys => "mousewheel/keypad arrows => increment/decrement\n" +
-            "shift + mousewheel/keypad arrows => fine increment/decrement\n" +
+        public string HintHotkeys => "mousewheel => increment/decrement\n" +
+            "shift + mousewheel => fine increment/decrement\n" +
             "del => reset hovered value to default";
 
         public string HintDescription => null;
@@ -55,7 +54,7 @@ namespace NodeController.GUI {
         protected override void OnMouseWheel(UIMouseEventParameter p) {
             Log.Debug(GetType().Name + "\n" + Environment.StackTrace);
             scrollWheelAmount = ScrollStep;
-            this.value += UISliderExt.Quantize(scrollWheelAmount * p.wheelDelta, scrollWheelAmount);
+            value = UISliderExt.Quantize(value + scrollWheelAmount * p.wheelDelta, scrollWheelAmount);
             p.Use();
         }
 
@@ -65,8 +64,12 @@ namespace NodeController.GUI {
         }
 
         protected override void OnMouseMove(UIMouseEventParameter p) {
-            base.OnMouseMove(p);
-            QuantizeValue(DragStep);
+            if (p.buttons.IsFlagSet(UIMouseButton.Left)) {
+                base.OnMouseMove(p);
+                QuantizeValue(DragStep);
+            }else {
+                base.OnMouseMove(p);
+            }
         }
 
         //protected override void OnKeyDown(UIKeyEventParameter p) {
@@ -107,7 +110,9 @@ namespace NodeController.GUI {
         public virtual string TooltipPostfix => "";
 
         public virtual void Reset() {
+            Log.Debug("Reset called" + value);
             value = 0;
+            Log.Debug("Reset set tvalue to =" + value);
         }
 
         protected bool Refreshing = false;

@@ -1,11 +1,11 @@
 namespace NodeController.GUI {
-    using ColossalFramework.UI;
     using ColossalFramework;
+    using ColossalFramework.UI;
     using KianCommons;
-    using UnityEngine;
-    using System.Collections.Generic;
-    using System;
     using NodeController.Tool;
+    using System;
+    using System.Collections.Generic;
+    using UnityEngine;
 
     public class HintBox : UILabel {
         UIPanelBase root_;
@@ -91,20 +91,11 @@ namespace NodeController.GUI {
                     return; // prevent flickering on mouse hover
 
                 string h1 = null, h2 = null;
-                foreach (IDataControllerUI c in controlls_) {
-                    UIComponent component = c as UIComponent;
-                    if (!component.isVisible)
-                        continue;
-                    bool hovered = component.containsMouse;
-                    if (!hovered && component is NodeTypeDropDown dd)
-                        hovered = dd.Popup?.containsMouse ?? false;
-                    
-                    if (hovered) {
-                        string m = $"{component.name}-{c}@{rootname}";
-                        Log.DebugWait(m);
-                        h1 = c.HintHotkeys;
-                        h2 = c.HintDescription;
-                    }
+                IDataControllerUI c = root_?.GethoveredController();
+                if (c != null) {
+                    //Log.DebugWait($"{component.name}-{c}@{rootname}");
+                    h1 = c.HintHotkeys;
+                    h2 = c.HintDescription;
                 }
                 // TODO get h3 from tool.
                 var prev_h1 = Hint1;
@@ -119,7 +110,7 @@ namespace NodeController.GUI {
                     RefreshValues();
                 }
             }
-            catch(Exception e) {
+            catch (Exception e) {
                 Hint1 = e.ToString();
                 Log.DebugWait(Hint1);
             }

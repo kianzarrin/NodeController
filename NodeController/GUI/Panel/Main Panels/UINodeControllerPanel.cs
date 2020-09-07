@@ -88,8 +88,8 @@ namespace NodeController.GUI {
 
                 var fieldAngle = row2.AddUIComponent<UICornerTextField>();
                 fieldAngle.size = CELL_SIZE2;
-                fieldAngle.GetData = () => NodeData.EmbankmentPercent;
-                fieldAngle.SetData = val => NodeData.EmbankmentPercent = Mathf.Clamp(val, -180, +180);
+                fieldAngle.GetData = () => NodeData.EmbankmentAngle;
+                fieldAngle.SetData = val => NodeData.EmbankmentAngle = Mathf.Clamp(val, -180, +180);
                 fieldAngle.IsMixed = () => !NodeData.HasUniformEmbankmentAngle();
                 fieldAngle.PostFix = "°";
                 Controls.Add(fieldAngle);
