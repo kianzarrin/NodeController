@@ -55,7 +55,7 @@ namespace NodeController.GUI {
             base.Start();
             this.relativePosition = new Vector2(0, 1f);
             this.backgroundSprite = "GenericPanel";
-            this.size = new Vector2(parent.width, 200);
+            this.size = new Vector2(parent.width, 600);
             this.autoSize = true;
 
             root_ = GetRootContainer() as UIPanelBase;
@@ -93,9 +93,11 @@ namespace NodeController.GUI {
                 string h1 = null, h2 = null;
                 foreach (IDataControllerUI c in controlls_) {
                     UIComponent component = c as UIComponent;
+                    if (!component.isVisible)
+                        continue;
                     bool hovered = component.containsMouse;
                     if (!hovered && component is NodeTypeDropDown dd)
-                        hovered = dd.Popup.containsMouse;
+                        hovered = dd.Popup?.containsMouse ?? false;
                     
                     if (hovered) {
                         string m = $"{component.name}-{c}@{rootname}";
@@ -119,6 +121,7 @@ namespace NodeController.GUI {
             }
             catch(Exception e) {
                 Hint1 = e.ToString();
+                Log.DebugWait(Hint1);
             }
         }
 

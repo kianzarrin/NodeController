@@ -2,19 +2,23 @@ using UnityEngine;
 
 namespace NodeController.GUI {
     public class UIOffsetSlider : UISliderBase {
+        public override void Awake() {
+            base.Awake();
+            CourseDragStep = CourseScrollStep = 0.1f;
+            LargeDragStep = LargeScrollStep = 1f;
+        }
+
         public override void ApplyNode(NodeData data) =>
             data.CornerOffset = value;
 
-        public override void ResetToDefaultValue() {
+        public override void Reset() {
             var data = Root?.GetData();
             if (data is SegmentEndData segmentEndData) {
                 value = segmentEndData.DefaultCornerOffset;
             } else if (data is NodeData nodeData) {
                 foreach (var segEndData in nodeData.IterateSegmentEndDatas()) {
-                    segEndData.CornerOffset = segEndData.DefaultCornerOffset;
+                    value = segEndData.DefaultCornerOffset;
                 }
-                data?.Update();
-                Root?.Refresh();
             }
         }
 

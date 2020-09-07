@@ -9,7 +9,7 @@ namespace NodeController.GUI {
     public class UIHideMarkingsCheckbox : UICheckBox, IDataControllerUI {
         public static UIHideMarkingsCheckbox Instance { get; private set; }
 
-        public string HintHotkeys => throw new NotImplementedException();
+        public string HintHotkeys => "del => reset hovered value to default";
 
         public string HintDescription =>
             "Removes crossing texture for all segment ends. " +
@@ -124,6 +124,10 @@ namespace NodeController.GUI {
                 this.isChecked = nodeData.ClearMarkings;
                 isEnabled = nodeData.ShowClearMarkingsToggle();
             } else Disable();
+        }
+
+        public void Reset() {
+            isChecked = false;
         }
     }
 }

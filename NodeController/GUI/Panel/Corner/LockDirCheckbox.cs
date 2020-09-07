@@ -94,5 +94,9 @@ namespace NodeController.GUI {
                 //isEnabled = nodeData.CanMassEditNodeCorners();
             } else Disable();
         }
+
+        public void Reset() {
+            isChecked = false;
+        }
     }
 }

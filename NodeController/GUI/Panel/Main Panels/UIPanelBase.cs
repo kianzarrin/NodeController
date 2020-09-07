@@ -181,6 +181,18 @@ namespace NodeController.GUI {
             Log.Debug($"UIPanelBase.Open(): isEnabled = {isEnabled} for {GetType().Name} V{this.VersionOf()}");
         }
 
+        public override void Update() {
+            base.Update();
+            var del = Input.GetKeyDown(KeyCode.Delete);
+            if (del && UIInput.hoveredComponent is IDataControllerUI controler) {
+                controler.Reset();
+                GetData()?.Update();
+            }
+
+        }
+
+        public new void Reset() { } // do nothing.
+
         public HintBox Hintbox;
 
         public void MakeHintBox() {

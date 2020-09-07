@@ -6,7 +6,7 @@ namespace NodeController.GUI {
             maxValue = 180;
         }
 
-        public override void ResetToDefaultValue() {
+        public override void Reset() {
             var data = Root?.GetData();
             if (data == null) return;
 

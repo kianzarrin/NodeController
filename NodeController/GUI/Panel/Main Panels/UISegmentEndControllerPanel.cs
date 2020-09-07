@@ -10,7 +10,8 @@ namespace NodeController.GUI {
 
         public static UISegmentEndControllerPanel Create() {
             var uiView = UIView.GetAView();
-            UISegmentEndControllerPanel panel = uiView.AddUIComponent(typeof(UISegmentEndControllerPanel)) as UISegmentEndControllerPanel;
+            UISegmentEndControllerPanel panel =
+                uiView.AddUIComponent(typeof(UISegmentEndControllerPanel)) as UISegmentEndControllerPanel;
             return panel;
         }
 

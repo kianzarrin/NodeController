@@ -31,7 +31,9 @@ namespace NodeController.GUI {
                 if (containsFocus)
                     return null;
                 string ret = "mousewheel/keypad arrows => increment/decrement.\n" +
-                    "shift + mousewheel/keypad arrows => large increment/decrement.";
+                    "shift + mousewheel/keypad arrows => large increment/decrement.\n" +
+                    "del => reset hovered value to default";
+
                 if (Mirror != null) {
                     ret += "\n";
                     ret += "control + mousewheel/keypad arrows => link corresponding text field\n";
@@ -47,13 +49,14 @@ namespace NodeController.GUI {
         public delegate float GetDataFunc();
         public delegate bool IsMixedFunc();
         public delegate void SetDataFunc(float data);
+        public delegate void ResetFunc();
 
         public IsMixedFunc IsMixed;
         public GetDataFunc GetData;
         public GetDataFunc GetDefault;
         public SetDataFunc SetData;
         public UIComponent Container; // that will be set visible or invisible.
-        public void ResetToDefault() => Value = GetDefault != null ? GetDefault() : 0f;
+        public ResetFunc ResetToDefault;
 
 
         public UICornerTextField Mirror;
@@ -138,33 +141,47 @@ namespace NodeController.GUI {
         public bool CourseMode => ShiftIsPressed;
         float ScrollStep => (CourseMode ? 0.2f : 1f) * MouseWheelRatio;
 
-#if false
         protected override void OnMouseWheel(UIMouseEventParameter p) {
             base.OnMouseWheel(p);
             AddDelta(p.wheelDelta * ScrollStep, ScrollStep);
         }
 
-        protected override void OnKeyDown(UIKeyEventParameter p) {
-            if (!containsFocus && base.builtinKeyNavigation) {
-                if (p.keycode == KeyCode.LeftArrow || p.keycode == KeyCode.DownArrow) {
-                    AddDelta(-ScrollStep, ScrollStep);
-                    p.Use();
-                    return;
-                } else if (p.keycode == KeyCode.RightArrow || p.keycode == KeyCode.UpArrow) {
-                    AddDelta(+ScrollStep, ScrollStep);
-                    p.Use();
-                    return;
-                } else if(p.keycode == KeyCode.Delete) {
-                    ResetToDefault();
-                    if (Mirror != null && LockMode)
-                        Mirror.ResetToDefault();
-                    p.Use();
-                    return;
-                }
+        public void Reset() {
+            if (ResetToDefault != null)
+                ResetToDefault();
+            else
+                SetData(0f);
+
+            if (LockMode) {
+                if (Mirror?.ResetToDefault != null)
+                    Mirror.ResetToDefault();
+                else
+                    Mirror.SetData(0f);
             }
-            base.OnKeyDown(p);
         }
-#endif
+
+        //protected override void OnKeyDown(UIKeyEventParameter p) {
+        //    Log.Debug(name + ": OnKeyDown");
+        //    if (!containsFocus && base.builtinKeyNavigation) {
+        //        if (p.keycode == KeyCode.LeftArrow || p.keycode == KeyCode.DownArrow) {
+        //            AddDelta(-ScrollStep, ScrollStep);
+        //            p.Use();
+        //            return;
+        //        } else if (p.keycode == KeyCode.RightArrow || p.keycode == KeyCode.UpArrow) {
+        //            AddDelta(+ScrollStep, ScrollStep);
+        //            p.Use();
+        //            return;
+        //        } else if (p.keycode == KeyCode.Delete) {
+        //            ResetToDefault();
+        //            if (Mirror != null && LockMode)
+        //                Mirror.ResetToDefault();
+        //            p.Use();
+        //            return;
+        //        }
+        //    }
+        //    base.OnKeyDown(p);
+        //}
+
         /// <summary>
         /// adds delta to Value rounding to step.
         /// also modifies the mirror.

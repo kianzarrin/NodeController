@@ -111,7 +111,7 @@ namespace NodeController.GUI {
         }
 
 
-        public string HintHotkeys => null;
+        public string HintHotkeys => "del => reset node type to default";
 
         public string HintDescription {
             get {
@@ -119,6 +119,11 @@ namespace NodeController.GUI {
                 var nodeType = GetHoveredItem();
                 return data?.ToolTip(nodeType);
             }
+        }
+
+        public void Reset() {
+            NodeData data = root_.NodeData;
+            data.NodeType = data.DefaultNodeType;
         }
 
         protected override void OnSelectedIndexChanged() {

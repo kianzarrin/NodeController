@@ -7,7 +7,7 @@ namespace NodeController.GUI {
 
 
     public class UIFlatJunctionsCheckbox : UICheckBox, IDataControllerUI {
-        public string HintHotkeys => null;
+        public string HintHotkeys => "del => reset hovered value to default";
         public string HintDescription =>
             "turn of to give slope to junctions. Useful for highway intersections. " +
             "the two bigger segments should turn off flat junction. " +
@@ -98,6 +98,12 @@ namespace NodeController.GUI {
                 //this.isChecked = nodeData.FlatJunctions; // TODO complete
                 isEnabled = nodeData.CanModifyFlatJunctions();
             } else Disable();
+        }
+
+        public void Reset() {
+            if (root_?.GetData() is SegmentEndData segmentEndData) {
+                isChecked = segmentEndData.DefaultFlatJunctions;
+            }
         }
     }
 }

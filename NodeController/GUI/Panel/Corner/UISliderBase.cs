@@ -13,12 +13,12 @@ namespace NodeController.GUI {
         public override void Awake() {
             base.Awake();
             tooltip = null;
-            //stepSize = 0f; // no quantization while reading.
+            stepSize = 0.01f; // no quantization while reading.
         }
 
         public string HintHotkeys => "mousewheel/keypad arrows => increment/decrement\n" +
             "shift + mousewheel/keypad arrows => fine increment/decrement\n" +
-            "del => reset to default";
+            "del => reset hovered value to default";
 
         public string HintDescription => null;
 
@@ -52,7 +52,6 @@ namespace NodeController.GUI {
         float ScrollStep => CourseMode ? CourseScrollStep : LargeScrollStep;
         float DragStep => CourseMode ? CourseDragStep : LargeDragStep;
 
-#if false
         protected override void OnMouseWheel(UIMouseEventParameter p) {
             Log.Debug(GetType().Name + "\n" + Environment.StackTrace);
             scrollWheelAmount = ScrollStep;
@@ -70,17 +69,18 @@ namespace NodeController.GUI {
             QuantizeValue(DragStep);
         }
 
-        protected override void OnKeyDown(UIKeyEventParameter p) {
-            scrollWheelAmount = ScrollStep;
-            base.OnKeyDown(p);
-            bool arrowkey = p.keycode == KeyCode.LeftArrow || p.keycode == KeyCode.RightArrow
-                || p.keycode == KeyCode.UpArrow || p.keycode == KeyCode.DownArrow;
-            if (arrowkey)
-                QuantizeValue(ScrollStep);
-            if (p.keycode == KeyCode.Delete)
-                ResetToDefaultValue();
-        }
-#endif
+        //protected override void OnKeyDown(UIKeyEventParameter p) {
+        //    if (!containsMouse)
+        //        return;
+        //    scrollWheelAmount = ScrollStep;
+        //    base.OnKeyDown(p);
+        //    bool arrowkey = p.keycode == KeyCode.LeftArrow || p.keycode == KeyCode.RightArrow
+        //        || p.keycode == KeyCode.UpArrow || p.keycode == KeyCode.DownArrow;
+        //    if (arrowkey)
+        //        QuantizeValue(ScrollStep);
+        //    if (p.keycode == KeyCode.Delete)
+        //        Reset();
+        //}
         #endregion
 
         public void Apply() {
@@ -106,7 +106,9 @@ namespace NodeController.GUI {
 
         public virtual string TooltipPostfix => "";
 
-        public virtual void ResetToDefaultValue() => value = 0;
+        public virtual void Reset() {
+            value = 0;
+        }
 
         protected bool Refreshing = false;
         public virtual void Refresh() {

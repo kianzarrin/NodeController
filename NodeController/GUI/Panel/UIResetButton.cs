@@ -7,7 +7,7 @@ namespace NodeController.GUI {
 
     public class UIResetButton : UIButton, IDataControllerUI {
         public static UIResetButton Instance { get; private set; }
-        public string HintHotkeys => null;
+        public string HintHotkeys => "del => reset all to default";
 
         public string HintDescription {
             get {
@@ -78,6 +78,10 @@ namespace NodeController.GUI {
                 return;
             }
             isEnabled = !data.IsDefault();
+        }
+
+        public void Reset() {
+            Apply();
         }
     }
 }

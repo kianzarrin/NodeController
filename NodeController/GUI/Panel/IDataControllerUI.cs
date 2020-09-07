@@ -32,9 +32,12 @@ namespace NodeController.GUI {
         /// </summary>
         void RefreshValues();
 
+        void Reset();
 
         string HintHotkeys { get; }
 
         string HintDescription { get; }
+
+
     }
 }

@@ -9,7 +9,7 @@ namespace NodeController.GUI {
         public static TwistCheckbox Instance { get; private set; }
         public UISprite UncheckedSprite, CheckedSprite;
 
-        public string HintHotkeys => null;
+        public string HintHotkeys => "del => reset hovered value to default";
         public string HintDescription =>
             "twists the segment end sideways where it meets a sloped intersection so that it matches the slope of the intersection.";
 
@@ -108,6 +108,12 @@ namespace NodeController.GUI {
             } else if (data is NodeData nodeData) {
                 Hide();
             } else Hide();
+        }
+
+        public void Reset() {
+            if (root_?.GetData() is SegmentEndData segmentEndData) {
+                isChecked = segmentEndData.DefaultTwist;
+            }
         }
     }
 }
