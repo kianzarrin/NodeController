@@ -119,6 +119,7 @@ namespace NodeController.GUI {
                 fieldAngle.GetData = () => SegmentEndData.SlopeAngleDeg;
                 fieldAngle.SetData = val => SegmentEndData.SlopeAngleDeg = Mathf.Clamp(val, -180, +180);
                 fieldAngle.PostFix = "°";
+                fieldAngle.ResetToDefault = () => SegmentEndData.DeltaSlopeAngleDeg = 0;
                 Controls.Add(fieldAngle);
             }
 
@@ -274,6 +275,7 @@ namespace NodeController.GUI {
                 ldirz = row3.AddUIComponent<UICornerTextField>();
                 ldirz.GetData = () => SegmentEndData.RightCorner.Dir.z;
                 ldirz.SetData = val => SegmentEndData.RightCorner.SetDirI(val, 2);
+                ldirz.ResetToDefault = () => SegmentEndData.RightCorner.ResetDeltaDirI(2);
                 ldirz.MouseWheelRatio = 0.1f;
                 ldirz.name = "ldriz";
                 Controls.Add(ldirz);
@@ -281,6 +283,7 @@ namespace NodeController.GUI {
                 ldiry = row3.AddUIComponent<UICornerTextField>();
                 ldiry.GetData = () => SegmentEndData.RightCorner.Dir.y;
                 ldiry.SetData = val => SegmentEndData.RightCorner.SetDirI(val, 1);
+                ldiry.ResetToDefault = () => SegmentEndData.RightCorner.ResetDeltaDirI(1);
                 ldiry.MouseWheelRatio = 0.1f;
                 ldiry.name = "ldiry";
                 Controls.Add(ldiry);
@@ -292,6 +295,8 @@ namespace NodeController.GUI {
                 llen = row4.AddUIComponent<UICornerTextField>();
                 llen.GetData = () => SegmentEndData.RightCorner.DirLength;
                 llen.SetData = val => SegmentEndData.RightCorner.DirLength = val; //clamped by setter.
+                ldirz.ResetToDefault = () => SegmentEndData.RightCorner.DirLength =
+                    ((Vector3)SegmentEndData.RightCorner.Dir0).magnitude;
                 llen.name = "llen";
                 Controls.Add(llen);
 
@@ -354,6 +359,7 @@ namespace NodeController.GUI {
                 rdirz = row3.AddUIComponent<UICornerTextField>();
                 rdirz.GetData = () => SegmentEndData.LeftCorner.Dir.z;
                 rdirz.SetData = val => SegmentEndData.LeftCorner.SetDirI(val, 2);
+                rdirz.ResetToDefault = () => SegmentEndData.LeftCorner.ResetDeltaDirI(2);
                 rdirz.MouseWheelRatio = 0.1f;
                 rdirz.name = "rdirz";
                 Controls.Add(rdirz);
@@ -361,6 +367,7 @@ namespace NodeController.GUI {
                 rdiry = row3.AddUIComponent<UICornerTextField>();
                 rdiry.GetData = () => SegmentEndData.LeftCorner.Dir.y;
                 rdiry.SetData = val => SegmentEndData.LeftCorner.SetDirI(val, 1);
+                rdiry.ResetToDefault = () => SegmentEndData.LeftCorner.ResetDeltaDirI(1);
                 rdiry.MouseWheelRatio = 0.1f;
                 rdiry.name = "rdiry";
                 Controls.Add(rdiry);
@@ -372,6 +379,8 @@ namespace NodeController.GUI {
                 rlen = row4.AddUIComponent<UICornerTextField>();
                 rlen.GetData = () => SegmentEndData.LeftCorner.DirLength;
                 rlen.SetData = val => SegmentEndData.LeftCorner.DirLength = val;
+                rlen.ResetToDefault = () => SegmentEndData.LeftCorner.DirLength =
+                    ((Vector3)SegmentEndData.LeftCorner.Dir0).magnitude;
                 rlen.name = "rlen";
                 Controls.Add(rlen);
 

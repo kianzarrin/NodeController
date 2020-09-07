@@ -116,6 +116,11 @@ namespace NodeController.GUI {
                 fieldAngle.GetData = () => NodeData.SlopeAngleDeg;
                 fieldAngle.SetData = val => NodeData.SlopeAngleDeg = Mathf.Clamp(val, -180, +180);
                 fieldAngle.IsMixed = () => !NodeData.HasUniformSlopeAngle();
+                fieldAngle.ResetToDefault = () => {
+                    foreach (var segmentEndData in NodeData.IterateSegmentEndDatas()) {
+                        segmentEndData.DeltaSlopeAngleDeg = 0;
+                    }
+                }; 
                 fieldAngle.PostFix = "°";
                 Controls.Add(fieldAngle);
             }

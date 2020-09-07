@@ -276,6 +276,13 @@ namespace NodeController {
             public Vector3Serializable CachedPos, CachedDir;
             public Vector3Serializable Dir0, Pos0;
             public Vector3Serializable DeltaPos, DeltaDir;
+
+            public void ResetDeltaDirI(int index) {
+                Vector3 v = DeltaDir;
+                v[index] = 0;
+                DeltaDir = v;
+            }
+
             public float Offset;
             public bool LockLength;
 
