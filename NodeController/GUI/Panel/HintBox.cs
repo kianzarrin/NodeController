@@ -92,9 +92,13 @@ namespace NodeController.GUI {
 
                 string h1 = null, h2 = null;
                 foreach (IDataControllerUI c in controlls_) {
-                    bool hovered = (c as UIComponent).containsMouse;
+                    UIComponent component = c as UIComponent;
+                    bool hovered = component.containsMouse;
+                    if (!hovered && component is NodeTypeDropDown dd)
+                        hovered = dd.Popup.containsMouse;
+                    
                     if (hovered) {
-                        string m = $"{(c as UIComponent).name}-{c}@{rootname}";
+                        string m = $"{component.name}-{c}@{rootname}";
                         Log.DebugWait(m);
                         h1 = c.HintHotkeys;
                         h2 = c.HintDescription;

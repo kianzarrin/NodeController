@@ -56,7 +56,7 @@ namespace NodeController.GUI {
                 var label = panel.AddUIComponent<UILabel>();
                 label.text = "Choose node type";
 
-                var dropdown_ = panel.AddUIComponent<UINodeTypeDropDown>();
+                var dropdown_ = panel.AddUIComponent<NodeTypeDropDown>();
                 Controls.Add(dropdown_);
             }
 

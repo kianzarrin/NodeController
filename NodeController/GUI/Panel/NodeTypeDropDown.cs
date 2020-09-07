@@ -5,9 +5,12 @@ namespace NodeController.GUI {
     using static KianCommons.HelpersExtensions;
     using KianCommons;
     using KianCommons.UI;
+    using System.Reflection;
+    using HarmonyLib;
 
-    public class UINodeTypeDropDown : UIDropDown, IDataControllerUI{
+    public class NodeTypeDropDown : UIDropDown, IDataControllerUI {
         bool awakened_ = false;
+
         public override void Awake() {
             base.Awake();
             atlas = TextureUtil.GetAtlas("Ingame");
@@ -82,12 +85,39 @@ namespace NodeController.GUI {
             set => selectedValue = value.ToString();
         }
 
+        FieldInfo fPopop = AccessTools.DeclaredField(typeof(UIDropDown), "m_Popup")
+            ?? throw new Exception("m_Popup not found");
+
+        public UIListBox Popup => fPopop.GetValue(this) as UIListBox;
+
+        FieldInfo fHoverIndex = AccessTools.DeclaredField(typeof(UIListBox), "m_HoverIndex")
+            ?? throw new Exception("m_HoverIndex not found");
+
+        int GetHoverIndex() {
+            Log.Debug("GetHoverIndex() popup=" + Popup);
+            if (!Popup.isVisible)
+                return -1;
+            return (int)fHoverIndex.GetValue(Popup);
+        }
+
+        public NodeTypeT GetHoveredItem() {
+            Log.Debug("GetHoveredItem() called" );
+            int index = GetHoverIndex();
+            Log.Debug("index = " + index);
+            if (index == -1)
+                return SelectedItem;
+            string item = items[index];
+            return (NodeTypeT)String2Enum<NodeTypeT>(item);
+        }
+
+
         public string HintHotkeys => null;
 
         public string HintDescription {
             get {
                 var data = root_?.GetData() as NodeData;
-                return data?.ToolTip(data.NodeType);
+                var nodeType = GetHoveredItem();
+                return data?.ToolTip(nodeType);
             }
         }
 
@@ -99,7 +129,7 @@ namespace NodeController.GUI {
         }
 
         public void Apply() {
-            if(VERBOSE)Log.Debug("UINodeTypeDropDown.Apply called()\n" + Environment.StackTrace);
+            if (VERBOSE) Log.Debug("NodeTypeDropDown.Apply called()\n" + Environment.StackTrace);
             NodeData data = root_.NodeData;
             if (data == null) return;
             data.NodeType = SelectedItem;
@@ -114,7 +144,7 @@ namespace NodeController.GUI {
         bool refreshing_ = false;
 
         public void Repopulate() {
-            if (VERBOSE) Log.Debug("UINodeTypeDropDown.Repopulate called()" + Environment.StackTrace);
+            if (VERBOSE) Log.Debug("NodeTypeDropDown.Repopulate called()" + Environment.StackTrace);
             NodeData data = root_.NodeData;
             items = null;
             foreach (NodeTypeT nodeType in Enum.GetValues(typeof(NodeTypeT))) {
@@ -146,7 +176,7 @@ namespace NodeController.GUI {
         public void RefreshValues() {
             refreshing_ = true;
             NodeData data = root_?.NodeData;
-            if(data != null)
+            if (data != null)
                 SelectedItem = data.NodeType;
             refreshing_ = false;
         }
