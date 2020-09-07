@@ -331,7 +331,7 @@ namespace NodeController.Tool {
         protected override void OnToolUpdate() {
             base.OnToolUpdate();
             ToolCursor = GetCursor();
-            //Hint = GetHint();
+            Hint = GetHint();
 
             while (!Monitor.TryEnter(this.m_cacheLock, SimulationManager.SYNCHRONIZE_TIMEOUT)) {
             }

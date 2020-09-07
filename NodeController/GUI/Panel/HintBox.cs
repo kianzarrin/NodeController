@@ -80,7 +80,7 @@ namespace NodeController.GUI {
         public override void Update() {
             base.Update();
             try {
-                //string rootname = root_?.GetType()?.Name ?? "null";
+                string rootname = root_?.GetType()?.Name ?? "null";
                 //var version = this?.VersionOf()?.ToString() ?? "null";
                 //string id = $"{rootname} V{this.VersionOf()}";
                 //Log.DebugWait($"HintBox.Update() called", id);
@@ -94,6 +94,8 @@ namespace NodeController.GUI {
                 foreach (IDataControllerUI c in controlls_) {
                     bool hovered = (c as UIComponent).containsMouse;
                     if (hovered) {
+                        string m = $"{(c as UIComponent).name}-{c}@{rootname}";
+                        Log.DebugWait(m);
                         h1 = c.HintHotkeys;
                         h2 = c.HintDescription;
                     }
