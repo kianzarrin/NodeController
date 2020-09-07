@@ -99,10 +99,25 @@ namespace NodeController {
             Calculate();
             CornerOffset = DefaultCornerOffset;
             FlatJunctions = DefaultFlatJunctions;
-            DeltaSlopeAngleDeg = 0;
-            Log.Debug($"SegmentEndData() Direction={Direction} Slope={SlopeAngleDeg}");
             Twist = DefaultTwist;
-            HelpersExtensions.Assert(IsDefault());
+            Log.Debug($"SegmentEndData() Direction={Direction} Slope={SlopeAngleDeg}");
+            HelpersExtensions.Assert(IsDefault(),
+            $"\n{CornerOffset} == {DefaultCornerOffset} error = 0.1\n" +
+            $"DeltaSlopeAngleDeg:{DeltaSlopeAngleDeg} == 0;" +
+            $"Stretch:{Stretch} == 0; " +
+            $"EmbankmentAngleDeg:{EmbankmentAngleDeg} == 0; \n" +
+            $"LeftCorner.IsDefault():{LeftCorner.IsDefault()} " +
+            $"RightCorner.IsDefault():{RightCorner.IsDefault()} \n" +
+            $"FlatJunctions:{FlatJunctions} == {DefaultFlatJunctions} " +
+            $"Twist:{Twist} == {DefaultTwist} \n" +
+            $"NoCrossings:{NoCrossings} == false; " +
+            $"NoMarkings:{NoMarkings} == false; " +
+            $"NoJunctionTexture:{NoJunctionTexture} == false; " +
+            $"NoJunctionProps:{NoJunctionProps} == false; "+
+            $"NoTLProps:{NoTLProps} == false "
+            );
+
+            
             Update();
         }
 
@@ -194,18 +209,18 @@ namespace NodeController {
         public bool IsDefault() {
             bool ret = Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.1f;
             ret &= DeltaSlopeAngleDeg == 0;
+            ret &= Stretch == 0;
+            ret &= EmbankmentAngleDeg == 0;
             ret &= FlatJunctions == DefaultFlatJunctions;
             ret &= Twist == DefaultTwist;
+            ret &= LeftCorner.IsDefault();
+            ret &= RightCorner.IsDefault();
+
             ret &= NoCrossings == false;
             ret &= NoMarkings == false;
             ret &= NoJunctionTexture == false;
             ret &= NoJunctionProps == false;
             ret &= NoTLProps == false;
-            ret &= LeftCorner.IsDefault();
-            ret &= RightCorner.IsDefault();
-            ret &= Stretch == 0;
-            ret &= EmbankmentAngleDeg == 0;
-
             return ret;
         }
 
@@ -262,7 +277,7 @@ namespace NodeController {
 
             public bool IsDefault() {
                 bool ret = DeltaPos == Vector3.zero && DeltaDir == Vector3.zero;
-                ret &= Offset == 0;
+                //ret &= Offset == ?; // cannot test unless I have link to segment end.
                 ret &= LockLength == false;
                 return ret;
             }
