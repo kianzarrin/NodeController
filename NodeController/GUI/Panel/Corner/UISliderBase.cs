@@ -54,19 +54,19 @@ namespace NodeController.GUI {
         protected override void OnMouseWheel(UIMouseEventParameter p) {
             Log.Debug(GetType().Name + "\n" + Environment.StackTrace);
             scrollWheelAmount = ScrollStep;
-            value = UISliderExt.Quantize(value + scrollWheelAmount * p.wheelDelta, scrollWheelAmount);
+            value = UISliderExt.Round(value + scrollWheelAmount * p.wheelDelta, scrollWheelAmount);
             p.Use();
         }
 
         protected override void OnMouseDown(UIMouseEventParameter p) {
             base.OnMouseDown(p);
-            QuantizeValue(DragStep);
+            RoundValue(DragStep);
         }
 
         protected override void OnMouseMove(UIMouseEventParameter p) {
             if (p.buttons.IsFlagSet(UIMouseButton.Left)) {
                 base.OnMouseMove(p);
-                QuantizeValue(DragStep);
+                RoundValue(DragStep);
             }else {
                 base.OnMouseMove(p);
             }
