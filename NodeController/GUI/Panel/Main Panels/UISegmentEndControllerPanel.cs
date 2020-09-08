@@ -143,7 +143,7 @@ namespace NodeController.GUI {
                 var panel = AddPanel();
                 panel.padding = new RectOffset(10, 10, 5, 5);
                 panel.autoLayoutPadding = default;
-                var checkBox = panel.AddUIComponent<UIFlatJunctionsCheckbox>();
+                var checkBox = panel.AddUIComponent<UIUnFlattenJunctionsCheckbox>();
                 Controls.Add(checkBox);
 
                 var panel2 = panel.AddUIComponent<UIAutoSizePanel>();

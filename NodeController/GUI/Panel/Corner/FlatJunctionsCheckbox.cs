@@ -6,16 +6,16 @@ namespace NodeController.GUI {
     using static KianCommons.HelpersExtensions;
 
 
-    public class UIFlatJunctionsCheckbox : UICheckBox, IDataControllerUI {
+    public class UIUnFlattenJunctionsCheckbox : UICheckBox, IDataControllerUI {
         public string HintHotkeys => "del => reset hovered value to default";
         public string HintDescription =>
-            "turn of to give slope to junctions. Useful for highway intersections. " +
+            "give slope to junctions. Useful for highway intersections. " +
             "the two bigger segments should turn off flat junction. " +
             "minor roads joining a sloped intersection twist sideways to matcht the slope of the intersection.";
 
         public override void Awake() {
             base.Awake();
-            name = nameof(UIFlatJunctionsCheckbox);
+            name = nameof(UIUnFlattenJunctionsCheckbox);
             height = 20f;
             clipChildren = true;
 
@@ -30,7 +30,7 @@ namespace NodeController.GUI {
             checkedBoxObject.relativePosition = Vector3.zero;
 
             label = AddUIComponent<UILabel>();
-            label.text = "Flatten junction";
+            label.text = "Slope at junction";
             label.textScale = 0.9f;
             label.relativePosition = new Vector2(sprite.width+5f, (height- label.height)/2+1);
 
@@ -55,14 +55,15 @@ namespace NodeController.GUI {
             root_ = GetRootContainer() as UIPanelBase;
         }
 
+
         public void Apply() {
-            Log.Debug("UIFlatJunctionsCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
+            Log.Debug("UIUnFlattenJunctionsCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
             SegmentEndData data = root_?.GetData() as SegmentEndData;
             if (data == null)
                 return;
  
-            data.FlatJunctions = this.isChecked;
-            if (!this.isChecked)
+            data.FlatJunctions = !this.isChecked;
+            if (this.isChecked)
                 data.Twist = false;
             else
                 data.Twist = data.DefaultTwist;
@@ -77,9 +78,9 @@ namespace NodeController.GUI {
 
         public void Refresh() {
             //Log.Debug("Refresh called()\n"/* + Environment.StackTrace*/);
+            RefreshValues();
             refreshing_ = true;
 
-            RefreshValues();
             //if (root_?.GetData() is NodeData nodeData)
             //    RefreshNode(nodeData);
 
@@ -90,19 +91,20 @@ namespace NodeController.GUI {
         }
 
         public void RefreshValues() {
+            refreshing_ = true;
             INetworkData data = root_?.GetData();
             if (data is SegmentEndData segmentEndData) {
-                this.isChecked = segmentEndData.FlatJunctions;
                 isEnabled = segmentEndData.CanModifyFlatJunctions();
-            } else if (data is NodeData nodeData) {
-                //this.isChecked = nodeData.FlatJunctions; // TODO complete
-                isEnabled = nodeData.CanModifyFlatJunctions();
+                if (isEnabled) {
+                    this.isChecked = !segmentEndData.FlatJunctions;
+                }
             } else Disable();
+            refreshing_ = false;
         }
 
         public void Reset() {
             if (root_?.GetData() is SegmentEndData segmentEndData) {
-                isChecked = segmentEndData.DefaultFlatJunctions;
+                isChecked = !segmentEndData.DefaultFlatJunctions;
             }
         }
     }

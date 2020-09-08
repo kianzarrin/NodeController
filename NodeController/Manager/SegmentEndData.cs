@@ -89,7 +89,16 @@ namespace NodeController {
         public ref NetNode Node => ref NodeID.ToNode();
         public NodeData NodeData => NodeManager.Instance.buffer[NodeID];
         public ref NodeTypeT NodeType => ref NodeData.NodeType;
-        public Vector3 Direction => Segment.GetDirection(NodeID);
+        /// <summary>segment end direction</summary>
+        public ref Vector3 Direction {
+            get {
+                if (IsStartNode)
+                    return ref Segment.m_startDirection;
+                else
+                    return ref Segment.m_endDirection;
+            }
+
+        }
 
 
         public SegmentEndData(ushort segmentID, ushort nodeID) {
@@ -150,6 +159,10 @@ namespace NodeController {
                 DeltaSlopeAngleDeg = 0;
                 Stretch = EmbankmentAngleDeg = 0;
             }
+            if (!FlatJunctions)
+                Twist = false;
+
+
         }
 
         public void Update() {
@@ -179,6 +192,12 @@ namespace NodeController {
                 cornerPos: out var lpos, cornerDirection: out var ldir, out _);
             Segment.CalculateCorner(SegmentID, true, IsStartNode, leftSide: false,
                 cornerPos: out var rpos, cornerDirection: out var rdir, out _);
+
+            // the following line is particualrly useful for
+            // side segments which are sloped because they come at an angle.
+            // it  helps to update the slope angle deg slider with righ values.
+            // also is useful for putting segment names on the segment when slope has changed by user.
+            Direction.y = (ldir.y + rdir.y) * 0.5f; 
 
             LeftCorner.CachedPos = lpos;
             RightCorner.CachedPos = rpos;
@@ -255,9 +274,11 @@ namespace NodeController {
         }
 
         public float SlopeAngleDeg {
-            get => DeltaSlopeAngleDeg + EndDirSlopeAngleDeg;
-            set => DeltaSlopeAngleDeg = value - EndDirSlopeAngleDeg;
+            get => DeltaSlopeAngleDeg + AngleDeg(Direction);
+            set => DeltaSlopeAngleDeg = value - AngleDeg(Direction);
         }
+
+
 
         #endregion
         public ref CornerData Corner(bool left) {
@@ -397,14 +418,14 @@ namespace NodeController {
             bool slope2 = !segEnd2.FlatJunctions;
             return slope1 || slope2;
         }
-        public bool ShowClearMarkingsToggle() {
+        public bool ShowNoMarkingsToggle() {
             if (IsCSUR) return false;
             if (NodeData == null) return true;
             return NodeData.NodeType == NodeTypeT.Custom;
         }
         #endregion
 
-        public float EndDirSlopeAngleDeg => Mathf.Atan(Direction.y) * Mathf.Rad2Deg;
+        public static float AngleDeg(Vector3 dir) => Mathf.Atan(dir.y) * Mathf.Rad2Deg;
 
         /// Precondition: cornerDir.LenXZ = 1
         /// <param name="leftSide">left side going away from the junction</param>
@@ -422,21 +443,21 @@ namespace NodeController {
                 forward: out var forwardDir);
 
             float dirY0 = cornerDir.y;
-            float angleDeg = SlopeAngleDeg; // save calculation time.
-            float angleRad = angleDeg * Mathf.Deg2Rad;
+            float slopeAngleDeg = DeltaSlopeAngleDeg + AngleDeg(cornerDir); 
+            float slopeAngleRad = slopeAngleDeg * Mathf.Deg2Rad;
 
-            if (89 <= angleDeg && angleDeg <= 91) {
+            if (89 <= slopeAngleDeg && slopeAngleDeg <= 91) {
                 cornerDir.x = cornerDir.z = 0;
                 cornerDir.y = 1;
-            } else if (-89 >= angleDeg && angleDeg >= -91) {
+            } else if (-89 >= slopeAngleDeg && slopeAngleDeg >= -91) {
                 cornerDir.x = cornerDir.z = 0;
                 cornerDir.y = -1;
-            } else if (angleDeg > 90 || angleDeg < -90) {
-                cornerDir.y = -Mathf.Tan(angleRad);
+            } else if (slopeAngleDeg > 90 || slopeAngleDeg < -90) {
+                cornerDir.y = -Mathf.Tan(slopeAngleRad);
                 cornerDir.x = -cornerDir.x;
                 cornerDir.z = -cornerDir.z;
             } else {
-                cornerDir.y = Mathf.Tan(angleRad);
+                cornerDir.y = Mathf.Tan(slopeAngleRad);
             }
             if (!Node.m_flags.IsFlagSet(NetNode.Flags.Middle)) {
                 float d = VectorUtils.DotXZ(cornerPos - Node.m_position, cornerDir);

@@ -72,6 +72,7 @@ namespace NodeController {
         public bool IsStraight;
         public bool Is180;
         ushort segmentID1, segmentID2;
+        public List<ushort> SortedSegmentIDs; //sorted by how big semgent is.
         SegmentEndData SegmentEnd1 => SegmentEndManager.Instance.GetAt(segmentID1, NodeID);
         SegmentEndData SegmentEnd2 => SegmentEndManager.Instance.GetAt(segmentID2, NodeID);
 
@@ -120,9 +121,12 @@ namespace NodeController {
             return true;
         }
         #endregion
-        #region clear markings
-        // same as no markings. can't rename for the sake of backward compatibility.
-        public bool ClearMarkings {
+        #region no markings
+
+        [Obsolete("this is only for backward compatiblity")]
+        public bool ClearMarkings { set => NoMarkings = value; }
+
+        public bool NoMarkings {
             get {
                 for (int i = 0; i < 8; ++i) {
                     ushort segmentID = Node.GetSegment(i);
@@ -153,6 +157,77 @@ namespace NodeController {
                 if (noMarkings0 == null)
                     noMarkings0 = segEnd.NoMarkings;
                 else if (noMarkings0 != segEnd.NoMarkings)
+                    return false;
+            }
+            return true;
+        }
+        #endregion
+        #region sloped junction
+
+        static int CompareSegments(ushort seg1Id, ushort seg2Id) {
+            ref NetSegment seg1 = ref seg1Id.ToSegment();
+            ref NetSegment seg2 = ref seg2Id.ToSegment();
+            NetInfo info1 = seg1.Info;
+            NetInfo info2 = seg2.Info;
+
+            int slope1 = info1.m_flatJunctions ? 0 : 1;
+            int slope2 = info2.m_flatJunctions ? 0 : 1;
+            int diff = slope1 - slope2;
+            if (diff != 0)return diff;
+
+            diff = info1.m_forwardVehicleLaneCount - info2.m_forwardVehicleLaneCount;
+            if (diff != 0) return diff;
+
+            diff = (int)Math.Ceiling(info2.m_halfWidth - info1.m_halfWidth);
+            if (diff != 0) return diff;
+
+            bool bHighway1 = (info1.m_netAI as RoadBaseAI)?.m_highwayRules ?? false;
+            bool bHighway2 = (info1.m_netAI as RoadBaseAI)?.m_highwayRules ?? false;
+            int iHighway1 = bHighway1 ? 1 : 0;
+            int iHighway2 = bHighway2 ? 1 : 0;
+            diff = iHighway1 - iHighway2;
+            return diff;
+        }
+
+        public bool SlopedJunction {
+            get {
+                for(int i = 0; i < SortedSegmentIDs.Count; ++i) {
+                    ushort segmentID = SortedSegmentIDs[i];
+                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                    Log.Debug($"get_SlopedJunction i:{i} segEnd.flat:{segEnd.FlatJunctions}");
+                    if (!segEnd.FlatJunctions)
+                        return true;
+                }
+                return false;
+            }
+            set {
+                for (int i = 0; i < SortedSegmentIDs.Count; ++i) {
+                    ushort segmentID = SortedSegmentIDs[i];
+                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                    bool sideSegment = i >= 2;
+                    if (value) {
+                        segEnd.FlatJunctions = sideSegment;
+                        segEnd.Twist = sideSegment;
+                    } else {
+                        segEnd.FlatJunctions = segEnd.DefaultFlatJunctions;
+                        segEnd.Twist = segEnd.DefaultTwist;
+                    }
+                }
+            }
+        }
+
+        public bool HasUniformSlopedJunction() {
+            bool good0 = default;
+            for (int i = 0; i < SortedSegmentIDs.Count; ++i) {
+                ushort segmentID = SortedSegmentIDs[i];
+                var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                bool sideSegment = i >= 2;
+                //main road slope, side segment flat and twisted.
+                bool good = segEnd.FlatJunctions == sideSegment && segEnd.Twist == sideSegment;
+                Log.Debug($"HasUniformSlopedJunction i:{i} good:{good}");
+                if (i == 0)
+                    good0 = good;
+                else if (good != good0)
                     return false;
             }
             return true;
@@ -315,6 +390,16 @@ namespace NodeController {
             foreach (ushort segmetnID in NetUtil.IterateNodeSegments(NodeID))
                 HasPedestrianLanes |= segmetnID.ToSegment().Info.m_hasPedestrianLanes;
 
+            SortedSegmentIDs = new List<ushort>(Node.CountSegments());
+            for (int i = 0; i < 8; ++i) {
+                ushort segmentID = Node.GetSegment(i);
+                if (segmentID == 0) continue;
+                SortedSegmentIDs.Add(segmentID);
+            }
+
+            SortedSegmentIDs.Sort(CompareSegments);
+            SortedSegmentIDs.Reverse();
+
             Refresh();
         }
 
@@ -443,7 +528,7 @@ namespace NodeController {
         public bool CanModifyFlatJunctions() => !NeedMiddleFlag();
         public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
         public bool CanModifyTextures() => IsRoad && !IsCSUR;
-        public bool ShowClearMarkingsToggle() => CanModifyTextures() && NodeType == NodeTypeT.Custom ;
+        public bool ShowNoMarkingsToggle() => CanModifyTextures() && NodeType == NodeTypeT.Custom ;
 
         bool CrossingIsRemoved(ushort segmentId) =>
             HideCrosswalks.Patches.CalculateMaterialCommons.

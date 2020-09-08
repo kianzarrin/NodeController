@@ -1,8 +1,5 @@
-- fix step sizes (done).
-- del => reset/0 (done)
-- ignore NetInfo.twistSegmentEnd. always on by default. (done)
 
-- slope junction checkbox.
+- twisted segments need slope when attached at an angle.
 
 - options for default universal behaviours:
     - limit dir.y to 2

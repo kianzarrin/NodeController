@@ -20,12 +20,20 @@ namespace NodeController.Patches {
                     throw new System.Exception("CalculateCornerPatch Could not find target method.");
         }
 
+        /// <summary>
+        /// give slope to junction
+        /// </summary>
         public static void FixCornerPos(Vector3 nodePos, Vector3 segmentEndDir, ref Vector3 cornerPos) {
             // NetSegment.FindDirection() calculates segmentEndDir such that lenxz = 1 regardless of y
             float d = DotXZ(cornerPos - nodePos, segmentEndDir);
             cornerPos.y = nodePos.y + d * segmentEndDir.y;
         }
 
+
+        /// <summary>
+        /// embank segment end to match slope of the junction.
+        /// TODO: also give slope if segment comes at an angle.
+        /// </summary>
         public static void FixCornerPosMinor(Vector3 nodePos, Vector3 neighbourEndDir, ref Vector3 cornerDir, ref Vector3 cornerPos) {
             float d = DotXZ(cornerPos - nodePos, neighbourEndDir);
             cornerPos.y = nodePos.y + d * neighbourEndDir.y;
@@ -67,11 +75,24 @@ namespace NodeController.Patches {
                         twist = segmentID.ToSegment().Info.m_flatJunctions;
                         //twist |= segmentID.ToSegment().Info.m_flatJunctions; 
                     if (twist && neighbourslope) {
+                        Vector3 nodePos = nodeID.ToNode().m_position;
+                        Vector3 neighbourEndDir = neighbourSegmentID.ToSegment().GetDirection(nodeID);
+                        if (data != null) {
+                            Log.Debug($"calling FixCornerPosMinor(" +
+                                $"nodePos: {nodePos}, neighbourEndDir: {neighbourEndDir}, \n" +
+                                $"cornerDir: ref {cornerDirection}, cornerPos: ref {cornerPos}) : {data} ");
+                        }
+
                         FixCornerPosMinor(
-                            nodePos: nodeID.ToNode().m_position,
-                            neighbourEndDir: neighbourSegmentID.ToSegment().GetDirection(nodeID),
+                            nodePos: nodePos,
+                            neighbourEndDir: neighbourEndDir,
                             cornerDir: ref cornerDirection,
                             cornerPos: ref cornerPos);
+
+                        if (data != null) {
+                            Log.Debug($"output FixCornerPosMinor->" +
+                                $"(cornerDir: ref {cornerDirection}, cornerPos: ref {cornerPos}) : {data} ");
+                        }
                     }
                 }
             }

@@ -5,28 +5,20 @@ namespace NodeController.GUI {
     using UnityEngine;
     using ColossalFramework.UI;
 
-    public class LockDirCheckbox :UICheckBoxExt, IDataControllerUI {
+    public class SlopeJunctionCheckbox :UICheckBoxExt, IDataControllerUI {
         public override void Awake() {
             base.Awake();
-            name = nameof(LockDirCheckbox);
-            label.text = "lock";
+            name = nameof(SlopeJunctionCheckbox);
+            label.text = "Slope at junction";
         }
 
-        public string HintHotkeys => "control + click => link both lock dir toggles";
+        public string HintHotkeys => null;
 
-        public string HintDescription => null;
+        public string HintDescription => "gives slope to main road\nembanks side roads if any";
 
-        static bool LockMode => ControlIsPressed && !AltIsPressed;
         Color GetColor() {
-            if (containsMouse && LockMode) 
-                return Color.green;
-            
-            if (Mirror != null && Mirror.containsMouse && LockMode) 
-                return Color.green;
-
             if (containsMouse)
                 return Color.white;
-
             return Color.Lerp(Color.grey, Color.white, 0.50f);
         }
 
@@ -42,26 +34,22 @@ namespace NodeController.GUI {
             Apply();
         }
 
-        UIPanelBase root_;
+        UINodeControllerPanel root_;
         public override void Start() {
             base.Start();
             width = parent.width;
-            root_ = GetRootContainer() as UIPanelBase;
+            root_ = GetRootContainer() as UINodeControllerPanel;
         }
 
-        public LockDirCheckbox Mirror;
-        public bool Left; // going away from the junction.
 
         public void Apply() {
             Assert(!refreshing_, "!refreshing_");
-        Log.Debug("LockDirCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
+            Log.Debug("SlopeJunctionCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
 
-            SegmentEndData data = root_?.GetData() as SegmentEndData;
+            NodeData data = root_?.NodeData;
             if (data == null) return;
 
-            data.Corner(Left).LockLength = this.isChecked;
-            if (ControlIsPressed &&  Mirror != null)
-                Mirror.isChecked = isChecked;
+            data.SlopedJunction = isChecked;
 
             data.RefreshAndUpdate();
             root_.Refresh();
@@ -74,8 +62,9 @@ namespace NodeController.GUI {
             //Log.Debug("Refresh called()\n"/* + Environment.StackTrace*/);
             RefreshValues();
             refreshing_ = true;
-            //if (root_?.GetData() is NodeData nodeData)
-            //    RefreshNode(nodeData);
+            if (isEnabled && root_?.GetData() is NodeData nodeData) {
+                RefreshNode(nodeData);
+            }
 
             parent.isVisible = isVisible = this.isEnabled;
             parent.Invalidate();
@@ -83,16 +72,23 @@ namespace NodeController.GUI {
             refreshing_ = false;
         }
 
+        public void RefreshNode(NodeData data) {
+            if (data.HasUniformSlopedJunction()) {
+                checkedBoxObject.color = Color.white;
+            } else {
+                checkedBoxObject.color = Color.grey;
+            }
+        }
+
         public void RefreshValues() {
             refreshing_ = true;
             INetworkData data = root_?.GetData();
-            if (data is SegmentEndData segmentEndData) {
-                this.isChecked = segmentEndData.Corner(Left).LockLength;
-                isEnabled = segmentEndData.CanModifyCorners();
-            } else if (data is NodeData nodeData) {
-                //this.isChecked = nodeData.FlatJunctions; // TODO complete
-                //isEnabled = nodeData.CanMassEditNodeCorners();
-            } else Disable();
+            if (data is NodeData nodeData) {
+                isEnabled = nodeData.CanModifyFlatJunctions();
+                if (isEnabled) {
+                    this.isChecked = nodeData.SlopedJunction;
+                }
+            }
             refreshing_ = false;
         }
 

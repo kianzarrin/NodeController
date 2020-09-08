@@ -96,9 +96,8 @@ namespace NodeController.GUI {
 
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
-            refreshing_ = true;
-
             RefreshValues();
+            refreshing_ = true;
             if (root_?.GetData() is NodeData nodeData)
                 RefreshNode(nodeData);
 
@@ -116,14 +115,16 @@ namespace NodeController.GUI {
         }
 
         public void RefreshValues() {
+            refreshing_ = true;
             INetworkData data = root_?.GetData();
             if (data is SegmentEndData segmentEndData) {
                 isChecked = segmentEndData.NoMarkings;
-                isEnabled = segmentEndData.ShowClearMarkingsToggle();
+                isEnabled = segmentEndData.ShowNoMarkingsToggle();
             } else if (data is NodeData nodeData) {
-                this.isChecked = nodeData.ClearMarkings;
-                isEnabled = nodeData.ShowClearMarkingsToggle();
+                this.isChecked = nodeData.NoMarkings;
+                isEnabled = nodeData.ShowNoMarkingsToggle();
             } else Disable();
+            refreshing_ = false;
         }
 
         public void Reset() {

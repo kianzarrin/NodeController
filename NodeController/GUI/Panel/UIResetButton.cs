@@ -63,8 +63,8 @@ namespace NodeController.GUI {
 
         public void Refresh() {
             if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
-            refreshing_ = true;
             RefreshValues();
+            refreshing_ = true;
 
             parent.isVisible = isVisible = true;
             Invalidate();
@@ -72,12 +72,14 @@ namespace NodeController.GUI {
         }
 
         public void RefreshValues() {
+            refreshing_ = true;
             INetworkData data = root_.GetData();
             if (data == null) {
                 Disable();
                 return;
             }
             isEnabled = !data.IsDefault();
+            refreshing_ = false;
         }
 
         public void Reset() {

@@ -136,8 +136,17 @@ namespace NodeController.GUI {
             // change width to match parent?
         }
 
-        public float minStep_ => MouseWheelRatio * 0.01f; // round to this.
-        public float MouseWheelRatio = 1; // set to 0.1 for dir vectors.
+        public float MinStep => MouseWheelRatio * 0.01f; // round to this.
+        private float mouseWheelRatio_ = 1;
+        private string format_ = "0.##";
+        public float MouseWheelRatio {
+            get => mouseWheelRatio_;
+            set {
+                mouseWheelRatio_ = value;
+                int n = Mathf.CeilToInt(-Mathf.Log10(value));
+                format_ = "0." + "#" + new String('#', n);
+            }
+        }
         public bool CourseMode => ShiftIsPressed;
         float ScrollStep => (CourseMode ? 0.2f : 1f) * MouseWheelRatio;
 
@@ -213,13 +222,13 @@ namespace NodeController.GUI {
             }
 
             var ret = float.TryParse(text2, out value);
-            value = value.RoundToNearest(minStep_);
+            value = value.RoundToNearest(MinStep);
             return ret;
         }
 
         public float Value {
-            set => text = value.RoundToNearest(minStep_).ToString("0.######") + PostFix;
-            get => float.Parse(StrippedText).RoundToNearest(minStep_);
+            set => text = value.RoundToNearest(MinStep).ToString(format_) + PostFix;
+            get => float.Parse(StrippedText).RoundToNearest(MinStep);
         }
 
         protected override void OnTextChanged() {

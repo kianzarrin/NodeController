@@ -74,9 +74,8 @@ namespace NodeController.GUI {
 
         public void Refresh() {
             //Log.Debug("Refresh called()\n" + Environment.StackTrace);
-            refreshing_ = true;
-
             RefreshValues();
+            refreshing_ = true;
             //if (root_?.GetData() is NodeData nodeData)
             //    RefreshNode(nodeData);
 
@@ -96,6 +95,7 @@ namespace NodeController.GUI {
         }
 
         public void RefreshValues() {
+            refreshing_ = true;
             INetworkData data = root_?.GetData();
             if (data is SegmentEndData segmentEndData) {
                 bool b = segmentEndData.CanModifyTwist();
@@ -105,9 +105,8 @@ namespace NodeController.GUI {
                 }
                 isVisible = parent.isVisible = b;
                 //Log.Debug($"TwistChekbox.Refresh() isVisible={isVisible} b={b}");
-            } else if (data is NodeData nodeData) {
-                Hide();
             } else Hide();
+            refreshing_ = false;
         }
 
         public void Reset() {
