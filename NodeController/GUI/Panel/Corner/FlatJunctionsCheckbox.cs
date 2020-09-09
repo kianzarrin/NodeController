@@ -9,9 +9,9 @@ namespace NodeController.GUI {
     public class UIUnFlattenJunctionsCheckbox : UICheckBox, IDataControllerUI {
         public string HintHotkeys => "del => reset hovered value to default";
         public string HintDescription =>
-            "give slope to junctions. Useful for highway intersections. " +
+            "uncheck give slope to junction/transition. Useful for highway intersections. " +
             "the two bigger segments should turn off flat junction. " +
-            "minor roads joining a sloped intersection twist sideways to matcht the slope of the intersection.";
+            "minor roads joining a sloped intersection twist sideways to match the slope of the intersection.";
 
         public override void Awake() {
             base.Awake();
@@ -30,7 +30,7 @@ namespace NodeController.GUI {
             checkedBoxObject.relativePosition = Vector3.zero;
 
             label = AddUIComponent<UILabel>();
-            label.text = "Slope at junction";
+            label.text = "flatten segment end";
             label.textScale = 0.9f;
             label.relativePosition = new Vector2(sprite.width+5f, (height- label.height)/2+1);
 
@@ -62,8 +62,8 @@ namespace NodeController.GUI {
             if (data == null)
                 return;
  
-            data.FlatJunctions = !this.isChecked;
-            if (this.isChecked)
+            data.FlatJunctions = this.isChecked;
+            if (!this.isChecked)
                 data.Twist = false;
             else
                 data.Twist = data.DefaultTwist;
@@ -96,7 +96,7 @@ namespace NodeController.GUI {
             if (data is SegmentEndData segmentEndData) {
                 isEnabled = segmentEndData.CanModifyFlatJunctions();
                 if (isEnabled) {
-                    this.isChecked = !segmentEndData.FlatJunctions;
+                    this.isChecked = segmentEndData.FlatJunctions;
                 }
             } else Disable();
             refreshing_ = false;
@@ -104,7 +104,7 @@ namespace NodeController.GUI {
 
         public void Reset() {
             if (root_?.GetData() is SegmentEndData segmentEndData) {
-                isChecked = !segmentEndData.DefaultFlatJunctions;
+                isChecked = segmentEndData.DefaultFlatJunctions;
             }
         }
     }

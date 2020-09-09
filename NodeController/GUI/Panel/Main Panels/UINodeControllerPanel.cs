@@ -60,11 +60,12 @@ namespace NodeController.GUI {
                 Controls.Add(dropdown_);
             }
 
-            {
-                var panel = AddPanel();
-                var checkBox = panel.AddUIComponent<SlopeJunctionCheckbox>();
-                Controls.Add(checkBox);
-            }
+            // TODO find a working logic.
+            //{
+            //    var panel = AddPanel();
+            //    var checkBox = panel.AddUIComponent<MassFlattenNodeCheckbox>();
+            //    Controls.Add(checkBox);
+            //}
 
             const bool extendedSlider = true;
             { // offset

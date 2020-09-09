@@ -1,11 +1,6 @@
-
-- twisted segments need slope when attached at an angle. (fixed)
-
 - options for default universal behaviours:
-    - limit dir.y to 2 (done)
-    - sloped junction (done)
-    - auto embankment for curved segments. (not done)
-    - if segment count=2, only one side should have zebra crossing by default (done in TMPE)
+    - auto embankment for curved segments. 
+
 
 - open and close left and right table.
 - new Corner table organisation

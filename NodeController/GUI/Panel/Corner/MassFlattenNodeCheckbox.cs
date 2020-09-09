@@ -5,16 +5,16 @@ namespace NodeController.GUI {
     using UnityEngine;
     using ColossalFramework.UI;
 
-    public class SlopeJunctionCheckbox :UICheckBoxExt, IDataControllerUI {
+    public class MassFlattenNodeCheckbox :UICheckBoxExt, IDataControllerUI {
         public override void Awake() {
             base.Awake();
-            name = nameof(SlopeJunctionCheckbox);
-            label.text = "Slope at junction";
+            name = nameof(MassFlattenNodeCheckbox);
+            label.text = "flatten node";
         }
 
         public string HintHotkeys => null;
 
-        public string HintDescription => "gives slope to main road\nembanks side roads if any";
+        public string HintDescription => "uncheck to give slope to main road\nembanks side roads if any";
 
         Color GetColor() {
             if (containsMouse)
@@ -44,12 +44,12 @@ namespace NodeController.GUI {
 
         public void Apply() {
             Assert(!refreshing_, "!refreshing_");
-            Log.Debug("SlopeJunctionCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
+            Log.Debug("FlattenNodeCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
 
             NodeData data = root_?.NodeData;
             if (data == null) return;
 
-            data.SlopedJunction = isChecked;
+            data.IsFlattened = isChecked;
 
             data.RefreshAndUpdate();
             root_.Refresh();
@@ -73,7 +73,7 @@ namespace NodeController.GUI {
         }
 
         public void RefreshNode(NodeData data) {
-            if (data.HasUniformSlopedJunction()) {
+            if (data.HasUniformFlatJunction()) {
                 checkedBoxObject.color = Color.white;
             } else {
                 checkedBoxObject.color = Color.grey;
@@ -86,7 +86,7 @@ namespace NodeController.GUI {
             if (data is NodeData nodeData) {
                 isEnabled = nodeData.CanModifyFlatJunctions();
                 if (isEnabled) {
-                    this.isChecked = nodeData.SlopedJunction;
+                    this.isChecked = nodeData.IsFlattened;
                 }
             }
             refreshing_ = false;

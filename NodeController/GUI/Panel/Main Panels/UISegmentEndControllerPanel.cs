@@ -53,6 +53,19 @@ namespace NodeController.GUI {
             name = "UISegmentEndControllerPanel";
             Caption = "Segment End Controller";
 
+            {
+                var panel = AddPanel();
+                panel.padding = new RectOffset(10, 10, 5, 5);
+                panel.autoLayoutPadding = default;
+                var checkBox = panel.AddUIComponent<UIUnFlattenJunctionsCheckbox>();
+                Controls.Add(checkBox);
+
+                var panel2 = panel.AddUIComponent<UIAutoSizePanel>();
+                panel2.padding = new RectOffset(20, 0, 4, 0);
+                var checkBox2 = panel2.AddUIComponent<TwistCheckbox>();
+                Controls.Add(checkBox2);
+            }
+
             { // offset
                 offsetPanel_ = MakeSliderSection(this,out var label,out var panel0, out var row1, out var row2);
                 label.text = "Corner offset";
@@ -137,19 +150,6 @@ namespace NodeController.GUI {
                 fieldPercent.SetData = val => SegmentEndData.Stretch = val;
                 fieldPercent.PostFix = "%";
                 Controls.Add(fieldPercent);
-            }
-
-            {
-                var panel = AddPanel();
-                panel.padding = new RectOffset(10, 10, 5, 5);
-                panel.autoLayoutPadding = default;
-                var checkBox = panel.AddUIComponent<UIUnFlattenJunctionsCheckbox>();
-                Controls.Add(checkBox);
-
-                var panel2 = panel.AddUIComponent<UIAutoSizePanel>();
-                panel2.padding = new RectOffset(20, 0, 4, 0);
-                var checkBox2 = panel2.AddUIComponent<TwistCheckbox>();
-                Controls.Add(checkBox2);
             }
 
             {

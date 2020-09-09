@@ -1,5 +1,3 @@
-//#define CORNER_LEGACY
-
 namespace NodeController {
     using ColossalFramework;
     using ColossalFramework.Math;
@@ -15,6 +13,7 @@ namespace NodeController {
     using UnityEngine;
     using CSURUtil = Util.CSURUtil;
     using Log = KianCommons.Log;
+    using NodeController.GUI;
 
     [Serializable]
     public class SegmentEndData : INetworkData, INetworkData<SegmentEndData>, ISerializable {
@@ -62,8 +61,8 @@ namespace NodeController {
 
         // defaults
         public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(NodeID);
-        public bool DefaultFlatJunctions => Info.m_flatJunctions;
-        public bool DefaultTwist => Info.m_flatJunctions /*|| Info.m_twistSegmentEnds*/ ;
+        public bool DefaultFlatJunctions => Info.m_flatJunctions; // TODO can this be based on config?
+        public bool DefaultTwist => DefaultFlatJunctions;
         public NetSegment.Flags DefaultFlags;
 
         // cache
@@ -273,9 +272,12 @@ namespace NodeController {
             set => EmbankmentAngleDeg = Mathf.Atan(value * 0.01f) * Mathf.Rad2Deg;
         }
 
+        // we know Dir00.LenXZ == 1
+        float AverageDirY00 => (LeftCorner.Dir00.y + RightCorner.Dir00.y) * 0.5f;
+
         public float SlopeAngleDeg {
-            get => DeltaSlopeAngleDeg + AngleDeg(Direction);
-            set => DeltaSlopeAngleDeg = value - AngleDeg(Direction);
+            get => DeltaSlopeAngleDeg + AngleDeg(AverageDirY00);
+            set => DeltaSlopeAngleDeg = value - AngleDeg(AverageDirY00);
         }
 
 
@@ -310,7 +312,8 @@ namespace NodeController {
             }
 
             public Vector3Serializable CachedPos, CachedDir;
-            public Vector3Serializable Dir0, Pos0;
+            public Vector3Serializable Dir00, Pos00; // before sliders
+            public Vector3Serializable Dir0, Pos0; // after sliders but before 3x4 table
             public Vector3Serializable DeltaPos, DeltaDir;
 
             public void ResetDeltaDirI(int index) {
@@ -425,7 +428,7 @@ namespace NodeController {
         }
         #endregion
 
-        public static float AngleDeg(Vector3 dir) => Mathf.Atan(dir.y) * Mathf.Rad2Deg;
+        public static float AngleDeg(float y) => Mathf.Atan(y) * Mathf.Rad2Deg;
 
         /// Precondition: cornerDir.LenXZ = 1
         /// <param name="leftSide">left side going away from the junction</param>
@@ -436,14 +439,20 @@ namespace NodeController {
                     VectorUtils.LengthXZ(cornerDir));
             }
 
+            ref CornerData corner = ref Corner(leftSide);
+            if (insideAfterCalcualte_) {
+                // take a snapshot of pos00/dir00 before sliders but after flatten node checkbox.
+                corner.Dir00 = cornerDir;
+                corner.Pos00 = cornerPos;
+            }
+
             CornerData.CalculateTransformVectors(
                 dir: cornerDir,
                 left: leftSide,
                 outward: out var outwardDir,
                 forward: out var forwardDir);
 
-            float dirY0 = cornerDir.y;
-            float slopeAngleDeg = DeltaSlopeAngleDeg + AngleDeg(cornerDir); 
+            float slopeAngleDeg = DeltaSlopeAngleDeg + AngleDeg(corner.Dir00.y); 
             float slopeAngleRad = slopeAngleDeg * Mathf.Deg2Rad;
 
             if (89 <= slopeAngleDeg && slopeAngleDeg <= 91) {
@@ -461,7 +470,7 @@ namespace NodeController {
             }
             if (!Node.m_flags.IsFlagSet(NetNode.Flags.Middle)) {
                 float d = VectorUtils.DotXZ(cornerPos - Node.m_position, cornerDir);
-                cornerPos.y += d * (cornerDir.y - dirY0);
+                cornerPos.y += d * (cornerDir.y - corner.Dir00.y);
             }
 
             if (Settings.GameConfig.UnviversalSlopeFixes) {
@@ -493,7 +502,6 @@ namespace NodeController {
 
             cornerPos += CornerData.TransformCoordinates(deltaPos, outwardDir, Vector3.up, forwardDir);
 
-            ref CornerData corner = ref Corner(leftSide);
 
             if (insideAfterCalcualte_) {
                 // take a snapshot of pos0/dir0 then apply delta pos/dir
