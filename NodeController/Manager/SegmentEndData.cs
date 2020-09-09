@@ -464,14 +464,15 @@ namespace NodeController {
                 cornerPos.y += d * (cornerDir.y - dirY0);
             }
 
-            // this must be done after readjusting cornerPos.y
-            // make sure direction vector is not too big.
-            float absY = Mathf.Abs(cornerDir.y);
-            if (absY > 2) {
-                // fix dir length so that y is 2:
-                cornerDir *= 2 / absY;
+            if (Settings.GameConfig.UnviversalSlopeFixes) {
+                // this must be done after readjusting cornerPos.y
+                // make sure direction vector is not too big.
+                float absY = Mathf.Abs(cornerDir.y);
+                if (absY > 2) {
+                    // fix dir length so that y is 2:
+                    cornerDir *= 2 / absY;
+                }
             }
-
 
             Vector3 deltaPos = Vector3.zero;
 

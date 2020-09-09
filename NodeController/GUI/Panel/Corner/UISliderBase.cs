@@ -43,7 +43,7 @@ namespace NodeController.GUI {
         public virtual bool CourseMode => ShiftIsPressed;
 
         public float LargeScrollStep = 10;
-        public float CourseScrollStep = 2;
+        public float CourseScrollStep = 1;
         public float LargeDragStep = 5;
         public float CourseDragStep = 1;
         // step size is read step.

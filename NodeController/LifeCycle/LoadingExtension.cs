@@ -11,13 +11,13 @@ namespace NodeController.LifeCycle
         {
             Log.Debug("LoadingExtention.OnLevelLoaded");
             if (mode == LoadMode.LoadGame || mode == LoadMode.NewGame || mode == LoadMode.NewGameFromScenario)
-                LifeCycle.Load();
+                LifeCycle.Load(mode);
         }
 
         public override void OnLevelUnloading()
         {
             Log.Debug("LoadingExtention.OnLevelUnloading");
-            LifeCycle.Release();
+            LifeCycle.UnLoad();
         }
     }
 }

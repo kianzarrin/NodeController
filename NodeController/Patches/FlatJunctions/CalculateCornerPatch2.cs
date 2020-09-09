@@ -6,6 +6,7 @@ namespace NodeController.Patches {
     using System.Reflection;
     using UnityEngine;
     using static ColossalFramework.Math.VectorUtils;
+    using NodeController.GUI;
 
     [UsedImplicitly]
     [HarmonyPatch]
@@ -49,6 +50,9 @@ namespace NodeController.Patches {
             ushort segmentID, bool start, bool leftSide,
             ref Vector3 cornerPos, ref Vector3 cornerDirection) {
             SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
+            if (data == null && !Settings.GameConfig.UnviversalSlopeFixes)
+                return;
+
             ushort nodeID = segmentID.ToSegment().GetNode(start);
             bool middle = nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle);
             if (!middle) {

@@ -1,22 +1,25 @@
-
 namespace NodeController.LifeCycle
 {
     using JetBrains.Annotations;
     using ICities;
     using KianCommons;
     using System;
+    using NodeController.GUI;
 
     [Serializable]
     public class NCState {
-        public string Version = "2.1.1";
         public static NCState Instance;
+
+        public string Version = typeof(NCState).VersionOf().ToString(3);
         public byte[] NodeManagerData;
         public byte[] SegmentEndManagerData;
+        public GameConfigT GameConfig;
 
         public static byte[] Serialize() {
             Instance = new NCState {
                 NodeManagerData = NodeManager.Serialize(),
                 SegmentEndManagerData = SegmentEndManager.Serialize(),
+                GameConfig = Settings.GameConfig,
             };
             return SerializationUtil.Serialize(Instance);
         }
@@ -28,17 +31,21 @@ namespace NodeController.LifeCycle
             } else {
                 Log.Debug($"NCState.Deserialize(data): data.Length={data?.Length}");
                 Instance = SerializationUtil.Deserialize(data) as NCState;
-                if (Instance?.Version != null)
+                if (Instance?.Version != null) { //2.1.1 or above
                     SerializationUtil.DeserializationVersion = new Version(Instance.Version);
-                else
-                    SerializationUtil.DeserializationVersion = new Version(2, 0);
+                } else {
+                    // 2.0
+                    SerializationUtil.DeserializationVersion = new System.Version(2, 0);
+                    Instance.GameConfig = GameConfigT.LoadGameDefault; // for the sake of feature proofing.
+                    Instance.GameConfig.UnviversalSlopeFixes = true; // in this version I do apply slope fixes.
+                }
             }
+            Settings.GameConfig = Instance.GameConfig;
             SegmentEndManager.Deserialize(Instance.SegmentEndManagerData);
             NodeManager.Deserialize(Instance.NodeManagerData);
         }
 
     }
-
 
     [UsedImplicitly]
     public class SerializableDataExtension

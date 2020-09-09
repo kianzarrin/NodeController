@@ -1,11 +1,30 @@
-using ColossalFramework.UI;
-using ICities;
-using ColossalFramework;
 
 namespace NodeController.GUI {
-    using Tool;
+    using System;
+    using ColossalFramework.UI;
+    using ICities;
+    using ColossalFramework;
+    using NodeController.Tool;
+    using static KianCommons.HelpersExtensions;
+
+    [Serializable]
+    public class GameConfigT {
+        public bool UnviversalSlopeFixes;
+
+        public static GameConfigT NewGameDefault => new GameConfigT {
+            UnviversalSlopeFixes = true,
+        };
+
+        public static GameConfigT LoadGameDefault => new GameConfigT {
+            UnviversalSlopeFixes = false,
+        };
+    }
+
     public static class Settings {
         public const string FileName = nameof(NodeController);
+
+        public static GameConfigT GameConfig;
+
         static Settings() {
             // Creating setting file - from SamsamTS
             if (GameSettings.FindSettingsFileByName(FileName) == null) {
@@ -14,8 +33,23 @@ namespace NodeController.GUI {
         }
 
         public static void OnSettingsUI(UIHelperBase helper) {
-            UIHelper group = helper.AddGroup("Node Controller") as UIHelper;
+            MakeGlobalSettings(helper);
+            if (CheckGameMode(AppMode.Game)) {
+                MakeGameSettings(helper);
+            }
+        }
+
+        public static void FixTooltipAlignment(UIComponent component) {
+            component.eventTooltipShow += (c, _) => {
+                if (c.tooltipBox is UILabel label)
+                    label.textAlignment = UIHorizontalAlignment.Left;
+            };
+        }
+
+        public static void MakeGlobalSettings(UIHelperBase helper) {
+            UIHelper group = helper.AddGroup("Global settings") as UIHelper;
             UIPanel panel = group.self as UIPanel;
+
             var keymappings = panel.gameObject.AddComponent<KeymappingsPanel>();
             keymappings.AddKeymapping("Activation Shortcut", NodeControllerTool.ActivationShortcut);
 
@@ -23,7 +57,10 @@ namespace NodeController.GUI {
                 "Snap to middle node",
                 NodeControllerTool.SnapToMiddleNode.value,
                 val => NodeControllerTool.SnapToMiddleNode.value = val) as UICheckBox;
-            //snapToggle.tooltip = "?";
+            snapToggle.tooltip = "when you click near a middle node:\n" +
+                " - [checked] => Node controller modifies the node\n" +
+                " - [unchceked] => Node controller moves the node to hovered position.";
+            FixTooltipAlignment(snapToggle);
 
             UICheckBox TMPE_Overlay = group.AddCheckbox(
                 "Hide TMPE overlay on the selected node",
@@ -31,6 +68,20 @@ namespace NodeController.GUI {
                 val => NodeControllerTool.Hide_TMPE_Overlay.value = val) as UICheckBox;
             TMPE_Overlay.tooltip = "Holding control hides all TMPE overlay.\n" +
                 "but if this is checked, you don't have to (excluding Corssings/Uturn)";
+            FixTooltipAlignment(TMPE_Overlay);
+
+        }
+
+        public static void MakeGameSettings(UIHelperBase helper) {
+            UIHelper group = helper.AddGroup("Game settings") as UIHelper;
+
+            UIPanel panel = group.self as UIPanel;
+
+            UICheckBox universalFixes = group.AddCheckbox(
+                "apply universal slope fixes(flat jucntions, curvitute of extreme slopes)",
+                defaultValue: GameConfig?.UnviversalSlopeFixes ?? GameConfigT.NewGameDefault.UnviversalSlopeFixes,
+                val => GameConfig.UnviversalSlopeFixes = val) as UICheckBox;
+            universalFixes.tooltip = "changing this may influence existing custom nodes.";
         }
     }
 }

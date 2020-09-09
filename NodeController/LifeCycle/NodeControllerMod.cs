@@ -25,7 +25,7 @@ namespace NodeController.LifeCycle
         [UsedImplicitly]
         public void OnDisabled()
         {
-            LifeCycle.Release();
+            LifeCycle.UnLoad();
         }
 
         [UsedImplicitly]
