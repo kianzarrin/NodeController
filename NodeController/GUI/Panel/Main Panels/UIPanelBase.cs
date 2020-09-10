@@ -123,6 +123,7 @@ namespace NodeController.GUI {
             lblCaption_.relativePosition = new Vector2(x, 14);
 
             Hintbox?.RefreshValues();
+            Hintbox.height = 600;
             Invalidate();
         }
 
@@ -222,6 +223,7 @@ namespace NodeController.GUI {
                 panel0.AutoSize2 = false;
                 panel0.width = 290; // set slider width
                 label = panel0.AddUIComponent<UILabel>();
+                panel0.padding = new RectOffset(5, 0, 0, 0);
             }
             {
                 var table = section.AddUIComponent<UIAutoSizePanel>();

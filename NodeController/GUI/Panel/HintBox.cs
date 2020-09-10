@@ -76,7 +76,6 @@ namespace NodeController.GUI {
         // tool 
         public string Hint3;
 
-
         public override void Update() {
             base.Update();
             try {

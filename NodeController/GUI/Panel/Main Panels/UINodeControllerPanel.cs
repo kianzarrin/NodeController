@@ -142,8 +142,8 @@ namespace NodeController.GUI {
 
                 var fieldPercent = row2.AddUIComponent<UICornerTextField>();
                 if (extendedSlider) fieldPercent.size = CELL_SIZE2;
-                fieldPercent.GetData = () => NodeData.Stretch;
-                fieldPercent.SetData = val => NodeData.Stretch = val;
+                fieldPercent.GetData = () => NodeData.Stretch + 100;
+                fieldPercent.SetData = val => NodeData.Stretch = val - 100;
                 fieldPercent.IsMixed = () => !NodeData.HasUniformStretch();
                 fieldPercent.PostFix = "%";
                 Controls.Add(fieldPercent);

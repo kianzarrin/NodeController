@@ -1,10 +1,11 @@
 
 namespace NodeController.GUI {
-    using System;
+    using ColossalFramework;
     using ColossalFramework.UI;
     using ICities;
-    using ColossalFramework;
+    using KianCommons;
     using NodeController.Tool;
+    using System;
     using static KianCommons.HelpersExtensions;
 
     [Serializable]
@@ -80,8 +81,31 @@ namespace NodeController.GUI {
             UICheckBox universalFixes = group.AddCheckbox(
                 "apply universal slope fixes(flat jucntions, curvitute of extreme slopes)",
                 defaultValue: GameConfig?.UnviversalSlopeFixes ?? GameConfigT.NewGameDefault.UnviversalSlopeFixes,
-                val => GameConfig.UnviversalSlopeFixes = val) as UICheckBox;
+                ApplyUniversalSlopeFixes) as UICheckBox;
             universalFixes.tooltip = "changing this may influence existing custom nodes.";
+        }
+
+        static void ApplyUniversalSlopeFixes(bool value) {
+            GameConfig.UnviversalSlopeFixes = value;
+            for (ushort segmentID = 0; segmentID < NetManager.MAX_SEGMENT_COUNT; ++segmentID) {
+                if (NetUtil.IsSegmentValid(segmentID)) {
+                    // update only those that have flat junctions and not customized (custom nodes use enforced flat junctions).
+                    if (segmentID.ToSegment().Info.m_flatJunctions == false &&
+                        !segmentID.ToSegment().m_startNode.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle) &&
+                        !segmentID.ToSegment().m_endNode.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle) &&
+                        SegmentEndManager.Instance.GetAt(segmentID, true) == null &&
+                        SegmentEndManager.Instance.GetAt(segmentID, false) == null) {
+                        NetManager.instance.UpdateSegment(segmentID);
+                    }
+
+                    // also update segments with extreme slopes.
+                    if (segmentID.ToSegment().m_startDirection.y > 2 ||
+                        segmentID.ToSegment().m_endDirection.y > 2) { 
+                        NetManager.instance.UpdateSegment(segmentID);
+                    }
+                }
+            }
         }
     }
 }
+

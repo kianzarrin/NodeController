@@ -254,9 +254,9 @@ namespace NodeController.Tool {
                 else
                     ret += "alt + click => select segment end.\ncannot insert node here ";
             } else if (insert && crossing)
-                ret = "click => insert crossing\n" + "alt + click select => segment end";
+                ret = "click => insert crossing\n" + "alt + click => select segment end";
             else if (insert && !crossing)
-                ret = "click => insert new middle node\n" + "alt + click select => segment end";
+                ret = "click => insert new middle node\n" + "alt + click => select segment end";
             else if (edit)
                 ret = "click => select node\n" + "alt + click  => select segment end";
             else

@@ -12,10 +12,10 @@ namespace NodeController.GUI {
         }
 
         public override void ApplyNode(NodeData data) 
-            => data.Stretch = value;
+            => data.Stretch = value - 100;
 
         public override void ApplySegmentEnd(SegmentEndData data)
-            => data.Stretch = value;
+            => data.Stretch = value - 100;
 
         public override string TooltipPostfix => "%";
 
@@ -26,13 +26,13 @@ namespace NodeController.GUI {
         public override void RefreshNodeValues(NodeData data) {
             isEnabled = data.CanMassEditNodeCorners();
             if (isEnabled)
-                value = data.Stretch;
+                value = data.Stretch + 100;
         }
 
         public override void RefreshSegmentEndValues(SegmentEndData data) {
             isEnabled = data.CanModifyCorners();
             if (isEnabled)
-                value = data.Stretch;
+                value = data.Stretch + 100;
         }
     }
 }

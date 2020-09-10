@@ -94,22 +94,21 @@ namespace NodeController.GUI {
             ?? throw new Exception("m_HoverIndex not found");
 
         int GetHoverIndex() {
-            Log.Debug("GetHoverIndex() popup=" + Popup);
-            if (!Popup.isVisible)
+            //Log.Debug("GetHoverIndex() popup=" + Popup);
+            if (Popup == null || !Popup.isVisible)
                 return -1;
             return (int)fHoverIndex.GetValue(Popup);
         }
 
         public NodeTypeT GetHoveredItem() {
-            Log.Debug("GetHoveredItem() called" );
+            //Log.Debug("GetHoveredItem() called" );
             int index = GetHoverIndex();
-            Log.Debug("index = " + index);
+            //Log.Debug("GetHoveredItem index = " + index);
             if (index == -1)
                 return SelectedItem;
             string item = items[index];
             return (NodeTypeT)String2Enum<NodeTypeT>(item);
         }
-
 
         public string HintHotkeys => "del => reset node type to default";
 
