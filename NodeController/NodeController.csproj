@@ -30,6 +30,9 @@
     <AssemblyName>NodeController</AssemblyName>
     <RootNamespace>NodeController</RootNamespace>
   </PropertyGroup>
+  <PropertyGroup>
+    <PathMap>$(MSBuildProjectDirectory)\=$(ProjectName)\</PathMap>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="KianCommons\KianCommons\obj\**" />
     <Compile Remove="KianCommons\libs\**" />

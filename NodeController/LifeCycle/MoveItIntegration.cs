@@ -99,26 +99,40 @@ namespace NodeController.LifeCycle {
             }
         }
 
-        public static void PasteSegment(ushort targetSegmentID, MoveItSegmentData record, Dictionary<InstanceID, InstanceID> map) {
-            Log.Debug($"MoveItIntegration.PasteSegment({targetSegmentID}) called with record = " + record);
-            if (record == null) {
+        public static void PasteSegment(
+            ushort targetSegmentID, MoveItSegmentData data, Dictionary<InstanceID, InstanceID> map) {
+            Log.Debug($"MoveItIntegration.PasteSegment({targetSegmentID}) called with record = " + data);
+            if (data == null) {
                 // doing this is not backward comatible:
                 //segEndMan.ResetSegmentEndToDefault(segmentId, true); 
                 //segEndMan.ResetSegmentEndToDefault(segmentId, false);
             } else {
-                var data = record;
-                if (data.Start != null) {
-                    data.Start.SegmentID = targetSegmentID;
-                    data.Start.NodeID = targetSegmentID.ToSegment().m_startNode;
-                }
-                segEndMan.SetAt(targetSegmentID, true, data.Start);
 
-                if (data.End != null) {
-                    data.End.SegmentID = targetSegmentID;
-                    data.End.NodeID = targetSegmentID.ToSegment().m_endNode;
+                var segEnd1 = data.Start;
+                if (segEnd1 != null) {
+                    ushort nodeID = MappedNodeID(map, segEnd1.NodeID);
+                    PasteSegmentEnd(segEnd1, targetSegmentID, nodeID);
                 }
-                segEndMan.SetAt(targetSegmentID, false, data.End);
+
+                var segEnd2 = data.End;
+                if (segEnd2 != null) {
+                    ushort nodeID = MappedNodeID(map, segEnd2.NodeID);
+                    PasteSegmentEnd(segEnd2, targetSegmentID, nodeID);
+                }
             }
         }
+
+        public static ushort MappedNodeID(Dictionary<InstanceID, InstanceID> map, ushort nodeID) {
+            return map[new InstanceID { NetNode = nodeID }].NetNode;
+        }
+
+        public static void PasteSegmentEnd(SegmentEndData segmentEndData, ushort targetNodeID, ushort targetSegmentID) {
+            if (segmentEndData != null) {
+                segmentEndData.SegmentID = targetSegmentID;
+                segmentEndData.NodeID = targetNodeID;
+            }
+            segEndMan.SetAt(targetSegmentID, targetNodeID, segmentEndData);
+        }
+
     }
 }

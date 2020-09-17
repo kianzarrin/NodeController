@@ -13,7 +13,6 @@ namespace NodeController {
     using UnityEngine;
     using CSURUtil = Util.CSURUtil;
     using Log = KianCommons.Log;
-    using NodeController.GUI;
 
     [Serializable]
     public class SegmentEndData : INetworkData, INetworkData<SegmentEndData>, ISerializable {
