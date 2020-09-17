@@ -13,6 +13,7 @@ namespace NodeController {
     using KianCommons.Math;
     using NodeController.Tool;
     using System.Diagnostics;
+    using System.Linq;
 
     public enum NodeTypeT {
         Middle,
@@ -349,7 +350,11 @@ namespace NodeController {
             Calculate();
             NodeType = DefaultNodeType;
             FirstTimeTrafficLight = false;
-            Assert(IsDefault(), "IsDefault()");
+            Assert(IsDefault(), $"{this}.IsDefault(): NodeType:{NodeType} == {DefaultNodeType}\n"+
+                string.Join("|", IterateSegmentEndDatas()
+                .Where(segEnd => !segEnd.IsDefault())
+                .Select(segEnd => $"{segEnd} is not default")
+                .ToArray()) );
             Assert(CanChangeTo(NodeType), $"CanChangeTo(NodeType={NodeType})");
             Update();
         }
@@ -440,9 +445,10 @@ namespace NodeController {
         }
 
         public void Update() {
-            var st = new StackTrace(fNeedFileInfo: true);
-            Log.Debug(this + "\n" + st.ToStringPretty());
-            
+            if (VERBOSE) {
+                var st = new StackTrace(fNeedFileInfo: true);
+                Log.Debug(this + "\n" + st.ToStringPretty());
+            }
             NetManager.instance.UpdateNode(NodeID);
         }
 
