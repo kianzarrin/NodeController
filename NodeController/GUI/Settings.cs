@@ -83,7 +83,7 @@ namespace NodeController.GUI {
             val = val ?? "null";
             Log.Debug($"MakeGameSettings: UnviversalSlopeFixes =" + val);
             UICheckBox universalFixes = group.AddCheckbox(
-                "apply universal slope fixes(flat jucntions, curvitute of extreme slopes)",
+                "apply universal slope fixes(flat jucntions, curvature of extreme slopes)",
                 defaultValue: GameConfig?.UnviversalSlopeFixes ?? GameConfigT.NewGameDefault.UnviversalSlopeFixes,
                 ApplyUniversalSlopeFixes) as UICheckBox;
             universalFixes.tooltip = "changing this may influence existing custom nodes.";

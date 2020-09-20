@@ -115,12 +115,9 @@ namespace NodeController.GUI {
         public override void Update() {
             base.Update();
             var c = GetColor();
-            if (!MixedValues)
-                color = Color.Lerp(c, Color.white, 0.70f);
-            else {
-                color = Color.Lerp(c, Color.grey, 0.70f);
-                opacity = 0.2f;
-            }
+            color = Color.Lerp(c, Color.white, 0.70f);
+            if (MixedValues)
+                color = Color.Lerp(c, Color.yellow, 0.2f);
         }
 
         public override void Start() {
