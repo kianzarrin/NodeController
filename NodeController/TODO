@@ -1,10 +1,7 @@
-BUG: move middle node/split segment does not work so well
 
-bug: reseting slope alone to default is problematic.
+bug: reseting slope to default is problematic.
 
-bug: node slider stays transparent even after I move it.
-
-bug: options persistency.
+bug: node sliders stays transparent even after I move it.
 
 
 - options for default universal behaviours:

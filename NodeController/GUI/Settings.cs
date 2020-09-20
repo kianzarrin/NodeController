@@ -34,8 +34,9 @@ namespace NodeController.GUI {
         }
 
         public static void OnSettingsUI(UIHelperBase helper) {
+            Log.Debug("Make settings was called");
             MakeGlobalSettings(helper);
-            if (CheckGameMode(AppMode.Game)) {
+            if (!InStartup) {
                 MakeGameSettings(helper);
             }
         }
@@ -78,6 +79,9 @@ namespace NodeController.GUI {
 
             UIPanel panel = group.self as UIPanel;
 
+            object val = GameConfig?.UnviversalSlopeFixes;
+            val = val ?? "null";
+            Log.Debug($"MakeGameSettings: UnviversalSlopeFixes =" + val);
             UICheckBox universalFixes = group.AddCheckbox(
                 "apply universal slope fixes(flat jucntions, curvitute of extreme slopes)",
                 defaultValue: GameConfig?.UnviversalSlopeFixes ?? GameConfigT.NewGameDefault.UnviversalSlopeFixes,

@@ -21,6 +21,10 @@ namespace NodeController.LifeCycle
                 SegmentEndManagerData = SegmentEndManager.Serialize(),
                 GameConfig = Settings.GameConfig,
             };
+
+            Log.Debug("NCState.Serialize(): saving UnviversalSlopeFixes as " +
+                Instance.GameConfig.UnviversalSlopeFixes);
+
             return SerializationUtil.Serialize(Instance);
         }
 
@@ -32,14 +36,17 @@ namespace NodeController.LifeCycle
                 Log.Debug($"NCState.Deserialize(data): data.Length={data?.Length}");
                 Instance = SerializationUtil.Deserialize(data) as NCState;
                 if (Instance?.Version != null) { //2.1.1 or above
+                    Log.Debug("Deserializing V"+ Instance.Version);
                     SerializationUtil.DeserializationVersion = new Version(Instance.Version);
                 } else {
                     // 2.0
+                    Log.Debug("Deserializing version 2.0");
                     SerializationUtil.DeserializationVersion = new System.Version(2, 0);
                     Instance.GameConfig = GameConfigT.LoadGameDefault; // for the sake of feature proofing.
                     Instance.GameConfig.UnviversalSlopeFixes = true; // in this version I do apply slope fixes.
                 }
             }
+            Log.Debug($"setting UnviversalSlopeFixes to {Instance.GameConfig.UnviversalSlopeFixes}");
             Settings.GameConfig = Instance.GameConfig;
             SegmentEndManager.Deserialize(Instance.SegmentEndManagerData);
             NodeManager.Deserialize(Instance.NodeManagerData);
