@@ -13,6 +13,7 @@ namespace NodeController {
     using UnityEngine;
     using CSURUtil = Util.CSURUtil;
     using Log = KianCommons.Log;
+    using static KianCommons.HelpersExtensions;
 
     [Serializable]
     public class SegmentEndData : INetworkData, INetworkData<SegmentEndData>, ISerializable {
@@ -107,7 +108,8 @@ namespace NodeController {
             CornerOffset = DefaultCornerOffset;
             FlatJunctions = DefaultFlatJunctions;
             Twist = DefaultTwist;
-            Log.Debug($"SegmentEndData() Direction={Direction} Slope={SlopeAngleDeg}");
+            if(VERBOSE)
+                Log.Debug($"SegmentEndData() Direction={Direction} Slope={SlopeAngleDeg}");
             HelpersExtensions.Assert(IsDefault(),
             $"\n{CornerOffset} == {DefaultCornerOffset} error = 0.1\n" +
             $"DeltaSlopeAngleDeg:{DeltaSlopeAngleDeg} == 0;" +
@@ -144,7 +146,7 @@ namespace NodeController {
                 Log.Debug("SegmentEndData.Refresh() for this\n" + Environment.StackTrace);
 
             if (!CanModifyOffset()) {
-                Log.Debug("SegmentEndData.Refresh(): setting CornerOffset = DefaultCornerOffset");
+                //Log.Debug("SegmentEndData.Refresh(): setting CornerOffset = DefaultCornerOffset");
                 CornerOffset = DefaultCornerOffset;
             }
             if (!CanModifyFlatJunctions()) {
@@ -164,9 +166,10 @@ namespace NodeController {
         }
 
         public void Update() {
-            var st = new StackTrace(fNeedFileInfo: true);
-            Log.Debug(this + "\n" + st.ToStringPretty());
-
+            if (VERBOSE) {
+                var st = new StackTrace(fNeedFileInfo: true);
+                Log.Debug(this + "\n" + st.ToStringPretty());
+            }
             NetManager.instance.UpdateNode(NodeID);
         }
 

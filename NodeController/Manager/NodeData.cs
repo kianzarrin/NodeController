@@ -226,7 +226,7 @@ namespace NodeController {
                 bool sideSegment = i >= 2;
                 //main road slope, side segment flat and twisted.
                 bool sloped = segEnd.FlatJunctions == sideSegment && segEnd.Twist == sideSegment;
-                Log.Debug($"HasUniformSlopedJunction i:{i} good:{sloped}");
+                //Log.Debug($"HasUniformSlopedJunction i:{i} good:{sloped}");
                 if (i == 0)
                     sloped0 = sloped;
                 else if (sloped != sloped0)
@@ -243,7 +243,7 @@ namespace NodeController {
                 bool sideSegment = i >= 2;
                 // main road slope, side segment flat and twisted.
                 bool flat = segEnd.FlatJunctions == true;
-                Log.Debug($"HasUniformFlatJunction i:{i} good:{flat}");
+                //Log.Debug($"HasUniformFlatJunction i:{i} good:{flat}");
                 if (i == 0)
                     flat0 = flat;
                 else if (flat != flat0)

@@ -81,11 +81,11 @@ namespace NodeController.Patches {
                     if (twist && neighbourslope) {
                         Vector3 nodePos = nodeID.ToNode().m_position;
                         Vector3 neighbourEndDir = neighbourSegmentID.ToSegment().GetDirection(nodeID);
-                        if (data != null) {
-                            Log.Debug($"calling FixCornerPosMinor(" +
-                                $"nodePos: {nodePos}, neighbourEndDir: {neighbourEndDir}, \n" +
-                                $"cornerDir: ref {cornerDirection}, cornerPos: ref {cornerPos}) : {data} ");
-                        }
+                        //if (data != null) {
+                        //    Log.Debug($"calling FixCornerPosMinor(" +
+                        //        $"nodePos: {nodePos}, neighbourEndDir: {neighbourEndDir}, \n" +
+                        //        $"cornerDir: ref {cornerDirection}, cornerPos: ref {cornerPos}) : {data} ");
+                        //}
 
                         FixCornerPosMinor(
                             nodePos: nodePos,
@@ -93,10 +93,10 @@ namespace NodeController.Patches {
                             cornerDir: ref cornerDirection,
                             cornerPos: ref cornerPos);
 
-                        if (data != null) {
-                            Log.Debug($"output FixCornerPosMinor->" +
-                                $"(cornerDir: ref {cornerDirection}, cornerPos: ref {cornerPos}) : {data} ");
-                        }
+                        //if (data != null) {
+                        //    Log.Debug($"output FixCornerPosMinor->" +
+                        //        $"(cornerDir: ref {cornerDirection}, cornerPos: ref {cornerPos}) : {data} ");
+                        //}
                     }
                 }
             }

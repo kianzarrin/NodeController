@@ -3,7 +3,6 @@ bug: reseting slope to default is problematic.
 
 bug: node sliders stays transparent even after I move it.
 
-
 - options for default universal behaviours:
     - auto embankment for curved segments. 
 
