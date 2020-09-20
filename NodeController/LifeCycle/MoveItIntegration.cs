@@ -107,18 +107,8 @@ namespace NodeController.LifeCycle {
                 //segEndMan.ResetSegmentEndToDefault(segmentId, true); 
                 //segEndMan.ResetSegmentEndToDefault(segmentId, false);
             } else {
-
-                var segEnd1 = data.Start;
-                if (segEnd1 != null) {
-                    ushort nodeID = MappedNodeID(map, segEnd1.NodeID);
-                    PasteSegmentEnd(segEnd1, targetSegmentID, nodeID);
-                }
-
-                var segEnd2 = data.End;
-                if (segEnd2 != null) {
-                    ushort nodeID = MappedNodeID(map, segEnd2.NodeID);
-                    PasteSegmentEnd(segEnd2, targetSegmentID, nodeID);
-                }
+                PasteSegmentEnd(segmentEndData: data.Start, targetSegmentID: targetSegmentID, map: map);
+                PasteSegmentEnd(segmentEndData: data.End, targetSegmentID: targetSegmentID, map: map);
             }
         }
 
@@ -126,12 +116,26 @@ namespace NodeController.LifeCycle {
             return map[new InstanceID { NetNode = nodeID }].NetNode;
         }
 
+        public static void PasteSegmentEnd(
+            SegmentEndData segmentEndData, ushort targetSegmentID, Dictionary<InstanceID, InstanceID> map) {
+            if (segmentEndData != null) {
+                ushort nodeID = MappedNodeID(map, segmentEndData.NodeID);
+                PasteSegmentEnd(
+                    segmentEndData: segmentEndData,
+                    targetNodeID: nodeID,
+                    targetSegmentID: targetSegmentID);
+            }
+        }
+
         public static void PasteSegmentEnd(SegmentEndData segmentEndData, ushort targetNodeID, ushort targetSegmentID) {
             if (segmentEndData != null) {
                 segmentEndData.SegmentID = targetSegmentID;
                 segmentEndData.NodeID = targetNodeID;
             }
-            segEndMan.SetAt(targetSegmentID, targetNodeID, segmentEndData);
+            segEndMan.SetAt(
+                segmentID: targetSegmentID,
+                nodeID: targetNodeID,
+                value: segmentEndData);
         }
 
     }

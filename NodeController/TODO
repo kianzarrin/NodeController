@@ -1,4 +1,11 @@
-stretch slider to start at   100%
+BUG: move middle node/split segment does not work so well
+
+bug: reseting slope alone to default is problematic.
+
+bug: node slider stays transparent even after I move it.
+
+bug: options persistency.
+
 
 - options for default universal behaviours:
     - auto embankment for curved segments. 

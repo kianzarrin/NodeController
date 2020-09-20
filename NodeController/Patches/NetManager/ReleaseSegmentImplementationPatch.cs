@@ -5,6 +5,7 @@ namespace NodeController.Patches._NetManager
     using HarmonyLib;
     using ColossalFramework;
     using NodeController.LifeCycle;
+    using KianCommons;
 
     [HarmonyPatch]
     public static class ReleaseSegmentImplementationPatch
@@ -32,6 +33,7 @@ namespace NodeController.Patches._NetManager
             if (m_upgrading) {
                 UpgradingSegmentData = MoveItIntegration.CopySegment(segment);
             }
+            Log.Debug($"ReleaseSegment.Prefix({segment})\n"+Environment.StackTrace);
             SegmentEndManager.Instance.SetAt(segmentID: segment, true, value: null);
             SegmentEndManager.Instance.SetAt(segmentID: segment, false, value: null);
         }
