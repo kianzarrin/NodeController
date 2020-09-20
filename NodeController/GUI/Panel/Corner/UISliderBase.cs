@@ -30,14 +30,13 @@ namespace NodeController.GUI {
 
         protected override void OnValueChanged() {
             base.OnValueChanged();
+            //Log.Debug($"UISliderBase.OnValueChanged() RefreshingValues={RefreshingValues}");
             if (RefreshingValues && Root?.GetData() is NodeData nodeData) {
                 bool mixed = MixedValues;
                 RefreshNode(nodeData);
-                if(mixed != MixedValues)
-                    Invalidate();
+                //Log.Debug($"UISliderBase.OnValueChanged() mixed={mixed} {MixedValues}");
             }else if (!Refreshing)
                 Apply();
-            //UpdateTooltip();
         }
 
         public virtual bool CourseMode => ShiftIsPressed;
@@ -52,7 +51,7 @@ namespace NodeController.GUI {
         float DragStep => CourseMode ? CourseDragStep : LargeDragStep;
 
         protected override void OnMouseWheel(UIMouseEventParameter p) {
-            Log.Debug(GetType().Name + "\n" + Environment.StackTrace);
+            //Log.Debug(GetType().Name + "\n" + Environment.StackTrace);
             scrollWheelAmount = ScrollStep;
             value = UISliderExt.Round(value + scrollWheelAmount * p.wheelDelta, scrollWheelAmount);
             p.Use();
@@ -72,18 +71,6 @@ namespace NodeController.GUI {
             }
         }
 
-        //protected override void OnKeyDown(UIKeyEventParameter p) {
-        //    if (!containsMouse)
-        //        return;
-        //    scrollWheelAmount = ScrollStep;
-        //    base.OnKeyDown(p);
-        //    bool arrowkey = p.keycode == KeyCode.LeftArrow || p.keycode == KeyCode.RightArrow
-        //        || p.keycode == KeyCode.UpArrow || p.keycode == KeyCode.DownArrow;
-        //    if (arrowkey)
-        //        QuantizeValue(ScrollStep);
-        //    if (p.keycode == KeyCode.Delete)
-        //        Reset();
-        //}
         #endregion
 
         public void Apply() {
@@ -98,6 +85,7 @@ namespace NodeController.GUI {
             }
 
             Root?.RefreshValues();
+            Refresh();
         }
 
         /// <summary>set data value. data refresh is already taken care of</summary>
@@ -110,9 +98,9 @@ namespace NodeController.GUI {
         public virtual string TooltipPostfix => "";
 
         public virtual void Reset() {
-            Log.Debug("Reset called" + value);
+            //Log.Debug("Reset called" + value);
             value = 0;
-            Log.Debug("Reset set tvalue to =" + value);
+            //Log.Debug("Reset set tvalue to =" + value);
         }
 
         protected bool Refreshing = false;
@@ -127,6 +115,9 @@ namespace NodeController.GUI {
 
                 if (isEnabled && data is NodeData nodeData)
                     RefreshNode(nodeData);
+                //Log.Debug($"Refresh:MixedValues={MixedValues}");
+
+
 
                 parent.isVisible = isEnabled;
                 parent.Invalidate();
@@ -172,16 +163,5 @@ namespace NodeController.GUI {
                 RefreshingValues = Refreshing = false;
             }
         }
-
-        //public bool TooltipVisible = false;
-        //public virtual void UpdateTooltip() {
-        //    if (TooltipVisible) {
-        //        tooltip = value.ToString() + TooltipPostfix;
-        //        RefreshTooltip();
-        //    } else {
-        //        tooltip = null;
-        //        RefreshTooltip();
-        //    }
-        //}
     }
 }

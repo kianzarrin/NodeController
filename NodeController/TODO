@@ -1,15 +1,14 @@
-
 bug: reseting slope to default is problematic.
 
-bug: node sliders stays transparent even after I move it.
-
 - options for default universal behaviours:
-    - auto embankment for curved segments. 
+    - auto embankment for curved segments.
+
+bug: when I select rev0 station tracks, corner offset changes.
 
 - open and close left and right table.
 - new Corner table organisation
 
-- test selecting nodes on top of another road (FRT + anarchy +  moveIT). (can't reproduce)
+- test selecting nodes on top of another road (FRT + anarchy + moveIT). (can't reproduce)
 
 - corner offset to increase chances of train track connection.
 - fix the orientation of asym road
