@@ -222,6 +222,7 @@ namespace NodeController.Tool {
             bool insert = false;
             bool searching = false;
             bool edit = false;
+            bool editSegmentEnd = fail;
             bool crossing = false;
 
             ToolErrors error = m_cachedErrors;
@@ -232,6 +233,7 @@ namespace NodeController.Tool {
                 insert = controlPoint.m_segment != 0;
                 if (edit) {
                     fail = !NodeData.IsSupported(nodeID);
+                    editSegmentEnd = nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.End);
                 } else if (AltIsPressed) {
                     searching = true;
                 } else if (insert) {
@@ -257,9 +259,11 @@ namespace NodeController.Tool {
                 ret = "click => insert crossing\n" + "alt + click => select segment end";
             else if (insert && !crossing)
                 ret = "click => insert new middle node\n" + "alt + click => select segment end";
-            else if (edit)
+            else if (editSegmentEnd) {
+                ret = "click => select segment end";
+            } else if (edit) {
                 ret = "click => select node\n" + "alt + click  => select segment end";
-            else
+            } else
                 return null;
 
             if (ShouldDrawSigns())
@@ -434,7 +438,7 @@ namespace NodeController.Tool {
             if (!m_mouseRayValid || handleHovered_)
                 return;
 
-            if (AltIsPressed) {
+            if (AltIsPressed || HoveredNodeId.ToNode().m_flags.IsFlagSet(NetNode.Flags.End)) {
                 if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)) {
                     DrawCutSegmentEnd(
                         cameraInfo,

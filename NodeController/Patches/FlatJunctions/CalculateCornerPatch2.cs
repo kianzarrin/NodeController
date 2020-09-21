@@ -52,6 +52,8 @@ namespace NodeController.Patches {
             SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
             if (data == null && !Settings.GameConfig.UnviversalSlopeFixes)
                 return;
+            //Log.Debug($"CalculateCorner2.PostFix(segmentID={segmentID} start={start} leftSide={leftSide}): cornerDir={cornerDirection}");
+
 
             ushort nodeID = segmentID.ToSegment().GetNode(start);
             bool middle = nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle);

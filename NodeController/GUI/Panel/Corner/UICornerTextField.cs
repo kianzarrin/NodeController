@@ -32,7 +32,9 @@ namespace NodeController.GUI {
                     return null;
                 string ret = "mousewheel => increment/decrement.\n" +
                     "shift + mousewheel => large increment/decrement.\n" +
-                    "del => reset hovered value to default";
+                    "del => reset hovered value to default" +
+                    (MixedValues ? "\nyellow color = mixed values" : "");
+
 
                 if (Mirror != null) {
                     ret += "\n";

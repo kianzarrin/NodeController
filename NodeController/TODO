@@ -1,9 +1,9 @@
 bug: reseting slope to default is problematic.
+bug: when I select rev0 station tracks, corner offset changes.
 
 - options for default universal behaviours:
     - auto embankment for curved segments.
 
-bug: when I select rev0 station tracks, corner offset changes.
 
 - open and close left and right table.
 - new Corner table organisation

@@ -1,4 +1,3 @@
-
 namespace NodeController.GUI {
     using ColossalFramework;
     using ColossalFramework.UI;
@@ -74,19 +73,28 @@ namespace NodeController.GUI {
 
         }
 
+        static UICheckBox universalFixes_;
         public static void MakeGameSettings(UIHelperBase helper) {
             UIHelper group = helper.AddGroup("Game settings") as UIHelper;
 
             UIPanel panel = group.self as UIPanel;
 
-            object val = GameConfig?.UnviversalSlopeFixes;
-            val = val ?? "null";
+            object val = GameConfig?.UnviversalSlopeFixes; val = val ?? "null";
             Log.Debug($"MakeGameSettings: UnviversalSlopeFixes =" + val);
-            UICheckBox universalFixes = group.AddCheckbox(
+            universalFixes_ = group.AddCheckbox(
                 "apply universal slope fixes(flat jucntions, curvature of extreme slopes)",
                 defaultValue: GameConfig?.UnviversalSlopeFixes ?? GameConfigT.NewGameDefault.UnviversalSlopeFixes,
                 ApplyUniversalSlopeFixes) as UICheckBox;
-            universalFixes.tooltip = "changing this may influence existing custom nodes.";
+            universalFixes_.tooltip = "changing this may influence existing custom nodes.";
+        }
+
+        public static void UpdateGameSettings() {
+            if (GameConfig == null) {
+                Log.Error("GameConfig==null");
+                return;
+            }
+            Log.Debug($"UpdateGameSettings: UnviversalSlopeFixes =" + GameConfig.UnviversalSlopeFixes);
+            universalFixes_.isChecked = GameConfig.UnviversalSlopeFixes;
         }
 
         static void ApplyUniversalSlopeFixes(bool value) {

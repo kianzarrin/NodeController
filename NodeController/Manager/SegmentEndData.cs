@@ -441,6 +441,8 @@ namespace NodeController {
                     VectorUtils.LengthXZ(cornerDir));
             }
 
+            //Log.Debug($"ApplyCornerAdjustments: cornerDir={cornerDir.ToString("e")}");
+
             ref CornerData corner = ref Corner(leftSide);
             if (insideAfterCalcualte_) {
                 // take a snapshot of pos00/dir00 before sliders but after flatten node checkbox.

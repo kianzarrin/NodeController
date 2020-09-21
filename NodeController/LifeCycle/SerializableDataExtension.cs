@@ -48,6 +48,7 @@ namespace NodeController.LifeCycle
             }
             Log.Debug($"setting UnviversalSlopeFixes to {Instance.GameConfig.UnviversalSlopeFixes}");
             Settings.GameConfig = Instance.GameConfig;
+            Settings.UpdateGameSettings();
             SegmentEndManager.Deserialize(Instance.SegmentEndManagerData);
             NodeManager.Deserialize(Instance.NodeManagerData);
         }

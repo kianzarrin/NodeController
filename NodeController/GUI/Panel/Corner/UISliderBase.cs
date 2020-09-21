@@ -17,7 +17,8 @@ namespace NodeController.GUI {
 
         public string HintHotkeys => "mousewheel => increment/decrement\n" +
             "shift + mousewheel => fine increment/decrement\n" +
-            "del => reset hovered value to default";
+            "del => reset hovered value to default" +
+            (MixedValues ? "\nyellow color = mixed values" :"");
 
         public string HintDescription => null;
 
