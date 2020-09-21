@@ -27,8 +27,7 @@ namespace NodeController.LifeCycle {
             Log.Debug($"MoveItIntegration.Decode64({base64Data},{dataVersion}) was called");
             if (base64Data == null || base64Data.Length == 0) return null;
             byte [] data = Convert.FromBase64String(base64Data);
-            SerializationUtil.DeserializationVersion = dataVersion;
-            return SerializationUtil.Deserialize(data).LogRet("MoveItIntegration.Decode64 ->");
+            return SerializationUtil.Deserialize(data, dataVersion).LogRet("MoveItIntegration.Decode64 ->");
         }
 
         public override string Encode64(object record) {

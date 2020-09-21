@@ -34,14 +34,14 @@ namespace NodeController.LifeCycle
                 Instance = new NCState();
             } else {
                 Log.Debug($"NCState.Deserialize(data): data.Length={data?.Length}");
-                Instance = SerializationUtil.Deserialize(data) as NCState;
+                Instance = SerializationUtil.Deserialize(data, default) as NCState;
                 if (Instance?.Version != null) { //2.1.1 or above
                     Log.Debug("Deserializing V"+ Instance.Version);
                     SerializationUtil.DeserializationVersion = new Version(Instance.Version);
                 } else {
                     // 2.0
                     Log.Debug("Deserializing version 2.0");
-                    SerializationUtil.DeserializationVersion = new System.Version(2, 0);
+                    Instance.Version = "2.0";
                     Instance.GameConfig = GameConfigT.LoadGameDefault; // for the sake of feature proofing.
                     Instance.GameConfig.UnviversalSlopeFixes = true; // in this version I do apply slope fixes.
                 }
@@ -49,8 +49,9 @@ namespace NodeController.LifeCycle
             Log.Debug($"setting UnviversalSlopeFixes to {Instance.GameConfig.UnviversalSlopeFixes}");
             Settings.GameConfig = Instance.GameConfig;
             Settings.UpdateGameSettings();
-            SegmentEndManager.Deserialize(Instance.SegmentEndManagerData);
-            NodeManager.Deserialize(Instance.NodeManagerData);
+            var version = new Version(Instance.Version);
+            SegmentEndManager.Deserialize(Instance.SegmentEndManagerData, version);
+            NodeManager.Deserialize(Instance.NodeManagerData, version);
         }
 
     }
@@ -75,8 +76,7 @@ namespace NodeController.LifeCycle
                 LoadingVersion = 1;
                 data = serializableDataManager.LoadData(DATA_ID1)
                     ?? serializableDataManager.LoadData(DATA_ID0);
-                NodeManager.Deserialize(data);
-                SerializationUtil.DeserializationVersion = new Version(1,0);
+                NodeManager.Deserialize(data, new Version(1, 0));
             }
         }
 

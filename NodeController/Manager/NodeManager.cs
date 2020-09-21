@@ -10,14 +10,14 @@ namespace NodeController {
 
         public static byte[] Serialize() => SerializationUtil.Serialize(Instance);
 
-        public static void Deserialize(byte[] data) {
+        public static void Deserialize(byte[] data, Version version) {
             if (data == null) {
                 Instance = new NodeManager();
                 Log.Debug($"NodeBlendManager.Deserialize(data=null)");
 
             } else {
                 Log.Debug($"NodeBlendManager.Deserialize(data): data.Length={data?.Length}");
-                Instance = SerializationUtil.Deserialize(data) as NodeManager;
+                Instance = SerializationUtil.Deserialize(data, version) as NodeManager;
             }
         }
 
@@ -54,7 +54,7 @@ namespace NodeController {
                 foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID))
                     SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: nodeID);
                 TargetNodeID = nodeID; // must be done before deserialization.
-                buffer[nodeID] = SerializationUtil.Deserialize(data) as NodeData;
+                buffer[nodeID] = SerializationUtil.Deserialize(data, this.VersionOf()) as NodeData;
                 buffer[nodeID].NodeID = nodeID;
                 UpdateData(nodeID);
                 TargetNodeID = 0;

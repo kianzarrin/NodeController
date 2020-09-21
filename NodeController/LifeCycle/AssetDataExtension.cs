@@ -34,6 +34,48 @@ namespace NodeController.LifeCycle {
         }
     }
 
+    [Serializable]
+    public class AssetData {
+        public string VersionString;
+        public byte[] Records;
+        public Version Version => new Version(VersionString);
+
+        public static AssetData GetAssetData() {
+            var records = GetRecords();
+            if (records == null || records.Length == 0)
+                return null;
+            return new AssetData {
+                Records = SerializationUtil.Serialize(records),
+                VersionString = typeof(AssetData).VersionOf().ToString(3),
+            };
+        }
+
+        public static object[] GetRecords() {
+            List<object> records = new List<object>();
+            for (ushort nodeID = 0; nodeID < NetManager.MAX_NODE_COUNT; ++nodeID) {
+                object record = CopyNode(nodeID);
+                if (record != null)
+                    records.Add(record);
+            }
+            for (ushort segmentID = 0; segmentID < NetManager.MAX_SEGMENT_COUNT; ++segmentID) {
+                object record = CopySegment(segmentID);
+                if (record != null)
+                    records.Add(record);
+            }
+            return records.ToArray();
+        }
+
+        public static object[] Deserialize(byte []data) {
+            AssetData assetData = SerializationUtil.Deserialize(data, default) as AssetData;
+            HelpersExtensions.AssertNotNull(assetData, "assetData");
+            var records = SerializationUtil.Deserialize(assetData.Records, assetData.Version) as object[];
+            if (records == null || records.Length == 0) return null;
+            return records;
+        }
+
+        public byte[] Serialize() => SerializationUtil.Serialize(this);
+    }
+
     public class AssetDataExtension: AssetDataExtensionBase {
         public const string NC_ID = "NodeController_V1.0";
         //static Building[] buildingBuffer = BuildingManager.instance.m_buildings.m_buffer;
@@ -55,60 +97,55 @@ namespace NodeController.LifeCycle {
             if (asset is BuildingInfo prefab) {
                 Log.Debug("AssetDataExtension.OnAssetLoaded():  prefab is " + prefab);
 
-                if (userData.TryGetValue(NC_ID, out byte[] data2)) {
+                if (userData.TryGetValue(NC_ID, out byte[] data)) {
                     Log.Debug("AssetDataExtension.OnAssetLoaded():  extracted data for " + NC_ID);
-                    var records = SerializationUtil.Deserialize(data2) as object[];
-                    HelpersExtensions.AssertNotNull(records, "records");
-                    Asset2Records[prefab] = records;
-                    Log.Debug("AssetDataExtension.OnAssetLoaded(): nodeDatas=" + records.ToSTR());
+                    object[] records = AssetData.Deserialize(data);
+                    if (records != null) 
+                        Asset2Records[prefab] = records;
+                    Log.Debug("AssetDataExtension.OnAssetLoaded(): records=" + records.ToSTR());
 
                 }
             }
         }
 
+
+
         public override void OnAssetSaved(string name, object asset, out Dictionary<string, byte[]> userData) {
             Log.Debug($"AssetDataExtension.OnAssetSaved({name}, {asset}, userData) called");
             userData = null;
-            //var info = ToolsModifierControl.toolController.m_editPrefabInfo;
             if(asset is BuildingInfo prefab) {
                 Log.Debug("AssetDataExtension.OnAssetSaved():  prefab is " + prefab);
-
-
-                List<object> records = new List<object>();
-                for (ushort nodeID = 0; nodeID < NetManager.MAX_NODE_COUNT; ++nodeID) {
-                    object record = CopyNode(nodeID);
-                    if (record != null)
-                        records.Add(record);
-                }
-                for (ushort segmentID = 0; segmentID < NetManager.MAX_SEGMENT_COUNT; ++segmentID) {
-                    object record = CopySegment(segmentID);
-                    if (record != null)
-                        records.Add(record);
+                var assetData = AssetData.GetAssetData();
+                if(assetData == null) {
+                    Log.Info("AssetDataExtension.OnAssetSaved(): there were no NC data.");
+                    return;
                 }
 
-                Log.Debug("AssetDataExtension.OnAssetSaved(): nodeDatas=" + records.ToSTR());
-                userData.Add(NC_ID, SerializationUtil.Serialize(records.ToArray()));
+                Log.Debug("AssetDataExtension.OnAssetSaved(): assetData=" + assetData);
+                userData = new Dictionary<string, byte[]>();
+                userData.Add(NC_ID, assetData.Serialize());
             }
         }
 
 
         public static void PlaceAsset(BuildingInfo info, Dictionary<InstanceID, InstanceID> map) {
             if (Instance.Asset2Records.TryGetValue(info, out var records)) {
-                Log.Debug("LoadPathsPatch.Postfix(): nodeDatas =" + records.ToSTR());
+                Log.Debug("PlaceAsset: records =" + records.ToSTR());
                 foreach (object record in records) {
                     Paste(record,map);
                 }
             } else {
-                Log.Debug("LoadPathsPatch.Postfix(): nodeDatas not found");
+                Log.Debug("PlaceAsset: records not found");
             }
         }
 
         static AssetDataExtension() {
             try {
                 RegisterEvent();
+                Log.Info("registered OnNetworksMapped.");
             }
             catch {
-                Log.Error("Could not register OnNetworksMapped. TMPE 11.6+ is required");
+                Log.Error("[NOT CRITICAL]Could not register OnNetworksMapped. TMPE 11.5.3+ is required for loading intersections with NC data");
             }
         }
 
