@@ -112,8 +112,29 @@ namespace NodeController.LifeCycle {
             }
         }
 
+        public static void Paste(object record, Dictionary<InstanceID, InstanceID> map) {
+            if (record is NodeData nodeData) {
+                ushort mappedNodeID = MappedNodeID(map, nodeData.NodeID);
+                PasteNode(mappedNodeID, nodeData, map);
+            } else if (record is MoveItSegmentData moveItSegmentData) {
+                ushort segmentID;
+                if (moveItSegmentData.Start != null) {
+                    segmentID = moveItSegmentData.Start.SegmentID;
+                } else if (moveItSegmentData.End != null) {
+                    segmentID = moveItSegmentData.Start.SegmentID;
+                } else {
+                    return;
+                }
+                ushort mappedSegmentID = MappedSegmentID(map, segmentID);
+                PasteSegment(mappedSegmentID, moveItSegmentData, map);
+            }
+        }
+
         public static ushort MappedNodeID(Dictionary<InstanceID, InstanceID> map, ushort nodeID) {
             return map[new InstanceID { NetNode = nodeID }].NetNode;
+        }
+        public static ushort MappedSegmentID(Dictionary<InstanceID, InstanceID> map, ushort segmentID) {
+            return map[new InstanceID { NetSegment = segmentID }].NetSegment;
         }
 
         public static void PasteSegmentEnd(

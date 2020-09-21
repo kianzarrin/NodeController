@@ -8,8 +8,8 @@ namespace NodeController.LifeCycle
         public override void OnLevelLoaded(LoadMode mode)
         {
             Log.Debug("LoadingExtention.OnLevelLoaded");
-            if (mode == LoadMode.LoadGame || mode == LoadMode.NewGame || mode == LoadMode.NewGameFromScenario)
-                LifeCycle.Load(mode);
+
+            LifeCycle.Load(mode);
         }
 
         public override void OnLevelUnloading()

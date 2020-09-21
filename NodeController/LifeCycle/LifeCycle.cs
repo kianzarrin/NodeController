@@ -5,8 +5,7 @@ namespace NodeController.LifeCycle
     using KianCommons;
     using ICities;
     using NodeController.GUI;
-
-
+    using UnityEngine.SceneManagement;
 
     public static class LifeCycle
     {
@@ -14,7 +13,12 @@ namespace NodeController.LifeCycle
         {
             HelpersExtensions.VERBOSE = false;
             Log.Info("LifeCycle.Load() called");
-            CSURUtil.Init();
+
+            SimulationManager.UpdateMode updateMode = SimulationManager.instance.m_metaData.m_updateMode;
+            string scene = SceneManager.GetActiveScene().name;
+            Log.Info($"OnLevelLoaded({mode}) called. updateMode={updateMode}, scene={scene}");
+            if (scene == "ThemeEditor")
+                return; CSURUtil.Init();
             HarmonyExtension.InstallHarmony();
             NodeControllerTool.Create();
             if (Settings.GameConfig == null) {
