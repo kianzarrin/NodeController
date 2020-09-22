@@ -68,9 +68,11 @@ namespace NodeController.LifeCycle {
 
         public static object[] Deserialize(byte []data) {
             AssertNotNull(data, "data");
-            
-            AssetData assetData = SerializationUtil.Deserialize(data, default) as AssetData;
+            var data2 = SerializationUtil.Deserialize(data, default);
+            AssertNotNull(data2, "data2");
+            AssetData assetData = data2 as AssetData;
             AssertNotNull(assetData, "assetData");
+
             var records = SerializationUtil.Deserialize(assetData.Records, assetData.Version) as object[];
             if (records == null || records.Length == 0) return null;
             return records;
@@ -111,8 +113,6 @@ namespace NodeController.LifeCycle {
             }
         }
 
-
-
         public override void OnAssetSaved(string name, object asset, out Dictionary<string, byte[]> userData) {
             Log.Debug($"AssetDataExtension.OnAssetSaved({name}, {asset}, userData) called");
             userData = null;
@@ -130,10 +130,10 @@ namespace NodeController.LifeCycle {
             }
         }
 
-
         public static void PlaceAsset(BuildingInfo info, Dictionary<InstanceID, InstanceID> map) {
             if (Instance.Asset2Records.TryGetValue(info, out var records)) {
-                Log.Debug("PlaceAsset: records =" + records.ToSTR());
+                Log.Debug("PlaceAsset: records = " + records.ToSTR());
+                Log.Debug("PlaceAsset: map = " + map.ToSTR());
                 foreach (object record in records) {
                     Paste(record,map);
                 }
@@ -156,8 +156,5 @@ namespace NodeController.LifeCycle {
         static void RegisterEvent() {
             TrafficManager.Util.PlaceIntersectionUtil.OnPlaceIntersection += PlaceAsset;
         }
-
-
-
     }
 }

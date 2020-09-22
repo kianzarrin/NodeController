@@ -6,6 +6,7 @@ using System.Collections.Generic;
 namespace NodeController.LifeCycle {
     [Serializable]
     public class MoveItSegmentData {
+        public MoveItSegmentData Clone() => new MoveItSegmentData { Start = Start, End = End };
         public SegmentEndData Start;
         public SegmentEndData End;
         public override string ToString() => $"MoveItSegmentData(Start={Start} End={End})";
@@ -88,6 +89,7 @@ namespace NodeController.LifeCycle {
             if (record == null) {
                 //nodeMan.ResetNodeToDefault(nodeID); // doing this is not backward comaptible
             } else {
+                record = record.Clone();
                 nodeMan.buffer[targetNodeID] = record;
                 nodeMan.buffer[targetNodeID].NodeID = targetNodeID;
 
@@ -120,7 +122,7 @@ namespace NodeController.LifeCycle {
                 if (moveItSegmentData.Start != null) {
                     segmentID = moveItSegmentData.Start.SegmentID;
                 } else if (moveItSegmentData.End != null) {
-                    segmentID = moveItSegmentData.Start.SegmentID;
+                    segmentID = moveItSegmentData.End.SegmentID;
                 } else {
                     return;
                 }
@@ -130,10 +132,20 @@ namespace NodeController.LifeCycle {
         }
 
         public static ushort MappedNodeID(Dictionary<InstanceID, InstanceID> map, ushort nodeID) {
-            return map[new InstanceID { NetNode = nodeID }].NetNode;
+            InstanceID instanceID = new InstanceID { NetNode = nodeID };
+            if(map.TryGetValue(instanceID, out InstanceID mappedInstanceID)) {
+                return mappedInstanceID.NetNode;
+            } else {
+                throw new Exception($"map does not contian node:{nodeID} map = {map.ToSTR()}");
+            }
         }
         public static ushort MappedSegmentID(Dictionary<InstanceID, InstanceID> map, ushort segmentID) {
-            return map[new InstanceID { NetSegment = segmentID }].NetSegment;
+            InstanceID instanceID = new InstanceID { NetSegment = segmentID };
+            if (map.TryGetValue(instanceID, out InstanceID mappedInstanceID)) {
+                return mappedInstanceID.NetSegment;
+            } else {
+                throw new Exception($"map does not contian segment:{segmentID} map = {map.ToSTR()}");
+            }
         }
 
         public static void PasteSegmentEnd(
@@ -149,6 +161,7 @@ namespace NodeController.LifeCycle {
 
         public static void PasteSegmentEnd(SegmentEndData segmentEndData, ushort targetNodeID, ushort targetSegmentID) {
             if (segmentEndData != null) {
+                segmentEndData = segmentEndData.Clone();
                 segmentEndData.SegmentID = targetSegmentID;
                 segmentEndData.NodeID = targetNodeID;
             }

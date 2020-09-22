@@ -13,8 +13,7 @@ namespace NodeController.GUI {
 
         public string HintDescription =>
             "Removes crossing texture for all segment ends. " +
-            "does not influence whether or not pedestrians can cross";
-
+            "To ban crossings, untick this and use TMPE.";
 
         UIPanelBase root_;
         public override void Awake() {
@@ -28,6 +27,7 @@ namespace NodeController.GUI {
             sprite.spriteName = "ToggleBase";
             sprite.size = new Vector2(19f, 19f);
             sprite.relativePosition = new Vector2(0, (height-sprite.height)/2 );
+            sprite.atlas = KianCommons.UI.TextureUtil.GetAtlas("InGame");
 
             checkedBoxObject = sprite.AddUIComponent<UISprite>();
             ((UISprite)checkedBoxObject).spriteName = "ToggleBaseFocused";
