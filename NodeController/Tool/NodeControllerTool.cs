@@ -268,7 +268,7 @@ namespace NodeController.Tool {
 
             if (ShouldDrawSigns())
                 ret += "\ncontrol => hide TMPE overlay";
-
+            ret += "\npage up/down => overground/underground view";
             return ret;
         }
 
