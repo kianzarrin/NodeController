@@ -5,7 +5,7 @@ using UnityEngine;
 using KianCommons;
 using KianCommons.UI;
 using UIUtils = KianCommons.UI.UIUtils;
-using static KianCommons.HelpersExtensions;
+using static KianCommons.Assertion;
 
 /* A lot of copy-pasting from Crossings mod by Spectra and Roundabout Mod by Strad. The sprites are partly copied as well. */
 

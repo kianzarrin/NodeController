@@ -32,8 +32,8 @@ namespace NodeController.Util {
         /// reteurns a copy of the texture with the differenc that: mipmap=false, linear=false, readable=true;
         /// </summary>
         public static Texture2D GetReadableCopy(this Texture2D tex, bool linear = false) {
-            HelpersExtensions.Assert(tex != null, "tex!=null");
-            HelpersExtensions.Assert(tex is Texture2D, $"tex is Texture2D");
+            Assertion.Assert(tex != null, "tex!=null");
+            Assertion.Assert(tex is Texture2D, $"tex is Texture2D");
             Texture2D ret = tex.MakeReadable(linear);
             ret.name = tex.name;
             ret.anisoLevel = tex.anisoLevel;

@@ -55,18 +55,18 @@ namespace NodeController.Patches {
         static MethodInfo mGetSegment => typeof(NetNode).GetMethod("GetSegment");
 
         public static void PatchCheckFlags(List<CodeInstruction> codes, int occurance, MethodInfo method) {
-            HelpersExtensions.Assert(mDrawMesh != null, "mDrawMesh!=null failed");
-            HelpersExtensions.Assert(fNodeMaterial != null, "fNodeMaterial!=null failed");
-            HelpersExtensions.Assert(fNodeMesh != null, "fNodeMesh!=null failed");
-            HelpersExtensions.Assert(mCalculateMaterial != null, "mCalculateMaterial!=null failed");
-            HelpersExtensions.Assert(mCalculateMesh != null, "mCalculateMesh!=null failed");
-            HelpersExtensions.Assert(mCheckRenderDistance != null, "mCheckRenderDistance!=null failed");
-            HelpersExtensions.Assert(mShouldContinueMedian != null, "mShouldContinueMedian!=null failed");
+            Assertion.Assert(mDrawMesh != null, "mDrawMesh!=null failed");
+            Assertion.Assert(fNodeMaterial != null, "fNodeMaterial!=null failed");
+            Assertion.Assert(fNodeMesh != null, "fNodeMesh!=null failed");
+            Assertion.Assert(mCalculateMaterial != null, "mCalculateMaterial!=null failed");
+            Assertion.Assert(mCalculateMesh != null, "mCalculateMesh!=null failed");
+            Assertion.Assert(mCheckRenderDistance != null, "mCheckRenderDistance!=null failed");
+            Assertion.Assert(mShouldContinueMedian != null, "mShouldContinueMedian!=null failed");
 
             int index = 0;
             // returns the position of First DrawMesh after index.
             index = SearchInstruction(codes, new CodeInstruction(OpCodes.Call, mDrawMesh), index, counter: occurance);
-            HelpersExtensions.Assert(index != 0, "index!=0");
+            Assertion.Assert(index != 0, "index!=0");
 
 
             // find ldfld node.m_nodeMaterial
@@ -121,11 +121,11 @@ namespace NodeController.Patches {
         } // end method
 
         public static CodeInstruction BuildSegnentLDLocFromPrevSTLoc(List<CodeInstruction> codes, int index, int counter = 1) {
-            HelpersExtensions.Assert(mGetSegment != null, "mGetSegment!=null");
+            Assertion.Assert(mGetSegment != null, "mGetSegment!=null");
             index = SearchInstruction(codes, new CodeInstruction(OpCodes.Call, mGetSegment), index, counter: counter, dir: -1);
 
             var code = codes[index + 1];
-            HelpersExtensions.Assert(IsStLoc(code), $"IsStLoc(code) | code={code}");
+            Assertion.Assert(IsStLoc(code), $"IsStLoc(code) | code={code}");
 
             return BuildLdLocFromStLoc(code);
         }

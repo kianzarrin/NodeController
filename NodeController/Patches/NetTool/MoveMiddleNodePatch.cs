@@ -4,6 +4,7 @@ namespace NodeController.Patches._NetTool {
     using System;
     using NodeController.LifeCycle;
     using static KianCommons.HelpersExtensions;
+    using static KianCommons.Assertion;
 
     [HarmonyPatch(typeof(global::NetTool), "MoveMiddleNode")]
     public static class MoveMiddleNodePatch {

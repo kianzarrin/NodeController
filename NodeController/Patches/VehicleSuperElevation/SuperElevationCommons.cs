@@ -8,7 +8,7 @@ namespace NodeController.Patches.VehicleSuperElevation {
     using System.Runtime.CompilerServices;
     using System;
     using System.Collections.Generic;
-    using static KianCommons.HelpersExtensions;
+    using static KianCommons.Assertion;
     using System.Reflection.Emit;
 
     public static class SuperElevationCommons {

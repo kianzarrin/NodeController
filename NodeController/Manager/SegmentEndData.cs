@@ -14,6 +14,9 @@ namespace NodeController {
     using CSURUtil = Util.CSURUtil;
     using Log = KianCommons.Log;
     using static KianCommons.HelpersExtensions;
+    using static KianCommons.AssemblyTypeExtensions;
+    using static KianCommons.Assertion;
+
 
     [Serializable]
     public class SegmentEndData : INetworkData, INetworkData<SegmentEndData>, ISerializable {
@@ -24,7 +27,7 @@ namespace NodeController {
 
         /// <summary>clone</summary>
         private SegmentEndData(SegmentEndData template) =>
-            HelpersExtensions.CopyProperties(this, template);
+            CopyProperties(this, template);
 
         public SegmentEndData Clone() => new SegmentEndData(this);
         #endregion
@@ -110,7 +113,7 @@ namespace NodeController {
             Twist = DefaultTwist;
             if(VERBOSE)
                 Log.Debug($"SegmentEndData() Direction={Direction} Slope={SlopeAngleDeg}");
-            HelpersExtensions.Assert(IsDefault(),
+            Assert(IsDefault(),
             $"\n{CornerOffset} == {DefaultCornerOffset} error = 0.1\n" +
             $"DeltaSlopeAngleDeg:{DeltaSlopeAngleDeg} == 0;" +
             $"Stretch:{Stretch} == 0; " +

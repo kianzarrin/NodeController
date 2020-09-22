@@ -3,6 +3,9 @@ namespace NodeController.GUI {
     using ColossalFramework.UI;
     using UnityEngine;
     using static KianCommons.HelpersExtensions;
+    using static KianCommons.EnumBitMaskExtensions;
+    using static KianCommons.Assertion;
+
     using KianCommons;
     using KianCommons.UI;
     using System.Reflection;

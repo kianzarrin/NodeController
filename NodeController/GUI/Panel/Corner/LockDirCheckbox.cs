@@ -1,6 +1,8 @@
 namespace NodeController.GUI {
     using KianCommons;
     using static KianCommons.HelpersExtensions;
+    using static KianCommons.Assertion;
+
     using KianCommons.UI;
     using UnityEngine;
     using ColossalFramework.UI;

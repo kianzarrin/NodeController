@@ -3,7 +3,7 @@ namespace NodeController.GUI {
     using System;
     using UnityEngine;
     using KianCommons;
-    using static KianCommons.HelpersExtensions;
+    using static KianCommons.Assertion;
 
     public class TwistCheckbox : UICheckBox, IDataControllerUI {
         public static TwistCheckbox Instance { get; private set; }

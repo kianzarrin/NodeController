@@ -16,7 +16,7 @@ namespace NodeController.Patches.NetNodePatches {
         static MethodInfo Target => typeof(global::NetNode).GetMethod("RenderInstance", BindingFlags.NonPublic | BindingFlags.Instance);
         static MethodBase TargetMethod() {
             var ret = Target;
-            HelpersExtensions.Assert(ret != null, "did not manage to find original function to patch");
+            Assertion.Assert(ret != null, "did not manage to find original function to patch");
             Log("aquired method " + ret);
             return ret;
         }

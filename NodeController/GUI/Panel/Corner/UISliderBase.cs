@@ -4,6 +4,7 @@ namespace NodeController.GUI {
     using ColossalFramework.UI;
     using static KianCommons.HelpersExtensions;
     using System;
+    using static KianCommons.Assertion;
 
     public abstract class UISliderBase: UISliderExt, IDataControllerUI {
         //UIResetButton resetButton_ => Root?.ResetButton;

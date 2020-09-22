@@ -2,6 +2,7 @@ namespace NodeController {
     using KianCommons;
     using NodeController.Tool;
     using System;
+    using static KianCommons.Assertion;
 
     [Serializable]
     public class NodeManager {
@@ -65,7 +66,7 @@ namespace NodeController {
         public NodeData InsertNode(NetTool.ControlPoint controlPoint, NodeTypeT nodeType = NodeTypeT.Crossing) {
             if (ToolBase.ToolErrors.None != NetUtil.InsertNode(controlPoint, out ushort nodeID))
                 return null;
-            HelpersExtensions.Assert(nodeID != 0, "nodeID");
+            Assert(nodeID != 0, "nodeID");
 
             foreach (var segmentID in NetUtil.IterateNodeSegments(nodeID)) {
                 var segEnd = new SegmentEndData(segmentID, nodeID);
@@ -95,7 +96,7 @@ namespace NodeController {
                     GetOrCreate(segmentID: segmentID, nodeID: nodeID);
             }
 
-            HelpersExtensions.AssertNotNull(data);
+            AssertNotNull(data);
             return ref data;
         }
 

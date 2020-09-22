@@ -3,6 +3,7 @@ using KianCommons;
 using System;
 using System.Collections.Generic;
 using static NodeController.LifeCycle.MoveItIntegration;
+using static KianCommons.Assertion;
 
 namespace NodeController.LifeCycle {
     using HarmonyLib;
@@ -66,8 +67,10 @@ namespace NodeController.LifeCycle {
         }
 
         public static object[] Deserialize(byte []data) {
+            AssertNotNull(data, "data");
+            
             AssetData assetData = SerializationUtil.Deserialize(data, default) as AssetData;
-            HelpersExtensions.AssertNotNull(assetData, "assetData");
+            AssertNotNull(assetData, "assetData");
             var records = SerializationUtil.Deserialize(assetData.Records, assetData.Version) as object[];
             if (records == null || records.Length == 0) return null;
             return records;

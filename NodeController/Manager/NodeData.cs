@@ -10,6 +10,9 @@ namespace NodeController {
     using KianCommons;
     using Log = KianCommons.Log;
     using static KianCommons.HelpersExtensions;
+    using static KianCommons.AssemblyTypeExtensions;
+    using static KianCommons.Assertion;
+
     using KianCommons.Math;
     using NodeController.Tool;
     using System.Diagnostics;

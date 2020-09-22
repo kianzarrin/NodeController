@@ -4,7 +4,7 @@ namespace NodeController.GUI {
     using UnityEngine;
     using KianCommons;
     using static KianCommons.HelpersExtensions;
-
+    using static KianCommons.Assertion;
 
     public class UIHideMarkingsCheckbox : UICheckBox, IDataControllerUI {
         public static UIHideMarkingsCheckbox Instance { get; private set; }

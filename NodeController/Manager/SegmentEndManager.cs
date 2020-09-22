@@ -63,7 +63,7 @@ namespace NodeController {
                 data = new SegmentEndData(segmentID: segmentID, nodeID: nodeID);
                 SetAt(segmentID: segmentID, startNode: startNode, data);
             }
-            HelpersExtensions.AssertNotNull(data);
+            Assertion.AssertNotNull(data);
             return ref data;
         }
 

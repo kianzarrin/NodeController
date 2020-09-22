@@ -6,7 +6,7 @@ namespace NodeController.Patches {
     using System.Reflection;
     using System.Reflection.Emit;
     using KianCommons;
-    using static KianCommons.HelpersExtensions;
+    using static KianCommons.Assertion;
     using static KianCommons.Patches.TranspilerUtils;
 
 

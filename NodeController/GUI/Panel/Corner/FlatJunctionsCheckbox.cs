@@ -3,7 +3,8 @@ namespace NodeController.GUI {
     using System;
     using UnityEngine;
     using KianCommons;
-    using static KianCommons.HelpersExtensions;
+    using static KianCommons.Assertion;
+
 
 
     public class UIUnFlattenJunctionsCheckbox : UICheckBox, IDataControllerUI {
