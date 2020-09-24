@@ -98,11 +98,12 @@ namespace NodeController.LifeCycle {
         }
 
         public override void OnAssetLoaded(string name, object asset, Dictionary<string, byte[]> userData) {
-            Log.Debug($"AssetDataExtension.OnAssetLoaded({name}, {asset}, userData) called");
+            //return;
+            //Log.Debug($"AssetDataExtension.OnAssetLoaded({name}, {asset}, userData) called");
             if (asset is BuildingInfo prefab) {
-                Log.Debug("AssetDataExtension.OnAssetLoaded():  prefab is " + prefab);
+                //Log.Debug("AssetDataExtension.OnAssetLoaded():  prefab is " + prefab);
 
-                if (userData.TryGetValue(NC_ID, out byte[] data)) {
+                if (userData !=null && userData.TryGetValue(NC_ID, out byte[] data)) {
                     Log.Debug("AssetDataExtension.OnAssetLoaded():  extracted data for " + NC_ID);
                     object[] records = AssetData.Deserialize(data);
                     if (records != null) 

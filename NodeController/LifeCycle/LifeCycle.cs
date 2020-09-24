@@ -37,6 +37,7 @@ namespace NodeController.LifeCycle
 
             NodeManager.Instance.OnLoad();
             SegmentEndManager.Instance.OnLoad();
+            Log.Info("LifeCycle.Load() sucessful");
         }
 
         public static void UnLoad()

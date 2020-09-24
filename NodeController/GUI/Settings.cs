@@ -94,7 +94,8 @@ namespace NodeController.GUI {
                 return;
             }
             Log.Debug($"UpdateGameSettings: UnviversalSlopeFixes =" + GameConfig.UnviversalSlopeFixes);
-            universalFixes_.isChecked = GameConfig.UnviversalSlopeFixes;
+            if(universalFixes_)
+                universalFixes_.isChecked = GameConfig.UnviversalSlopeFixes;
         }
 
         static void ApplyUniversalSlopeFixes(bool value) {
