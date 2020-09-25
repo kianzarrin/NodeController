@@ -76,7 +76,7 @@ namespace NodeController.GUI {
             NodeData data = (root_ as UINodeControllerPanel).NodeData;
             if (data == null)
                 return;
-            data.ClearMarkings = this.isChecked;
+            data.NoMarkings = this.isChecked;
             Assert(!refreshing_, "!refreshing_");
             data.Update();
             (root_ as IDataControllerUI).Refresh();

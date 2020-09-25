@@ -437,7 +437,7 @@ namespace NodeController {
             if (VERBOSE) Log.Debug($"NodeData.Refresh() node:{NodeID}\n" + Environment.StackTrace);
 
             if (NodeType != NodeTypeT.Custom)
-                ClearMarkings = false;
+                NoMarkings = false;
 
             if (!CanModifyOffset()) {
                 if (NodeType == NodeTypeT.UTurn)

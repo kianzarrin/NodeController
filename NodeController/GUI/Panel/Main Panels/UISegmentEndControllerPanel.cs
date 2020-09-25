@@ -180,41 +180,6 @@ namespace NodeController.GUI {
             Close();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="container">container to add section to</param>
-        /// <param name="label">label of the section</param>
-        /// <param name="panel0">add slider to this</param>
-        /// <param name="row1">add text field labels here if any</param>
-        /// <param name="row2">add text fields here</param>
-        /// <returns>top contianer of the section. hide this to hide the section</returns>
-        public static UIAutoSizePanel MakeSliderSection(UIPanel container,
-            out UILabel label, out UIAutoSizePanel panel0, out UIPanel row1, out UIPanel row2) {
-            UIAutoSizePanel section = container.AddUIComponent<UIAutoSizePanel>();
-            section.autoLayoutDirection = LayoutDirection.Horizontal;
-            section.AutoSize2 = true;
-            section.padding = new RectOffset(5, 5, 5, 5);
-            section.autoLayoutPadding = new RectOffset(0, 4, 0, 0);
-            section.name = "section";
-            {
-                panel0 = section.AddUIComponent<UIAutoSizePanel>();
-                panel0.AutoSize2 = false;
-                panel0.width = 290; // set slider width
-                label = panel0.AddUIComponent<UILabel>();
-            }
-            {
-                var table = section.AddUIComponent<UIAutoSizePanel>();
-                table.name = "table";
-                table.autoLayoutDirection = LayoutDirection.Vertical;
-                table.AutoSize2 = true;
-                row1 = AddTableRow(table);
-                row2 = AddTableRow(table);
-                row1.width = row2.width = CELL_SIZE2.x * 2;
-            }
-            return section;
-        }
-
         UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_;
         UIAutoSizePanel tableLeft_, tableRight_;
         public void MakeCornerTable(UIPanel container) {

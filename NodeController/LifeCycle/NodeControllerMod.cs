@@ -5,6 +5,7 @@ namespace NodeController.LifeCycle
     using ICities;
     using CitiesHarmony.API;
     using KianCommons;
+    using System.Diagnostics;
 
     public class NodeControllerMod : IUserMod
     {
@@ -16,6 +17,7 @@ namespace NodeController.LifeCycle
         [UsedImplicitly]
         public void OnEnabled()
         {
+            Log.Debug("Testing StackTrace:\n" + new StackTrace(true).ToString(), copyToGameLog: false);
             KianCommons.UI.TextureUtil.EmbededResources = false;
             HarmonyHelper.EnsureHarmonyInstalled();   
             if (!HelpersExtensions.InStartup)

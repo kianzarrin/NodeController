@@ -200,13 +200,13 @@ namespace NodeController.GUI {
             delta = Value - (Value + delta).RoundToNearest(step); // we need final detla for Mirror values.
             Value += delta;
 
-            if (Mirror == null)
-                ; // nothing
-            else if (LockMode)
+            if (Mirror == null) {
+                // nothing
+            } else if (LockMode) {
                 Mirror.Value += delta;
-            else if (InvertLockMode)
+            } else if (InvertLockMode) {
                 Mirror.Value -= delta;
-
+            }
             return delta;
         }
 
