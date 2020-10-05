@@ -1,28 +1,58 @@
-namespace NodeController.LifeCycle
-{
+namespace NodeController.LifeCycle {
+    using CitiesHarmony.API;
+    using ICities;
+    using KianCommons;
+    using NodeController.GUI;
     using NodeController.Tool;
     using NodeController.Util;
-    using KianCommons;
-    using ICities;
-    using NodeController.GUI;
+    using System.Diagnostics;
     using UnityEngine.SceneManagement;
 
-    public static class LifeCycle
-    {
-        public static void Load(LoadMode mode = LoadMode.NewGame)
-        {
-            HelpersExtensions.VERBOSE = false;
-            Log.Info("LifeCycle.Load() called");
+    public static class LifeCycle {
+        public static string HARMONY_ID = "CS.Kian.NodeController";
 
-            SimulationManager.UpdateMode updateMode = SimulationManager.instance.m_metaData.m_updateMode;
-            string scene = SceneManager.GetActiveScene().name;
-            Log.Info($"OnLevelLoaded({mode}) called. updateMode={updateMode}, scene={scene}");
-            if (scene == "ThemeEditor")
-                return; CSURUtil.Init();
-            HarmonyExtension.InstallHarmony();
-            NodeControllerTool.Create();
+        public static SimulationManager.UpdateMode UpdateMode => SimulationManager.instance.m_metaData.m_updateMode;
+        public static LoadMode Mode => (LoadMode)UpdateMode;
+        public static string Scene => SceneManager.GetActiveScene().name;
+
+        public static bool Loaded;
+
+        public static void Enable() {
+            Log.Debug("Testing StackTrace:\n" + new StackTrace(true).ToString(), copyToGameLog: false);
+            KianCommons.UI.TextureUtil.EmbededResources = false;
+            HelpersExtensions.VERBOSE = false;
+            Loaded = false;
+
+            HarmonyHelper.EnsureHarmonyInstalled();
+            LoadingManager.instance.m_simulationDataReady += SimulationDataReady; // load/update data
+            if (HelpersExtensions.InGameOrEditor)
+                HotReload();
+        }
+
+        public static void Disable() {
+            LoadingManager.instance.m_simulationDataReady -= SimulationDataReady;
+            Unload(); // in case of hot unload
+        }
+
+        public static void OnLevelUnloading() {
+            Unload(); // called when loading new game or exiting to main menu.
+        }
+
+        public static void HotReload() {
+            SimulationDataReady();
+            OnLevelLoaded(Mode);
+        }
+
+        public static void SimulationDataReady() {
+            Log.Info($"LifeCycle.SimulationDataReady() called. mode={Mode} updateMode={UpdateMode}, scene={Scene}");
+            System.Threading.Thread.Sleep(1000 * 50); //50 sec
+            Log.Info($"LifeCycle.SimulationDataReady() after sleep");
+
+            if (Scene == "ThemeEditor")
+                return;
+            CSURUtil.Init();
             if (Settings.GameConfig == null) {
-                switch (mode) {
+                switch (Mode) {
                     case LoadMode.NewGameFromScenario:
                     case LoadMode.LoadScenario:
                     case LoadMode.LoadMap:
@@ -35,17 +65,29 @@ namespace NodeController.LifeCycle
                 }
             }
 
+            HarmonyUtil.InstallHarmony(HARMONY_ID); // game config is checked in patch.
+
             NodeManager.Instance.OnLoad();
             SegmentEndManager.Instance.OnLoad();
-            Log.Info("LifeCycle.Load() sucessful");
+            Loaded = true;
+            Log.Info("LifeCycle.SimulationDataReady() sucessful");
+
         }
 
-        public static void UnLoad()
-        {
-            Log.Info("LifeCycle.Release() called");
+        public static void OnLevelLoaded(LoadMode mode) {
+            // after level has been loaded.
+            if (Loaded) {
+                NodeControllerTool.Create();
+            }
+        }
+
+        public static void Unload() {
+            if (!Loaded) return; //protect against disabling from main menu.
+            Log.Info("LifeCycle.Unload() called");
+            HarmonyUtil.UninstallHarmony(HARMONY_ID);
             Settings.GameConfig = null;
-            HarmonyExtension.UninstallHarmony();
             NodeControllerTool.Remove();
+            Loaded = false;
         }
     }
 }

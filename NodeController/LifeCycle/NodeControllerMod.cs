@@ -17,20 +17,13 @@ namespace NodeController.LifeCycle
         [UsedImplicitly]
         public void OnEnabled()
         {
-            Log.Debug("Testing StackTrace:\n" + new StackTrace(true).ToString(), copyToGameLog: false);
-            KianCommons.UI.TextureUtil.EmbededResources = false;
-            HarmonyHelper.EnsureHarmonyInstalled();   
-            if (!HelpersExtensions.InStartup)
-                LifeCycle.Load();
-#if DEBUG
-            //HarmonyExtension.InstallHarmony(); // Only for testing
-#endif
+            LifeCycle.Enable();
         }
 
         [UsedImplicitly]
         public void OnDisabled()
         {
-            LifeCycle.UnLoad();
+            LifeCycle.Disable();
         }
 
         [UsedImplicitly]

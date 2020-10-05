@@ -50,6 +50,7 @@ namespace NodeController.Patches {
             ushort segmentID, bool start, bool leftSide,
             ref Vector3 cornerPos, ref Vector3 cornerDirection) {
             SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
+            Assertion.AssertNotNull(Settings.GameConfig, "Settings.GameConfig");
             if (data == null && !Settings.GameConfig.UnviversalSlopeFixes)
                 return;
             //Log.Debug($"CalculateCorner2.PostFix(segmentID={segmentID} start={start} leftSide={leftSide}): cornerDir={cornerDirection}");
@@ -57,7 +58,7 @@ namespace NodeController.Patches {
 
             ushort nodeID = segmentID.ToSegment().GetNode(start);
             bool middle = nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle);
-            if (!middle) {
+            if (!middle) { 
                 bool flatJunctions = data?.FlatJunctions ?? segmentID.ToSegment().Info.m_flatJunctions;
                 bool slope = !flatJunctions;
                 if (slope) {

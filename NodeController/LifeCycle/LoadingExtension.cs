@@ -5,17 +5,16 @@ namespace NodeController.LifeCycle
 
     public class LoadingExtention : LoadingExtensionBase
     {
-        public override void OnLevelLoaded(LoadMode mode)
-        {
+        public override void OnLevelLoaded(LoadMode mode) {
             Log.Debug("LoadingExtention.OnLevelLoaded");
 
-            LifeCycle.Load(mode);
+            LifeCycle.OnLevelLoaded(mode);
         }
 
         public override void OnLevelUnloading()
         {
             Log.Debug("LoadingExtention.OnLevelUnloading");
-            LifeCycle.UnLoad();
+            LifeCycle.OnLevelUnloading();
         }
     }
 }

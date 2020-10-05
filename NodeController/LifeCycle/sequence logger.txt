@@ -1,0 +1,116 @@
+
+SequenceLogger v1.1.2.28140
+
+UserMod.ctor() static
+UserMod.ctor() instance
+UserMod.OnEnabled()
+[StorageManager.Load] SequenceLogger.Options.xml
+PluginManager.eventPluginsChanged
+[21 repeat(s)]
+LocaleManager.eventLocaleChanged
+SceneManager.activeSceneChanged(, Startup)
+SceneManager.sceneLoaded(Startup, Single)
+SceneManager.sceneLoaded(LoadingAnimation, Additive)
+SceneManager.sceneUnloaded(Startup)
+SceneManager.sceneUnloaded(LoadingAnimation)
+SceneManager.activeSceneChanged(, IntroScreen)
+SceneManager.sceneLoaded(IntroScreen, Single)
+SceneManager.sceneLoaded(IntroScreen2, Additive)
+UserMod.OnSettingsUI()
+SceneManager.sceneLoaded(MainMenu, Additive)
+PlatformService.workshop.eventUGCRequestUGCDetailsCompleted(result, False)
+[1 repeat(s)]
+LoadingManager.instance.m_introLoaded
+PlatformService.workshop.eventUGCQueryCompleted(result, False)
+[16 repeat(s)]
+PlatformService.workshop.eventUGCRequestUGCDetailsCompleted(result, False)
+[2 repeat(s)]
+PlatformService.workshop.eventUGCQueryCompleted(result, False)
+[2 repeat(s)]
+PlatformService.workshop.eventUGCRequestUGCDetailsCompleted(result, False)
+[5 repeat(s)]
+PlatformService.workshop.eventUGCQueryCompleted(result, False)
+[29 repeat(s)]
+PlatformService.workshop.eventUGCRequestUGCDetailsCompleted(result, False)
+[10 repeat(s)]
+PluginManager.eventPluginsStateChanged
+UserMod.OnSettingsUI()
+LoadingManager.instance.m_levelPreLoaded
+SceneManager.sceneUnloaded(IntroScreen)
+SceneManager.sceneUnloaded(IntroScreen2)
+SceneManager.sceneUnloaded(MainMenu)
+SceneManager.activeSceneChanged(, Game)
+SceneManager.sceneLoaded(Game, Single)
+LoadingExtension.ctor() static
+LoadingExtension.ctor() instance
+LoadingExtension.OnCreated(...):
+- Mode: Game
+- Theme: North
+- Complete: False
+AssetDataExtension.ctor() static
+AssetDataExtension.ctor() instance
+AssetDataExtension.OnCreated(assetData=AssetDataWrapper)
+LoadingManager.instance.m_metaDataReady
+SerializableDataExtension.ctor() static
+SerializableDataExtension.ctor() instance
+SerializableDataExtension.OnCreated(SerializableDataWrapper)
+ThreadingExtension.ctor() static
+ThreadingExtension.ctor() instance
+ThreadingExtension.OnCreated(...)
+SceneManager.sceneLoaded(NorthLoading, Additive)
+SceneManager.sceneLoaded(NorthPrefabs, Additive)
+SceneManager.sceneLoaded(LoginPackPrefabs, Additive)
+SceneManager.sceneLoaded(PreorderPackPrefabs, Additive)
+SceneManager.sceneLoaded(SignupPackPrefabs, Additive)
+AssetDataExtension.OnAssetLoaded(name=AdaptiveRoadsTest, asset=AdaptiveRoadsTest.AdaptiveRoadsTest_Data (NetInfo), userData=System.Collections.Generic.Dictionary`2[System.String,System.Byte[]])
+SceneManager.sceneLoaded(NorthProperties, Additive)
+UserMod.OnSettingsUI()
+SceneManager.sceneLoaded(Ingame, Additive)
+SerializableDataExtension.OnLoadData()
+LoadingManager.instance.m_simulationDataReady
+ThreadingExtension.OnBeforeSimulationTick() first tick
+LoadingManager.instance.m_levelLoaded(NewGameFromMap)
+LoadingExtension.OnLevelLoaded(NewGame)
+ThreadingExtension.OnUpdate() first update
+---------------------------------------
+LoadingExtension.OnLevelUnloading()
+LoadingManager.instance.m_levelPreLoaded
+LoadingManager.instance.m_metaDataReady
+SceneManager.sceneLoaded(NorthLoading, Additive)
+SerializableDataExtension.OnLoadData()
+LoadingManager.instance.m_simulationDataReady
+LoadingManager.instance.m_levelLoaded(LoadGame)
+LoadingExtension.OnLevelLoaded(LoadGame)
+ThreadingExtension.OnBeforeSimulationFrame() first frame
+----------------------------------------
+LoadingExtension.OnLevelUnloading()
+LoadingManager.instance.m_levelPreUnloaded
+SceneManager.sceneUnloaded(Game)
+SceneManager.sceneUnloaded(NorthLoading)
+SceneManager.sceneUnloaded(NorthPrefabs)
+SceneManager.sceneUnloaded(LoginPackPrefabs)
+SceneManager.sceneUnloaded(PreorderPackPrefabs)
+SceneManager.sceneUnloaded(SignupPackPrefabs)
+SceneManager.sceneUnloaded(NorthProperties)
+SceneManager.sceneUnloaded(Ingame)
+SceneManager.sceneUnloaded(NorthLoading)
+UserMod.OnSettingsUI()
+SceneManager.activeSceneChanged(, MainMenu)
+SceneManager.sceneLoaded(MainMenu, Single)
+PlatformService.workshop.eventUGCRequestUGCDetailsCompleted(result, False)
+[1 repeat(s)]
+LoadingExtension.OnReleased()
+AssetDataExtension.OnReleased()
+LoadingManager.instance.m_levelUnloaded
+SerializableDataExtension.OnReleased()
+ThreadingExtension.OnReleased()
+PlatformService.workshop.eventUGCQueryCompleted(result, False)
+[9 repeat(s)]
+PlatformService.workshop.eventUGCRequestUGCDetailsCompleted(result, False)
+[1 repeat(s)]
+PlatformService.workshop.eventUGCQueryCompleted(result, False)
+[8 repeat(s)]
+PlatformService.workshop.eventUGCRequestUGCDetailsCompleted(result, False)
+PlatformService.workshop.eventUGCQueryCompleted(result, False)
+[30 repeat(s)]
+PlatformService.workshop.eventUGCRequestUGCDetailsCompleted(result, False)
