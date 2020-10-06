@@ -5,6 +5,7 @@ namespace NodeController.GUI {
     using KianCommons;
     using static KianCommons.HelpersExtensions;
     using static KianCommons.Assertion;
+    using KianCommons.UI;
 
     public class UIHideMarkingsCheckbox : UICheckBox, IDataControllerUI {
         public static UIHideMarkingsCheckbox Instance { get; private set; }
@@ -28,9 +29,11 @@ namespace NodeController.GUI {
             sprite.size = new Vector2(19f, 19f);
             sprite.relativePosition = new Vector2(0, (height-sprite.height)/2 );
             sprite.atlas = KianCommons.UI.TextureUtil.GetAtlas("InGame");
+            sprite.atlas = TextureUtil.Ingame;
 
             checkedBoxObject = sprite.AddUIComponent<UISprite>();
             ((UISprite)checkedBoxObject).spriteName = "ToggleBaseFocused";
+            ((UISprite)checkedBoxObject).atlas = TextureUtil.Ingame;
             checkedBoxObject.size = sprite.size;
             checkedBoxObject.relativePosition = Vector3.zero;
 

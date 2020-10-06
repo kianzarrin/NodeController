@@ -5,6 +5,7 @@ namespace NodeController.GUI {
     using static KianCommons.HelpersExtensions;
     using static KianCommons.Assertion;
     using KianCommons;
+    using KianCommons.UI;
 
     public class UIResetButton : UIButton, IDataControllerUI {
         public static UIResetButton Instance { get; private set; }
@@ -35,6 +36,7 @@ namespace NodeController.GUI {
             disabledBgSprite = "ButtonMenuDisabled";
             disabledTextColor = new Color32(128, 128, 128, 255);
             canFocus = false;
+            atlas = TextureUtil.Ingame;
 
             text = "Reset to default";
         }

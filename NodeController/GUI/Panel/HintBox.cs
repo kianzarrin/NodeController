@@ -2,6 +2,7 @@ namespace NodeController.GUI {
     using ColossalFramework;
     using ColossalFramework.UI;
     using KianCommons;
+    using KianCommons.UI;
     using NodeController.Tool;
     using System;
     using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace NodeController.GUI {
             this.textColor = Color.white;
             textScale = 0.8f;
             padding = new RectOffset(5, 5, 5, 5);
+            atlas = TextureUtil.Ingame;
         }
 
         public new float width {

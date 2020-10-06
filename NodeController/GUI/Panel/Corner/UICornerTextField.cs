@@ -67,7 +67,7 @@ namespace NodeController.GUI {
 
         public override void Awake() {
             base.Awake();
-            atlas = TextureUtil.GetAtlas("Ingame");
+            atlas = TextureUtil.Ingame;
             size = UIPanelBase.CELL_SIZE;
             padding = new RectOffset(4, 4, 3, 3);
             builtinKeyNavigation = true;

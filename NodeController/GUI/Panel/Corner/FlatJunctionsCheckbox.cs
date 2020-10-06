@@ -4,8 +4,7 @@ namespace NodeController.GUI {
     using UnityEngine;
     using KianCommons;
     using static KianCommons.Assertion;
-
-
+    using KianCommons.UI;
 
     public class UIUnFlattenJunctionsCheckbox : UICheckBox, IDataControllerUI {
         public string HintHotkeys => "del => reset hovered value to default";
@@ -24,9 +23,11 @@ namespace NodeController.GUI {
             sprite.spriteName = "ToggleBase";
             sprite.size = new Vector2(20f, 20f);
             sprite.relativePosition = new Vector2(0, (height-sprite.height)/2 );
+            sprite.atlas = TextureUtil.Ingame;
 
             checkedBoxObject = sprite.AddUIComponent<UISprite>();
             ((UISprite)checkedBoxObject).spriteName = "ToggleBaseFocused";
+            ((UISprite)checkedBoxObject).atlas = TextureUtil.Ingame;
             checkedBoxObject.size = sprite.size;
             checkedBoxObject.relativePosition = Vector3.zero;
 

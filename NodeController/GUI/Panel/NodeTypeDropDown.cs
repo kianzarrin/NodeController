@@ -16,7 +16,7 @@ namespace NodeController.GUI {
 
         public override void Awake() {
             base.Awake();
-            atlas = TextureUtil.GetAtlas("Ingame");
+            atlas = TextureUtil.Ingame;
             size = new Vector2(120f, 30);
             listBackground = "GenericPanelLight";
             itemHeight = 25;
@@ -45,7 +45,7 @@ namespace NodeController.GUI {
 
             var button = AddUIComponent<UIButton>();
             triggerButton = button;
-            button.atlas = TextureUtil.GetAtlas("Ingame");
+            button.atlas = TextureUtil.Ingame;
             button.text = "";
             button.size = size;
             button.relativePosition = new Vector3(0f, 0f);

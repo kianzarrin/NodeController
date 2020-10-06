@@ -2,7 +2,7 @@ namespace NodeController.GUI {
     using ColossalFramework.UI;
     using System;
     using UnityEngine;
-    using KianCommons;
+    using KianCommons.UI;
     using static KianCommons.Assertion;
 
     public class TwistCheckbox : UICheckBox, IDataControllerUI {
@@ -24,9 +24,11 @@ namespace NodeController.GUI {
             sprite.spriteName = "ToggleBase";
             sprite.size = new Vector2(20f, 20f);
             sprite.relativePosition = new Vector2(0, (height - sprite.height) / 2);
+            sprite.atlas = TextureUtil.Ingame;
 
             checkedBoxObject = CheckedSprite = sprite.AddUIComponent<UISprite>();
             ((UISprite)checkedBoxObject).spriteName = "ToggleBaseFocused";
+            ((UISprite)checkedBoxObject).atlas = TextureUtil.Ingame;
             checkedBoxObject.size = sprite.size;
             checkedBoxObject.relativePosition = Vector3.zero;
 
