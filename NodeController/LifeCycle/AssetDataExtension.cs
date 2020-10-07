@@ -52,6 +52,7 @@ namespace NodeController.LifeCycle {
         }
 
         public static object[] GetRecords() {
+            NodeManager.ValidateAndHeal();
             List<object> records = new List<object>();
             for (ushort nodeID = 0; nodeID < NetManager.MAX_NODE_COUNT; ++nodeID) {
                 object record = CopyNode(nodeID);
@@ -135,8 +136,15 @@ namespace NodeController.LifeCycle {
             if (Instance.Asset2Records.TryGetValue(info, out var records)) {
                 Log.Debug("PlaceAsset: records = " + records.ToSTR());
                 Log.Debug("PlaceAsset: map = " + map.ToSTR());
+                int exceptionCount = 0;
                 foreach (object record in records) {
-                    Paste(record,map);
+                    try {
+                        Paste(record, map);
+                    }
+                    catch (Exception e) {
+                        Log.Exception(e, showInPanel: exceptionCount == 0);
+                        exceptionCount++;
+                    }
                 }
             } else {
                 Log.Debug("PlaceAsset: records not found");

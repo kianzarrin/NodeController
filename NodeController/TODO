@@ -1,10 +1,8 @@
-bug: when I select rev0 station tracks, corner offset changes.
+- node color / info
 
-bug: copy paste/rotate networks in MoveIt asset editor results in segmentID=0.
+- slope button.
 
-bug : terrain height when setting middle node at tunnel entrance
-
-bug: dark texture when rendering middle node of a bridge where it meets the ground.
+- modify prop x offset when stretching segment.
 
 - options for default universal behaviours:
     - auto embankment for curved segments.
@@ -18,3 +16,7 @@ bug: dark texture when rendering middle node of a bridge where it meets the grou
 - lod support (not now)
 
 - Toggle Crossing tool mod activatble from UUI.
+
+bug : terrain height when setting middle node at tunnel entrance
+
+bug: dark texture when rendering middle node of a bridge where it meets the ground.

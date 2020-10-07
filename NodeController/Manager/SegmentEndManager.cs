@@ -128,22 +128,50 @@ namespace NodeController {
         }
 
         public void Validate() {
-            Assert(buffer[0] == null && buffer[1] == null, "buffer[0] == buffer[1] == null"); ;
-            for(int i = 1; i < buffer.Length; ++i) {
-                var data = buffer[i];
-                if (data == null) continue;
+            try {
+                Log.Info("SegmentEndManager.Validate() called");
+                Assert(buffer[0] == null && buffer[1] == null, "buffer[0] == buffer[1] == null"); ;
+                for (int i = 1; i < buffer.Length; ++i) {
+                    var data = buffer[i];
+                    if (data == null) continue;
 
-                bool startNode = i % 2 ==0;
-                ushort segmentID = (ushort)UnityEngine.Mathf.FloorToInt(i / 2);
-                ushort nodeID = segmentID.ToSegment().GetNode(startNode);
+                    bool startNode = i % 2 == 0;
+                    ushort segmentID = (ushort)UnityEngine.Mathf.FloorToInt(i / 2);
+                    ushort nodeID = segmentID.ToSegment().GetNode(startNode);
 
-                Assert(NetUtil.IsNodeValid(nodeID));
-                Assert(NetUtil.IsSegmentValid(segmentID));
-                AssertEqual(data.NodeID, nodeID, "data.NodeID == nodeID");
-                AssertEqual(data.IsStartNode, startNode, "data.IsStartNode == startNode");
-                AssertEqual(data.SegmentID, segmentID, "data.SegmentID == segmentID");
+                    Assert(NetUtil.IsNodeValid(nodeID));
+                    Assert(NetUtil.IsSegmentValid(segmentID));
+                    AssertEqual(data.NodeID, nodeID, "data.NodeID == nodeID");
+                    AssertEqual(data.IsStartNode, startNode, "data.IsStartNode == startNode");
+                    AssertEqual(data.SegmentID, segmentID, "data.SegmentID == segmentID");
+                }
+            } catch(Exception e) {
+                Log.Exception(e);
             }
         }
 
+        public void Heal() {
+            Log.Info("SegmentEndManager.Heal() called");
+            buffer[0] = buffer[1] = null;
+            for (int i = 1; i < buffer.Length; ++i) {
+                ref SegmentEndData data = ref buffer[i];
+                if (data == null) continue;
+
+                bool startNode = i % 2 == 0;
+                ushort segmentID = (ushort)UnityEngine.Mathf.FloorToInt(i / 2);
+                ushort nodeID = segmentID.ToSegment().GetNode(startNode);
+
+                if (!NetUtil.IsNodeValid(nodeID) || !NetUtil.IsSegmentValid(segmentID)) {
+                    buffer[i] = null;
+                }
+                if (data.NodeID != nodeID)
+                    data.NodeID = nodeID;
+                if (data.SegmentID != segmentID)
+                    data.SegmentID = segmentID;
+
+                if (data.IsStartNode != startNode)
+                    buffer[i] = null;
+            }
+        }
     }
 }

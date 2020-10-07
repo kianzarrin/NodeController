@@ -16,6 +16,7 @@ namespace NodeController.LifeCycle
         public GameConfigT GameConfig;
 
         public static byte[] Serialize() {
+            NodeManager.ValidateAndHeal();
             Instance = new NCState {
                 NodeManagerData = NodeManager.Serialize(),
                 SegmentEndManagerData = SegmentEndManager.Serialize(),

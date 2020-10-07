@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MoveItIntegration</name>
+    </assembly>
+    <members>
+        <member name="T:MoveItIntegration.EncodeUtil">
+            <summary>
+            Utility class to assist with Move It integration
+            </summary>
+        </member>
+        <member name="M:MoveItIntegration.EncodeUtil.BinaryDecode64(System.String)">
+            <summary>
+            Converts Base64 string to object
+            </summary>
+        </member>
+        <member name="M:MoveItIntegration.EncodeUtil.BinaryEncode64(System.Object)">
+            <summary>
+            Converts object to Base64 string
+            </summary>
+        </member>
+        <member name="M:MoveItIntegration.EncodeUtil.XMLEncode(System.String,System.Type)">
+            <summary>
+            Converts string to XML
+            </summary>
+            <param name="data">the string to convert</param>
+            <param name="dataType">the type of the returned XML object</param>
+        </member>
+        <member name="M:MoveItIntegration.EncodeUtil.XMLDecode(System.Object)">
+            <summary>
+            Converts XML to string
+            </summary>
+        </member>
+        <member name="T:MoveItIntegration.IMoveItIntegrationFactory">
+            <summary>
+            Factory class to get the <see cref="T:MoveItIntegration.MoveItIntegrationBase"/> instance
+            </summary>
+        </member>
+        <member name="M:MoveItIntegration.IMoveItIntegrationFactory.GetInstance">
+            <summary>
+            Get the <see cref="T:MoveItIntegration.MoveItIntegrationBase"/> instance
+            </summary>
+            <returns>Instance that handles integration</returns>
+        </member>
+        <member name="T:MoveItIntegration.MoveItIntegrationBase">
+            <summary>
+            implementation of <see cref="T:MoveItIntegration.IMoveItIntegrationFactory"/> is required to get instance of this class.
+            </summary>
+        </member>
+        <member name="P:MoveItIntegration.MoveItIntegrationBase.ID">
+            <summary>
+            unique ID to identify the integration. must not change for the sake of backward compatibility.
+            </summary>
+        </member>
+        <member name="P:MoveItIntegration.MoveItIntegrationBase.Name">
+            <summary>
+            (future feature)
+            Display name in move it options. if null, The integration will not be added to the MoveIT options.
+            </summary>
+        </member>
+        <member name="P:MoveItIntegration.MoveItIntegrationBase.Description">
+            <summary>
+            (future feature)
+            Description of the integration item in move it options. if null, no description is displayed.
+            </summary>
+        </member>
+        <member name="P:MoveItIntegration.MoveItIntegrationBase.DataVersion">
+            <summary>
+            The version of data that can be read later for backward compatibility.
+            </summary>
+        </member>
+        <member name="M:MoveItIntegration.MoveItIntegrationBase.Copy(InstanceID)">
+            <summary>Copy object data</summary>
+            <param name="sourceInstanceID"><see cref="T:InstanceID"/> of object being cloned</param>
+        </member>
+        <member name="M:MoveItIntegration.MoveItIntegrationBase.Paste(InstanceID,System.Object,System.Collections.Generic.Dictionary{InstanceID,InstanceID})">
+            <summary>Paste object data</summary>
+            <param name="targetInstanceID"><see cref="T:InstanceID"/> of new object</param>
+            <param name="record">data returned by <see cref="M:MoveItIntegration.MoveItIntegrationBase.Copy(InstanceID)"/></param>
+            <param name="map">a dictionary of source instance ID to target instance ID.
+            this maps all the nodes, segments and lanes. 
+            please contact mod owner if you need buildings, props, etc to be mapped as well</param>
+        </member>
+        <member name="M:MoveItIntegration.MoveItIntegrationBase.Mirror(InstanceID,System.Object,System.Collections.Generic.Dictionary{InstanceID,InstanceID},System.Single,System.Single)">
+            <summary>Paste object data that has been mirrored, with segment ends needing reversed</summary>
+            <param name="targetInstanceID"><see cref="T:InstanceID"/> of new object</param>
+            <param name="record">data returned by <see cref="M:MoveItIntegration.MoveItIntegrationBase.Copy(InstanceID)"/></param>
+            <param name="map">a dictionary of source instance ID to target instance ID.
+            this maps all the nodes, segments and lanes. 
+            please contact mod owner if you need buildings, props, etc to be mapped as well</param>
+            <param name="instanceRotation">Relative angle in radians that instance has been rotated by</param>
+            <param name="mirrorRotation">Absolute angle in radians of mirror action</param>
+        </member>
+        <member name="M:MoveItIntegration.MoveItIntegrationBase.Encode64(System.Object)">
+            <summary>Converts data to base 64 string.</summary>
+            <param name="record">record returned by <see cref="M:MoveItIntegration.MoveItIntegrationBase.Copy(InstanceID)"/> </param>
+        </member>
+        <member name="M:MoveItIntegration.MoveItIntegrationBase.Decode64(System.String,System.Version)">
+            <summary>Decode the record encoded by <see cref="M:MoveItIntegration.MoveItIntegrationBase.Encode64(System.Object)"/>.</summary>
+            <param name="base64Data">The base 64 string that was encoded in <see cref="M:MoveItIntegration.MoveItIntegrationBase.Encode64(System.Object)"/></param>
+            <param name="dataVersion"><see cref="P:MoveItIntegration.MoveItIntegrationBase.DataVersion"/> when data was stored</param>
+        </member>
+        <member name="T:MoveItIntegration.IntegrationHelper">
+            <summary>
+            Used by Move It to find integrated mods
+            </summary>
+        </member>
+        <member name="M:MoveItIntegration.IntegrationHelper.GetIntegrations">
+            <summary>
+            Search for mods with Move It integration (assemblies which contain <see cref="T:MoveItIntegration.MoveItIntegrationBase"/> implementations
+            </summary>
+            <returns>List of <see cref="T:MoveItIntegration.MoveItIntegrationBase"/> instances, one from each integrationed mod</returns>
+        </member>
+    </members>
+</doc>

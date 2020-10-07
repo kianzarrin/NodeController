@@ -175,14 +175,46 @@ namespace NodeController {
         }
 
         public void Validate() {
-            Assert(buffer[0] == null, "buffer[0] == null"); ;
-            for (ushort nodeID = 1; nodeID < buffer.Length; ++nodeID) {
+            Log.Info("NodeManager.Validate() called");
+            try {
+                Assert(buffer[0] == null, "buffer[0] == null"); ;
+                for (ushort nodeID = 1; nodeID < buffer.Length; ++nodeID) {
+                    var data = buffer[nodeID];
+                    if (data == null) continue;
+
+                    Assert(NetUtil.IsNodeValid(nodeID));
+                    AssertEqual(data.NodeID, nodeID, "data.NodeID == nodeID");
+                }
+            }catch(Exception e) {
+                Log.Exception(e);
+            }
+
+        }
+
+        public void Heal() {
+            Log.Info("NodeManager.Validate() heal");
+            buffer[0] = null;
+            for(ushort nodeID=1; nodeID < buffer.Length; ++nodeID) {
                 var data = buffer[nodeID];
                 if (data == null) continue;
-
-                Assert(NetUtil.IsNodeValid(nodeID));
-                AssertEqual(data.NodeID, nodeID, "data.NodeID == nodeID");
+                if (!NetUtil.IsNodeValid(nodeID)) {
+                    SetNullNodeAndSegmentEnds(nodeID);
+                    continue;
+                }
+                if (buffer[nodeID].NodeID != nodeID) {
+                    buffer[nodeID].NodeID = nodeID;
+                }
             }
+        }
+
+        public static void ValidateAndHeal() {
+            Instance.Validate();
+            SegmentEndManager.Instance.Validate();
+            Instance.Heal();
+            SegmentEndManager.Instance.Heal();
+            Instance.Validate();
+            SegmentEndManager.Instance.Validate();
+
         }
     }
 }
