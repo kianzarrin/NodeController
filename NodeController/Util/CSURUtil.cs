@@ -8,13 +8,12 @@ namespace NodeController.Util {
         internal static bool CSUREnabled;
         public static void Init() => CSUREnabled = PluginUtil.GetCSUR().IsActive();
 
-        public static float GetMinCornerOffset(ushort nodeID) {
+        public static float GetMinCornerOffset(ushort segmentID, ushort nodeID) {
             NetInfo info = nodeID.ToNode().Info;
-            float ret = info.m_minCornerOffset;
-            if (CSUREnabled) {
-                ret = GetMinCornerOffset_(ret,nodeID); 
+            if (CSUREnabled && info.m_netAI is RoadBaseAI && info.name.Contains("CSUR")) {
+                return GetMinCornerOffset_(info.m_minCornerOffset ,nodeID); 
             }
-            return ret;
+            return segmentID.ToSegment().Info.m_minCornerOffset;
         }
 
         [MethodImplAttribute(MethodImplOptions.NoInlining)]

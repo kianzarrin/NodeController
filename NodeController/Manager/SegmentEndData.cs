@@ -16,7 +16,7 @@ namespace NodeController {
     using static KianCommons.HelpersExtensions;
     using static KianCommons.AssemblyTypeExtensions;
     using static KianCommons.Assertion;
-
+    using System.Linq;
 
     [Serializable]
     public class SegmentEndData : INetworkData, INetworkData<SegmentEndData>, ISerializable {
@@ -63,7 +63,7 @@ namespace NodeController {
         }
 
         // defaults
-        public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(NodeID);
+        public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(SegmentID, NodeID);
         public bool DefaultFlatJunctions => Info.m_flatJunctions; // TODO can this be based on config?
         public bool DefaultTwist => DefaultFlatJunctions;
         public NetSegment.Flags DefaultFlags;
@@ -99,7 +99,6 @@ namespace NodeController {
                 else
                     return ref Segment.m_endDirection;
             }
-
         }
 
 
@@ -129,7 +128,6 @@ namespace NodeController {
             $"NoTLProps:{NoTLProps} == false "
             );
 
-            
             Update();
         }
 
@@ -197,11 +195,8 @@ namespace NodeController {
             Segment.CalculateCorner(SegmentID, true, IsStartNode, leftSide: false,
                 cornerPos: out var rpos, cornerDirection: out var rdir, out _);
 
-            // the following line is particualrly useful for
-            // side segments which are sloped because they come at an angle.
-            // it  helps to update the slope angle deg slider with righ values.
-            // also is useful for putting segment names on the segment when slope has changed by user.
-            Direction.y = (ldir.y + rdir.y) * 0.5f; 
+            // useful for putting segment names on the segment when slope has changed by user.
+            // Direction.y = (ldir.y + rdir.y) * 0.5f; // messes up with middle ndoes
 
             LeftCorner.CachedPos = lpos;
             RightCorner.CachedPos = rpos;
@@ -312,7 +307,6 @@ namespace NodeController {
 
             public void ResetToDefault() {
                 DeltaPos = DeltaDir = Vector3.zero;
-                Offset = 0;
                 LockLength = false;
             }
 
@@ -412,20 +406,36 @@ namespace NodeController {
         public bool CanModifyCorners() => NodeData != null &&
             (CanModifyOffset() || NodeType == NodeTypeT.End || NodeType == NodeTypeT.Middle);
         public bool CanModifyFlatJunctions() => NodeData?.CanModifyFlatJunctions() ?? false;
-        public bool CanModifyTwist() {
-            if (NodeData == null || NodeData.SegmentCount < 3)
-                return false;
+        public bool CanModifyTwist() => CanTwist(SegmentID, NodeID);
+        public static bool CanTwist(ushort segmentID, ushort nodeID) {
+            int segmentCount = nodeID.ToNode().CountSegments();
+
+            if (segmentCount == 1) return false;
 
             // get neighbouring segment data
-            ushort segmentID1 = Segment.GetLeftSegment(NodeID);
-            ushort segmentID2 = Segment.GetRightSegment(NodeID);
-            var segEnd1 = SegmentEndManager.Instance.GetOrCreate(segmentID1, NodeID);
-            var segEnd2 = SegmentEndManager.Instance.GetOrCreate(segmentID2, NodeID);
+            ushort segmentID1 = segmentID.ToSegment().GetLeftSegment(nodeID);
+            ushort segmentID2 = segmentID.ToSegment().GetRightSegment(nodeID);
+            var segEnd1 = SegmentEndManager.Instance.GetAt(segmentID1, nodeID);
+            var segEnd2 = SegmentEndManager.Instance.GetAt(segmentID2, nodeID);
 
-            bool slope1 = !segEnd1.FlatJunctions;
-            bool slope2 = !segEnd2.FlatJunctions;
-            return slope1 || slope2;
+            bool flat1 = segEnd1?.FlatJunctions ?? segmentID1.ToSegment().Info.m_flatJunctions;
+            bool flat2 = segEnd2?.FlatJunctions ?? segmentID2.ToSegment().Info.m_flatJunctions;
+            bool slope1 = !flat1 ;
+            bool slope2 = !flat2;
+            bool slope = slope1 || slope2;
+            if (!slope) return false;
+
+            if (segmentCount == 2) {
+                var dir1 = segmentID1.ToSegment().GetDirection(nodeID);
+                var dir = segmentID.ToSegment().GetDirection(nodeID);
+                float dot = VectorUtils.DotXZ(dir, dir1);
+                bool straight = Mathf.Abs(dot) > 0.999f;
+                if (straight) return false;
+            }
+
+            return true;
         }
+
         public bool ShowNoMarkingsToggle() {
             if (IsCSUR) return false;
             if (NodeData == null) return true;

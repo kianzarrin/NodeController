@@ -77,8 +77,8 @@ namespace NodeController {
         public bool Is180;
         ushort segmentID1, segmentID2;
         public List<ushort> SortedSegmentIDs; //sorted by how big semgent is.
-        SegmentEndData SegmentEnd1 => SegmentEndManager.Instance.GetAt(segmentID1, NodeID);
-        SegmentEndData SegmentEnd2 => SegmentEndManager.Instance.GetAt(segmentID2, NodeID);
+        public SegmentEndData SegmentEnd1 => SegmentEndManager.Instance.GetAt(segmentID1, NodeID);
+        public SegmentEndData SegmentEnd2 => SegmentEndManager.Instance.GetAt(segmentID2, NodeID);
 
         // Configurable
         public NodeTypeT NodeType;

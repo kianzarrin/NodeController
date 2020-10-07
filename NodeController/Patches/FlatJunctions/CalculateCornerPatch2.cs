@@ -71,17 +71,18 @@ namespace NodeController.Patches {
                     ushort neighbourSegmentID = leftSide
                         ? segmentID.ToSegment().GetRightSegment(nodeID)
                         : segmentID.ToSegment().GetLeftSegment(nodeID);
-                    var neighbourData = SegmentEndManager.Instance.GetAt(neighbourSegmentID, nodeID);
+                    //var neighbourData = SegmentEndManager.Instance.GetAt(neighbourSegmentID, nodeID);
+                    //bool neighbourFlatJunctions = neighbourData?.FlatJunctions ?? neighbourSegmentID.ToSegment().Info.m_flatJunctions;
 
-                    bool neighbourFlatJunctions = neighbourData?.FlatJunctions ?? neighbourSegmentID.ToSegment().Info.m_flatJunctions;
-                    bool neighbourslope = !neighbourFlatJunctions;
                     bool twist;
                     if (data != null)
-                        twist = data.Twist;
-                    else
+                        twist = data.CanModifyTwist() && data.Twist;
+                    else {
                         twist = segmentID.ToSegment().Info.m_flatJunctions;
-                        //twist |= segmentID.ToSegment().Info.m_flatJunctions; 
-                    if (twist && neighbourslope) {
+                        twist = twist && SegmentEndData.CanTwist(segmentID: segmentID, nodeID: nodeID);
+                    }
+                    
+                    if (twist) {
                         Vector3 nodePos = nodeID.ToNode().m_position;
                         Vector3 neighbourEndDir = neighbourSegmentID.ToSegment().GetDirection(nodeID);
                         //if (data != null) {

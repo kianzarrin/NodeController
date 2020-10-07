@@ -3,6 +3,7 @@ namespace NodeController.Tool {
     using KianCommons;
     using KianCommons.UI;
     using NodeController.GUI;
+    using System;
     using System.Threading;
     using UnityEngine;
     using static KianCommons.HelpersExtensions;
@@ -126,13 +127,22 @@ namespace NodeController.Tool {
         }
 
         protected override void OnEnable() {
-            Log.Debug("NodeControllerTool.OnEnable");
-            Log.Debug(Button?.ToString());
-            base.OnEnable();
-            Button?.Activate();
-            SelectedNodeID = 0;
-            SelectedSegmentID = 0;
-            handleHovered_ = false;
+            try {
+                Log.Debug("NodeControllerTool.OnEnable");
+                Log.Debug(Button?.ToString());
+                base.OnEnable();
+                Button?.Activate();
+                SelectedNodeID = 0;
+                SelectedSegmentID = 0;
+                handleHovered_ = false;
+
+                NodeManager.Instance.Validate();
+                SegmentEndManager.Instance.Validate();
+            }
+            catch (Exception e) {
+                Log.Exception(e);
+            }
+
         }
 
         protected override void OnDisable() {

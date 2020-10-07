@@ -1,14 +1,16 @@
-bug: reseting slope to default is problematic.
 bug: when I select rev0 station tracks, corner offset changes.
+
+bug: copy paste/rotate networks in MoveIt asset editor results in segmentID=0.
+
+bug : terrain height when setting middle node at tunnel entrance
+
+bug: dark texture when rendering middle node of a bridge where it meets the ground.
 
 - options for default universal behaviours:
     - auto embankment for curved segments.
 
-
-- open and close left and right table.
+- open and close corner table.
 - new Corner table organisation
-
-- test selecting nodes on top of another road (FRT + anarchy + moveIT). (can't reproduce)
 
 - corner offset to increase chances of train track connection.
 - fix the orientation of asym road
@@ -16,4 +18,3 @@ bug: when I select rev0 station tracks, corner offset changes.
 - lod support (not now)
 
 - Toggle Crossing tool mod activatble from UUI.
-

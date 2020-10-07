@@ -4,6 +4,8 @@ namespace NodeController {
     using KianCommons;
     using NodeController.Tool;
     using UnityEngine.Assertions;
+    using UnityEngine;
+    using static KianCommons.Assertion;
 
     [Serializable]
     public class SegmentEndManager {
@@ -123,6 +125,24 @@ namespace NodeController {
             }
 
             segEnd.Calculate();
+        }
+
+        public void Validate() {
+            Assert(buffer[0] == null && buffer[1] == null, "buffer[0] == buffer[1] == null"); ;
+            for(int i = 1; i < buffer.Length; ++i) {
+                var data = buffer[i];
+                if (data == null) continue;
+
+                bool startNode = i % 2 ==0;
+                ushort segmentID = (ushort)UnityEngine.Mathf.FloorToInt(i / 2);
+                ushort nodeID = segmentID.ToSegment().GetNode(startNode);
+
+                Assert(NetUtil.IsNodeValid(nodeID));
+                Assert(NetUtil.IsSegmentValid(segmentID));
+                AssertEqual(data.NodeID, nodeID, "data.NodeID == nodeID");
+                AssertEqual(data.IsStartNode, startNode, "data.IsStartNode == startNode");
+                AssertEqual(data.SegmentID, segmentID, "data.SegmentID == segmentID");
+            }
         }
 
     }
