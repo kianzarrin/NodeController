@@ -193,67 +193,87 @@ namespace NodeController {
             return diff;
         }
 
-        public bool IsFlattened {
-            get {
-                for(int i = 0; i < SortedSegmentIDs.Count; ++i) {
-                    ushort segmentID = SortedSegmentIDs[i];
-                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
-                    //Log.Debug($"get_SlopedJunction i:{i} segEnd.flat:{segEnd.FlatJunctions}");
-                    bool sideSegment = i >= 2;
-                    if (segEnd.FlatJunctions)
-                        return true;
-                }
-                return false;
-            }
-            set {
-                for (int i = 0; i < SortedSegmentIDs.Count; ++i) {
-                    ushort segmentID = SortedSegmentIDs[i];
-                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
-                    bool sideSegment = i >= 2;
-                    if (!value) {
-                        segEnd.FlatJunctions = sideSegment;
-                        segEnd.Twist = sideSegment;
-                    } else {
-                        segEnd.FlatJunctions = true;
-                        segEnd.Twist = false;
-                    }
-                }
+        public void Flatten() {
+            Log.Debug("NodeData.Flatten() called");
+            foreach (ushort segmentID in SortedSegmentIDs) { 
+                var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                segEnd.FlatJunctions = true;
+                segEnd.Twist = false;
             }
         }
 
-        public bool HasUniformSlopedJunction() {
-            bool sloped0 = default;
+        public void UnFlatten() {
+            Log.Debug("NodeData.UnFlatten() called");
             for (int i = 0; i < SortedSegmentIDs.Count; ++i) {
                 ushort segmentID = SortedSegmentIDs[i];
                 var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
                 bool sideSegment = i >= 2;
-                //main road slope, side segment flat and twisted.
-                bool sloped = segEnd.FlatJunctions == sideSegment && segEnd.Twist == sideSegment;
-                //Log.Debug($"HasUniformSlopedJunction i:{i} good:{sloped}");
-                if (i == 0)
-                    sloped0 = sloped;
-                else if (sloped != sloped0)
-                    return false;
+                segEnd.FlatJunctions = sideSegment;
+                segEnd.Twist = sideSegment;
             }
-            return true;
         }
 
-        public bool HasUniformFlatJunction() {
-            bool flat0 = default;
-            for (int i = 0; i < SortedSegmentIDs.Count; ++i) {
-                ushort segmentID = SortedSegmentIDs[i];
-                var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
-                bool sideSegment = i >= 2;
-                // main road slope, side segment flat and twisted.
-                bool flat = segEnd.FlatJunctions == true;
-                //Log.Debug($"HasUniformFlatJunction i:{i} good:{flat}");
-                if (i == 0)
-                    flat0 = flat;
-                else if (flat != flat0)
-                    return false;
-            }
-            return true;
-        }
+        //public bool IsFlattened {
+        //    get {
+        //        for(int i = 0; i < SortedSegmentIDs.Count; ++i) {
+        //            ushort segmentID = SortedSegmentIDs[i];
+        //            var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+        //            //Log.Debug($"get_SlopedJunction i:{i} segEnd.flat:{segEnd.FlatJunctions}");
+        //            bool sideSegment = i >= 2;
+        //            if (segEnd.FlatJunctions)
+        //                return true;
+        //        }
+        //        return false;
+        //    }
+        //    set {
+        //        for (int i = 0; i < SortedSegmentIDs.Count; ++i) {
+        //            ushort segmentID = SortedSegmentIDs[i];
+        //            var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+        //            bool sideSegment = i >= 2;
+        //            if (!value) {
+        //                segEnd.FlatJunctions = sideSegment;
+        //                segEnd.Twist = sideSegment;
+        //            } else {
+        //                segEnd.FlatJunctions = true;
+        //                segEnd.Twist = false;
+        //            }
+        //        }
+        //    }
+        //}
+
+        //public bool HasUniformSlopedJunction() {
+        //    bool sloped0 = default;
+        //    for (int i = 0; i < SortedSegmentIDs.Count; ++i) {
+        //        ushort segmentID = SortedSegmentIDs[i];
+        //        var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+        //        bool sideSegment = i >= 2;
+        //        //main road slope, side segment flat and twisted.
+        //        bool sloped = segEnd.FlatJunctions == sideSegment && segEnd.Twist == sideSegment;
+        //        //Log.Debug($"HasUniformSlopedJunction i:{i} good:{sloped}");
+        //        if (i == 0)
+        //            sloped0 = sloped;
+        //        else if (sloped != sloped0)
+        //            return false;
+        //    }
+        //    return true;
+        //}
+
+        //public bool HasUniformFlatJunction() {
+        //    bool flat0 = default;
+        //    for (int i = 0; i < SortedSegmentIDs.Count; ++i) {
+        //        ushort segmentID = SortedSegmentIDs[i];
+        //        var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+        //        bool sideSegment = i >= 2;
+        //        // main road slope, side segment flat and twisted.
+        //        bool flat = segEnd.FlatJunctions == true;
+        //        //Log.Debug($"HasUniformFlatJunction i:{i} good:{flat}");
+        //        if (i == 0)
+        //            flat0 = flat;
+        //        else if (flat != flat0)
+        //            return false;
+        //    }
+        //    return true;
+        //}
 
         #endregion
         #region embankment angle

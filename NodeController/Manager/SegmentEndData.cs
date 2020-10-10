@@ -82,7 +82,8 @@ namespace NodeController {
         public bool NoTLProps;
         public bool FlatJunctions;
         public bool Twist;
-        public float Stretch; //increase width
+        /// <summary>delta width stretch in percent</summary>
+        public float Stretch;
         public float EmbankmentAngleDeg;
         public float DeltaSlopeAngleDeg;
 

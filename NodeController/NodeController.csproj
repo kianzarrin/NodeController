@@ -7,7 +7,7 @@
     <Product>NodeController</Product>
     <Copyright>Copyright ©  2020</Copyright>
     <Deterministic>false</Deterministic>
-    <AssemblyVersion>2.1.5.*</AssemblyVersion>
+    <AssemblyVersion>2.1.7.*</AssemblyVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -45,9 +45,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="DecompiledSources\NetAI.cs" />
+    <Compile Remove="DecompiledSources\NetLane2.cs" />
     <Compile Remove="DecompiledSources\NetNode.cs" />
     <Compile Remove="DecompiledSources\NetSegment2.cs" />
     <Compile Remove="DecompiledSources\VehicleAI.cs" />
+    <Compile Remove="GUI\Panel\Corner\MassFlattenNodeCheckbox.cs" />
     <Compile Remove="KianCommons\KianCommons\Properties\AssemblyInfo.cs" />
     <Compile Remove="KianCommons\KianCommons\Util\CSURUtil.cs" />
     <Compile Remove="Patches\NetSegmentPatches\RenderInstance.cs" />
@@ -120,6 +122,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="KianCommons\KianCommons\Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DecompiledSources\NetLane2.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Resources\cursor_edit.png">

@@ -39,6 +39,7 @@ namespace NodeController.GUI {
             base.Awake();
             Instance = this;
         }
+
         public override void OnDestroy() {
             Instance = null;
             base.OnDestroy();
@@ -60,12 +61,14 @@ namespace NodeController.GUI {
                 Controls.Add(dropdown_);
             }
 
-            // TODO find a working logic.
-            //{
-            //    var panel = AddPanel();
-            //    var checkBox = panel.AddUIComponent<MassFlattenNodeCheckbox>();
-            //    Controls.Add(checkBox);
-            //}
+            {
+                var panel = AddPanel();
+                panel.autoLayoutDirection = LayoutDirection.Horizontal;
+                panel.AutoSize2 = true;
+                Controls.Add(panel.AddUIComponent<FlattenButton>());
+                Controls.Add(panel.AddUIComponent<SlopeButton>());
+                
+            }
 
             const bool extendedSlider = true;
             { // offset
@@ -182,7 +185,7 @@ namespace NodeController.GUI {
         }
 
         public override void Refresh() {
-            Log.Debug("UINodeControllerPanel.Refresh() called offsetPanel_=" + offsetPanel_ ?? "null");
+            Log.Debug("UINodeControllerPanel.Refresh() called");
             offsetPanel_.isVisible = NodeData?.CanModifyOffset() ?? false;
             slopePanel_.isVisible = stretchPanel_.isVisible = embankmentPanel_.isVisible =
                  NodeData?.CanMassEditNodeCorners() ?? false;
