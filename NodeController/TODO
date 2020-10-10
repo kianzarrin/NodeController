@@ -1,8 +1,8 @@
-- node color / info
-
-- slope button.
-
 - modify prop x offset when stretching segment.
+   - done for close
+   - not working for lod
+
+- fix end node selector.
 
 - options for default universal behaviours:
     - auto embankment for curved segments.

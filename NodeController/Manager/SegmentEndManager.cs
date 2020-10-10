@@ -141,6 +141,11 @@ namespace NodeController {
 
                     Assert(NetUtil.IsNodeValid(nodeID));
                     Assert(NetUtil.IsSegmentValid(segmentID));
+
+                    if (data.SegmentID != segmentID || data.NodeID !=nodeID) {
+                        Assert(!ReferenceEquals(GetAt(data.SegmentID, data.NodeID), GetAt(segmentID,nodeID)),
+                            $"!ReferenceEquals(GetAt(data.SegmentID:{data.SegmentID}, data.NodeID:{data.NodeID}), GetAt(segmentID:{segmentID},nodeID:{nodeID})");
+                    }
                     AssertEqual(data.NodeID, nodeID, "data.NodeID == nodeID");
                     AssertEqual(data.IsStartNode, startNode, "data.IsStartNode == startNode");
                     AssertEqual(data.SegmentID, segmentID, "data.SegmentID == segmentID");
@@ -163,6 +168,7 @@ namespace NodeController {
 
                 if (!NetUtil.IsNodeValid(nodeID) || !NetUtil.IsSegmentValid(segmentID)) {
                     buffer[i] = null;
+                    continue;
                 }
                 if (data.NodeID != nodeID)
                     data.NodeID = nodeID;

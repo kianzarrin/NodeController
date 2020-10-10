@@ -183,6 +183,10 @@ namespace NodeController {
                     if (data == null) continue;
 
                     Assert(NetUtil.IsNodeValid(nodeID));
+                    if(data.NodeID != nodeID) {
+                        Assert(!ReferenceEquals(buffer[data.NodeID], buffer[nodeID]),
+                            $"!ReferenceEquals(buffer[data.NodeID:{data.NodeID}], buffer[nodeID:{nodeID}]");
+                    }
                     AssertEqual(data.NodeID, nodeID, "data.NodeID == nodeID");
                 }
             }catch(Exception e) {
@@ -201,9 +205,8 @@ namespace NodeController {
                     SetNullNodeAndSegmentEnds(nodeID);
                     continue;
                 }
-                if (buffer[nodeID].NodeID != nodeID) {
+                if (buffer[nodeID].NodeID != nodeID) 
                     buffer[nodeID].NodeID = nodeID;
-                }
             }
         }
 
