@@ -35,15 +35,15 @@ namespace NodeController.Patches.NetLanePatches {
             embankment *= 0.01f; //convert percent to ratio.
             float deltaY = pos.x * embankment;
 
-            //string mstart = $"start:[node={start?.NodeID} embankStart={embankStart}";
-            //string mend = $"end:[node={end?.NodeID} embankEnd={embankEnd}";
-            //Log.DebugWait($"CalculatePropPos: embankment={embankment} | {mstart} | {mend}");
 
             if (reverse)
                 pos.y += deltaY;
             else
                 pos.y -= deltaY;
 
+            //string mstart = $"start:[node={start?.NodeID} stretchStart={stretchStart}";
+            //string mend = $"end:[node={end?.NodeID} stretchEnd={stretchEnd}";
+            //Log.DebugWait($"CalculatePropPos: stretch={stretch} | {mstart} | {mend} | {pos0}->{pos}");
             return pos;
         }
 
@@ -61,28 +61,41 @@ namespace NodeController.Patches.NetLanePatches {
             .GetMethod(nameof(Bezier3.Position), BindingFlags.Public | BindingFlags.Instance)
             ?? throw new Exception("mPosition is null");
 
-        public static void Patch(List<CodeInstruction> codes, MethodInfo method) {
-            bool predicate(int i) {
-                if (i + 1 >= codes.Count) return false;
-                // m_position.x || m_position.z
-                var c0 = codes[i];
-                var c1 = codes[i + 1];
-                bool ret = c0.operand == fPosition;
-                ret &= c1.operand == fX || c1.operand == fY;
-                return ret;
-            }
+        public static IEnumerable<CodeInstruction> Patch(IEnumerable<CodeInstruction> instructions, MethodInfo method) {
+            HelpersExtensions.VERBOSE = true;
+            try {
+                var codes = instructions.ToCodeList();
+                bool predicate(int i) {
+                    if (i + 2 >= codes.Count) return false;
+                    // m_position.x || m_position.z
+                    var c0 = codes[i];
+                    var c1 = codes[i + 1];
+                    var c2 = codes[i + 2];
+                    bool ret = c0.operand == fPosition;
+                    ret &= c1.operand == fX || c1.operand == fY;
+                    ret &= c2.opcode == OpCodes.Mul || c2.opcode == OpCodes.Add; // ignore if(pos.x != 0)
+                    return ret;
+                }
 
-            int index = 0;
-            int nInsertions = 0;
-            for(int watchdog=0; ; ++watchdog) {
-                Assert(watchdog < 20, "watchdog");
-                int c = watchdog == 0 ? 1 : 2; // skip over m_position from previous loop.
-                index = SearchGeneric(codes, predicate, index, throwOnError:false, counter: c);
-                if (index < 0) break;
-                if(InsertCall(codes, index, method))
-                    nInsertions++;
+                int index = 0;
+                int nInsertions = 0;
+                for (int watchdog = 0; ; ++watchdog) {
+                    Assert(watchdog < 20, "watchdog");
+                    int c = 1;//watchdog == 0 ? 1 : 2; // skip over m_position from previous loop.
+                    index = SearchGeneric(codes, predicate, index, throwOnError: false, counter: c);
+                    if (index < 0) break; // not found
+                    index++; // insert after
+                    bool inserted = InsertCall(codes, index, method);
+                    if (inserted) nInsertions++;
+                }
+
+                //Log.DebugWait($"successfully inserted {nInsertions} calls to CalculatePropPos() in {method.DeclaringType.Name}.{method.Name}");
+                return codes;
             }
-            
+            catch (Exception e) {
+                Log.Exception(e);
+                return instructions;
+            }
         }
 
         public static bool InsertCall(List<CodeInstruction> codes, int index, MethodInfo method) {
@@ -101,7 +114,7 @@ namespace NodeController.Patches.NetLanePatches {
             };
 
             // insert after ldflda prop.m_posion
-            InsertInstructions(codes, insertion, index + 1);
+            InsertInstructions(codes, insertion, index);
             return true;
         }
 
