@@ -222,11 +222,11 @@ namespace NodeController.Tool {
             // E)fail insert 
             // G)inside panel 
 
-            if (!this.enabled || !m_mouseRayValid || handleHovered_) 
+            if (!this.enabled || !m_mouseRayValid || handleHovered_)
                 return null;
 
             if (CornerFocusMode)
-                return "drag => move corner\n"+"control + drag => move both corners";
+                return "drag => move corner\n" + "control + drag => move both corners";
 
             bool fail = false;
             bool insert = false;
@@ -448,22 +448,17 @@ namespace NodeController.Tool {
             if (!m_mouseRayValid || handleHovered_)
                 return;
 
-            if (AltIsPressed || HoveredNodeId.ToNode().m_flags.IsFlagSet(NetNode.Flags.End)) {
-                if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)) {
-                    DrawCutSegmentEnd(
-                        cameraInfo,
-                        HoveredSegmentId,
-                        0.5f,
-                        NetUtil.IsStartNode(segmentId: HoveredSegmentId, nodeId: HoveredNodeId),
-                        Color.yellow,
-                        alpha: true);
-                }
+            if (AltIsPressed) {
+                RenderHoveredSegmentEnd(cameraInfo);
             } else if (IsHoverValid && m_prefab != null) {
                 NetTool.ControlPoint controlPoint = m_cachedControlPoint;
-                ushort nodeID = controlPoint.m_node;
-                if (nodeID != 0) {
-                    bool fail = !NodeData.IsSupported(nodeID);
-                    DrawNodeCircle(cameraInfo, GetColor(fail), nodeID, false);
+                if (controlPoint.m_node != 0) {
+                    bool fail = !NodeData.IsSupported(controlPoint.m_node);
+                    if (controlPoint.m_node.ToNode().m_flags.IsFlagSet(NetNode.Flags.End)) {
+                        RenderHoveredSegmentEnd(cameraInfo);
+                    } else {
+                        DrawNodeCircle(cameraInfo, GetColor(fail), controlPoint.m_node, false);
+                    }
                 } else if (controlPoint.m_segment != 0) {
                     ToolErrors error = m_cachedErrors;
                     error |= m_prefab.m_netAI.CheckBuildPosition(false, false, true, true, ref controlPoint, ref controlPoint, ref controlPoint, out _, out _, out _, out _);
@@ -472,6 +467,18 @@ namespace NodeController.Tool {
                     RenderStripOnSegment(cameraInfo, controlPoint.m_segment, controlPoint.m_position, 1.5f, color);
                 }
                 //DrawOverlayCircle(cameraInfo, Color.red, raycastOutput.m_hitPos, 1, true);
+            }
+        }
+
+        void RenderHoveredSegmentEnd(RenderManager.CameraInfo cameraInfo) {
+            if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)) {
+                DrawCutSegmentEnd(
+                cameraInfo,
+                HoveredSegmentId,
+                0.5f,
+                NetUtil.IsStartNode(segmentId: HoveredSegmentId, nodeId: HoveredNodeId),
+                Color.yellow,
+                alpha: true);
             }
         }
 
@@ -542,7 +549,7 @@ namespace NodeController.Tool {
             if (!IsHoverValid || handleHovered_ || CornerFocusMode)
                 return;
             Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
-            if (AltIsPressed ) {
+            if (AltIsPressed) {
                 if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)) {
                     SelectedSegmentID = HoveredSegmentId;
                     SelectedNodeID = HoveredNodeId;
@@ -569,9 +576,10 @@ namespace NodeController.Tool {
                     SECPanel.Display(
                         segmentID: SelectedSegmentID,
                         nodeID: SelectedNodeID);
+                } else {
+                    SelectedSegmentID = 0;
+                    NCPanel.Display(SelectedNodeID);
                 }
-                SelectedSegmentID = 0;
-                NCPanel.Display(SelectedNodeID);
             } else if (c.m_segment != 0) {
                 if (!NetUtil.IsCSUR(m_prefab)) {
                     SimulationManager.instance.AddAction(delegate () {
