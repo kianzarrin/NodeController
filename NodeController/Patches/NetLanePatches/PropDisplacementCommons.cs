@@ -62,7 +62,6 @@ namespace NodeController.Patches.NetLanePatches {
             ?? throw new Exception("mPosition is null");
 
         public static IEnumerable<CodeInstruction> Patch(IEnumerable<CodeInstruction> instructions, MethodInfo method) {
-            HelpersExtensions.VERBOSE = true;
             try {
                 var codes = instructions.ToCodeList();
                 bool predicate(int i) {
