@@ -92,6 +92,9 @@ namespace NodeController.GUI {
 
                 lcorner.Mirror = rcorner;
                 rcorner.Mirror = lcorner;
+
+                leftCornerOffset_ = lcorner;
+                rightCornerOffset_ = rcorner;
                 
             }
 
@@ -182,6 +185,19 @@ namespace NodeController.GUI {
 
         UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_;
         UIAutoSizePanel tableLeft_, tableRight_;
+        UICornerTextField leftCornerOffset_, rightCornerOffset_;
+
+        public bool IsRighTableHovered() {
+            var b1 = tableRight_?.containsMouse ?? false;
+            var b2 = rightCornerOffset_?.containsMouse ?? false;
+            return b1 || b2;
+        }
+        public bool IsLeftTableHovered() {
+            var b1 = tableLeft_?.containsMouse ?? false;
+            var b2 = leftCornerOffset_?.containsMouse ?? false;
+            return b1 || b2;
+        }
+
         public void MakeCornerTable(UIPanel container) {
             UICornerTextField lposx, lposy, lposz,
                               rposx, rposy, rposz,

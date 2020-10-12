@@ -416,10 +416,14 @@ namespace NodeController.Tool {
 
         public override void RenderOverlay(RenderManager.CameraInfo cameraInfo) {
             base.RenderOverlay(cameraInfo);
-
             if (SelectedSegmentID != 0) {
-                GetCornerMarker(left: true)?.RenderOverlay(cameraInfo, Color.red, leftCornerHovered_, leftCornerSelected_);
-                GetCornerMarker(left: false)?.RenderOverlay(cameraInfo, Color.red, rightCornerHovered_, rightCornerSelected_);
+                bool enlargeLeft = SECPanel?.IsRighTableHovered() ?? false; // change direction of view
+                enlargeLeft |= leftCornerHovered_;
+                GetCornerMarker(left: true)?.RenderOverlay(cameraInfo, Color.red, enlargeLeft, leftCornerSelected_);
+
+                bool enlargeRight = SECPanel?.IsLeftTableHovered() ?? false; // change direction of view
+                enlargeRight |= rightCornerHovered_;
+                GetCornerMarker(left: false)?.RenderOverlay(cameraInfo, Color.red, enlargeRight, rightCornerSelected_);
             }
             if (CornerFocusMode)
                 return;
