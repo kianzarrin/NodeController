@@ -175,6 +175,7 @@ namespace NodeController {
         }
 
         public void Validate(string errorMessage, bool showPanel=true) {
+            errorMessage = "\n" + errorMessage;
             Log.Info("NodeManager.Validate() called");
             try {
                 Assert(buffer[0] == null, "buffer[0] == null"); ;
@@ -185,12 +186,12 @@ namespace NodeController {
                     Assert(NetUtil.IsNodeValid(nodeID));
                     if(data.NodeID != nodeID) {
                         Assert(!ReferenceEquals(buffer[data.NodeID], buffer[nodeID]),
-                            $"!ReferenceEquals(buffer[data.NodeID:{data.NodeID}], buffer[nodeID:{nodeID}]");
+                            $"!ReferenceEquals(buffer[data.NodeID:{data.NodeID}], buffer[nodeID:{nodeID}]" + errorMessage);
                     }
-                    AssertEqual(data.NodeID, nodeID, "data.NodeID == nodeID");
+                    AssertEqual(data.NodeID, nodeID, "data.NodeID == nodeID" + errorMessage);
                 }
             }catch(Exception e) {
-                Log.Exception(e, m: errorMessage, showInPanel: showPanel);
+                Log.Exception(e, showInPanel: showPanel);
             }
 
         }
@@ -212,14 +213,14 @@ namespace NodeController {
 
         /// <param name="showError1">set true to display error panel before healing</param>
         public static void ValidateAndHeal(bool showError1) {
-            string m1 = "Node Controller(before healing).";
+            string m1 = "Node Controller tries to recover from the error";
             Instance.Validate(m1, showError1);
             SegmentEndManager.Instance.Validate(m1, showError1);
 
             Instance.Heal();
             SegmentEndManager.Instance.Heal();
 
-            string m2 = "Node Controller. please report this bug and submit NodeController.log";
+            string m2 = "Node Controller error: please report this bug and submit NodeController.log";
             Instance.Validate(m2, true);
             SegmentEndManager.Instance.Validate(m2, true);
         }
