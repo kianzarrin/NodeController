@@ -30,7 +30,7 @@ namespace NodeController.Patches._NetTool {
             NodeID = node;
             AssertEqual(NodeID.ToNode().CountSegments(), 1, "CountSegments");
             ushort segmentID = NetUtil.GetFirstSegment(NodeID);
-            Log.Debug($"MoveMiddleNode.Prefix() node:{NodeID} segment:{segmentID}\n" + Environment.StackTrace,false);
+            Log.Info($"MoveMiddleNode.Prefix() node:{NodeID} segment:{segmentID}\n" + Environment.StackTrace, true);
             SegmentData = MoveItIntegration.CopySegment(segmentID);
             NodeID2 = segmentID.ToSegment().GetOtherNode(NodeID);
         }

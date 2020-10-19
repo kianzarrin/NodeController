@@ -85,7 +85,7 @@ namespace NodeController.LifeCycle {
         }
 
         public static void PasteNode(ushort targetNodeID, NodeData record, Dictionary<InstanceID, InstanceID> map) {
-            Log.Debug($"MoveItIntegration.PasteNode({targetNodeID}) called with record = " + record);
+            Log.Info($"MoveItIntegration.PasteNode({targetNodeID}) called with record = " + record, true);
             if (record == null) {
                 //nodeMan.ResetNodeToDefault(nodeID); // doing this is not backward comaptible
             } else {
@@ -160,6 +160,7 @@ namespace NodeController.LifeCycle {
         }
 
         public static void PasteSegmentEnd(SegmentEndData segmentEndData, ushort targetNodeID, ushort targetSegmentID) {
+            Log.Info($"PasteSegmentEnd({segmentEndData}, targetNodeID:{targetNodeID}, targetSegmentID:{targetNodeID})",true);
             if (segmentEndData != null) {
                 segmentEndData = segmentEndData.Clone();
                 segmentEndData.SegmentID = targetSegmentID;

@@ -127,7 +127,7 @@ namespace NodeController {
             segEnd.Calculate();
         }
 
-        public void Validate() {
+        public void Validate(string errorMessage, bool showPanel = true) {
             try {
                 Log.Info("SegmentEndManager.Validate() called");
                 Assert(buffer[0] == null && buffer[1] == null, "buffer[0] == buffer[1] == null"); ;
@@ -151,7 +151,7 @@ namespace NodeController {
                     AssertEqual(data.SegmentID, segmentID, "data.SegmentID == segmentID");
                 }
             } catch(Exception e) {
-                Log.Exception(e);
+                Log.Exception(e, m: errorMessage, showInPanel: showPanel);
             }
         }
 

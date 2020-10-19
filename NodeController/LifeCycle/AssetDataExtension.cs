@@ -52,7 +52,7 @@ namespace NodeController.LifeCycle {
         }
 
         public static object[] GetRecords() {
-            NodeManager.ValidateAndHeal();
+            NodeManager.ValidateAndHeal(false);
             List<object> records = new List<object>();
             for (ushort nodeID = 0; nodeID < NetManager.MAX_NODE_COUNT; ++nodeID) {
                 object record = CopyNode(nodeID);

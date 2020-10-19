@@ -80,7 +80,7 @@ namespace NodeController.LifeCycle {
 
                 NodeManager.Instance.OnLoad();
                 SegmentEndManager.Instance.OnLoad();
-                NodeManager.ValidateAndHeal();
+                NodeManager.ValidateAndHeal(true);
                 Loaded = true;
                 Log.Info("LifeCycle.SimulationDataReady() sucessful");
             }

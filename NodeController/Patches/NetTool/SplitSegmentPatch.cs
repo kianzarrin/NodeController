@@ -16,7 +16,7 @@ namespace NodeController.Patches._NetTool {
         public static void Prefix(ushort segment)
         {
             if (!InSimulationThread()) return;
-            Log.Debug($"SplitSegment.Prefix() segment:{segment}\n" + Environment.StackTrace, false);
+            Log.Info($"SplitSegment.Prefix() segment:{segment}\n" + Environment.StackTrace, true);
             SegmentData = MoveItIntegration.CopySegment(segment);
         }
 

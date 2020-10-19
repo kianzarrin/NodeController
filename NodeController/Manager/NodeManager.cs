@@ -174,7 +174,7 @@ namespace NodeController {
             buffer[nodeID] = null;
         }
 
-        public void Validate() {
+        public void Validate(string errorMessage, bool showPanel=true) {
             Log.Info("NodeManager.Validate() called");
             try {
                 Assert(buffer[0] == null, "buffer[0] == null"); ;
@@ -190,7 +190,7 @@ namespace NodeController {
                     AssertEqual(data.NodeID, nodeID, "data.NodeID == nodeID");
                 }
             }catch(Exception e) {
-                Log.Exception(e);
+                Log.Exception(e, m: errorMessage, showInPanel: showPanel);
             }
 
         }
@@ -210,14 +210,18 @@ namespace NodeController {
             }
         }
 
-        public static void ValidateAndHeal() {
-            Instance.Validate();
-            SegmentEndManager.Instance.Validate();
+        /// <param name="showError1">set true to display error panel before healing</param>
+        public static void ValidateAndHeal(bool showError1) {
+            string m1 = "Node Controller(before healing).";
+            Instance.Validate(m1, showError1);
+            SegmentEndManager.Instance.Validate(m1, showError1);
+
             Instance.Heal();
             SegmentEndManager.Instance.Heal();
-            Instance.Validate();
-            SegmentEndManager.Instance.Validate();
 
+            string m2 = "Node Controller. please report this bug and submit NodeController.log";
+            Instance.Validate(m2, true);
+            SegmentEndManager.Instance.Validate(m2, true);
         }
     }
 }

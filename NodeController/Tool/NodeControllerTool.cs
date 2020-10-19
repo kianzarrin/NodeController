@@ -135,7 +135,7 @@ namespace NodeController.Tool {
                 SelectedSegmentID = 0;
                 handleHovered_ = false;
                 SimulationManager.instance.m_ThreadingWrapper.QueueSimulationThread(delegate () {
-                    NodeManager.ValidateAndHeal();
+                    NodeManager.ValidateAndHeal(false);
                 });
             }
             catch (Exception e) {
