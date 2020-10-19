@@ -161,7 +161,7 @@
       <Now>$([System.DateTime]::Now.ToString("HH:mm:ss"))</Now>
     </PropertyGroup>
     <ItemGroup>
-      <AuxilaryFiles Include="$(TargetDir)*.png;$(TargetDir)MoveItIntegration.dll;$(TargetDir)CitiesHarmony.API.dll" />
+      <AuxilaryFiles Include="$(TargetDir)Resources\*.png;$(TargetDir)MoveItIntegration.dll;$(TargetDir)CitiesHarmony.API.dll" />
       <VersionNumber Include="@(Targets->'%(Version)')" />
     </ItemGroup>
     <Delete Files="$(TargetPath).mdb" />
