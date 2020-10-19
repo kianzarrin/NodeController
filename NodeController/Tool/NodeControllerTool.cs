@@ -129,7 +129,6 @@ namespace NodeController.Tool {
         protected override void OnEnable() {
             try {
                 Log.Debug("NodeControllerTool.OnEnable");
-                Log.Debug(Button?.ToString());
                 base.OnEnable();
                 Button?.Activate();
                 SelectedNodeID = 0;
@@ -411,8 +410,6 @@ namespace NodeController.Tool {
         bool CornerFocusMode =>
             SelectedSegmentID != 0 &&
             (leftCornerHovered_ | rightCornerHovered_ | leftCornerSelected_ | rightCornerSelected_);
-
-
 
         public override void RenderOverlay(RenderManager.CameraInfo cameraInfo) {
             base.RenderOverlay(cameraInfo);

@@ -113,7 +113,7 @@ namespace NodeController.GUI {
             base.OnDestroy();
         }
 
-        public override string ToString() => $"NodeControllerButton:|name={name} parent={parent.name}|";
+        public override string ToString() => $"NodeControllerButton:|name={name} parent={parent?.name}|";
 
 
     }
