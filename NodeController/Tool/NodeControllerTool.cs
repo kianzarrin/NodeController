@@ -44,14 +44,14 @@ namespace NodeController.Tool {
             .GetAt(segmentID: SelectedSegmentID, nodeID: SelectedNodeID);
 
         protected override void Awake() {
-            Log.Debug("NodeControllerTool.Awake() called");
+            Log.Info("NodeControllerTool.Awake() called");
             base.Awake();
 
             NodeControllerButton.CreateButton();
             NCPanel = UINodeControllerPanel.Create();
             SECPanel = UISegmentEndControllerPanel.Create();
 
-            Log.Debug($"NodeControllerTool.Start() was called " +
+            Log.Info($"NodeControllerTool.Start() was called " +
                 $"this.version={this.VersionOf()} " +
                 $"NodeControllerTool.version={typeof(UISliderBase).VersionOf()} " +
                 $"NCPanel.version={NCPanel.VersionOf()} " +
@@ -93,7 +93,7 @@ namespace NodeController.Tool {
         }
 
         public static NodeControllerTool Create() {
-            Log.Debug("NodeControllerTool.Create()");
+            Log.Info("NodeControllerTool.Create()");
             GameObject toolModControl = ToolsModifierControl.toolController.gameObject;
             //var tool = toolModControl.GetComponent<NodeControllerTool>() ?? toolModControl.AddComponent<NodeControllerTool>();
             var tool = toolModControl.AddComponent<NodeControllerTool>();
@@ -108,14 +108,14 @@ namespace NodeController.Tool {
         }
 
         public static void Remove() {
-            Log.Debug("NodeControllerTool.Remove()");
+            Log.Info("NodeControllerTool.Remove()");
             var tool = Instance;
             if (tool != null)
                 Destroy(tool);
         }
 
         protected override void OnDestroy() {
-            Log.Debug("NodeControllerTool.OnDestroy() " +
+            Log.Info("NodeControllerTool.OnDestroy() " +
                 $"this.version={this.VersionOf()} NodeControllerTool.version={typeof(NodeControllerTool).VersionOf()}");
 
             Button?.Hide();
@@ -128,7 +128,7 @@ namespace NodeController.Tool {
 
         protected override void OnEnable() {
             try {
-                Log.Debug("NodeControllerTool.OnEnable");
+                Log.Info("NodeControllerTool.OnEnable",true);
                 base.OnEnable();
                 Button?.Activate();
                 SelectedNodeID = 0;
@@ -145,7 +145,7 @@ namespace NodeController.Tool {
         }
 
         protected override void OnDisable() {
-            Log.Debug($"NodeControllerTool.OnDisable()");
+            Log.Info($"NodeControllerTool.OnDisable()");
             ToolCursor = null;
             Hint = null;
             base.OnDisable();
@@ -549,7 +549,7 @@ namespace NodeController.Tool {
         protected override void OnPrimaryMouseClicked() {
             if (!IsHoverValid || handleHovered_ || CornerFocusMode)
                 return;
-            Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}");
+            Log.Info($"OnPrimaryMouseClicked: segment {HoveredSegmentId} node {HoveredNodeId}",true);
             if (AltIsPressed) {
                 if (CanSelectSegmentEnd(nodeID: HoveredNodeId, segmentID: HoveredSegmentId)) {
                     SelectedSegmentID = HoveredSegmentId;

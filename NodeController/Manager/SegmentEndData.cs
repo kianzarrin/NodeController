@@ -409,6 +409,12 @@ namespace NodeController {
         public bool CanModifyFlatJunctions() => NodeData?.CanModifyFlatJunctions() ?? false;
         public bool CanModifyTwist() => CanTwist(SegmentID, NodeID);
         public static bool CanTwist(ushort segmentID, ushort nodeID) {
+            // can be twisted but not by default
+            //if (nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Untouchable))
+            //    return false;
+            //if (nodeID.ToNode().Info.m_netAI is PedestrianPathAI)
+            //    return false;
+
             int segmentCount = nodeID.ToNode().CountSegments();
 
             if (segmentCount == 1) return false;

@@ -27,7 +27,7 @@ namespace NodeController.Tool {
             InfoManager.InfoMode.None, InfoManager.SubInfoMode.None);
 
         protected virtual void OnPageDown() {
-            Log.Debug("KianToolBase.OnPageDown()");
+            Log.Info("KianToolBase.OnPageDown()");
             if (m_mouseRayValid)
                 SetUnderGroundView();
         }
@@ -46,14 +46,14 @@ namespace NodeController.Tool {
         }
 
         public void EnableTool() {
-            Log.Debug("EnableTool: called");
+            Log.Info("EnableTool: called");
             //WorldInfoPanel.HideAllWorldInfoPanels();
             //GameAreaInfoPanel.Hide();
             ToolsModifierControl.toolController.CurrentTool = this;
         }
 
         public void DisableTool() {
-            Log.Debug("DisableTool: called");
+            Log.Info("DisableTool: called");
             if (ToolsModifierControl.toolController?.CurrentTool == this)
                 ToolsModifierControl.SetTool<DefaultTool>();
         }
