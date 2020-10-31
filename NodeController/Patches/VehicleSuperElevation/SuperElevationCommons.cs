@@ -46,6 +46,7 @@ namespace NodeController.Patches.VehicleSuperElevation {
             pathPos.m_segment.ToSegment().Info.m_lanes[pathPos.m_lane];
 
         internal static float GetCurrentSE(PathUnit.Position pathPos, float offset, ref Vehicle vehicleData) {
+            if (float.IsNaN(offset) || float.IsInfinity(offset)) return 0;
             // bezier is always from start to end node regardless of direction.
             SegmentEndData segStart = SegmentEndManager.Instance.GetAt(pathPos.m_segment, true);
             SegmentEndData segEnd = SegmentEndManager.Instance.GetAt(pathPos.m_segment, false);

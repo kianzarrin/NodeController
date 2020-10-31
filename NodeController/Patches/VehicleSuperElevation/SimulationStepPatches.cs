@@ -57,6 +57,7 @@ namespace NodeController.Patches.VehicleSuperElevation {
             float deltaOffset = deltaPos / laneID.ToLane().m_length;
             float offset = leadingVehicle.m_lastPathOffset * (1f / 255f) - deltaOffset;
             offset = Mathf.Clamp(offset, 0, 1);
+            if (float.IsNaN(offset)) return;
 
             float se = GetCurrentSE(pathPos, offset, ref vehicleData);
             var rot = Quaternion.Euler(0, 0f, se);
