@@ -2,10 +2,12 @@ namespace NodeController.Patches.TMPE {
     using System.Reflection;
     using HarmonyLib;
     using TrafficManager;
-    using System;
+    using KianCommons;
 
     [HarmonyPatch(typeof(ThreadingExtension), nameof(ThreadingExtension.OnBeforeSimulationFrame))]
     public static class ThreadingExtension_OnBeforeSimulationFrame {
+        static bool Prepare() => PluginUtil.GetPlugin("TrafficManagerMod").IsActive();
+
         static FieldInfo field_firstFrame =
             AccessTools.Field(typeof(ThreadingExtension), "firstFrame");
             // ?? throw new Exception("could not find ThreadingExtension.firstFrame");

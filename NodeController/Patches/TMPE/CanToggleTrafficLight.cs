@@ -5,9 +5,12 @@ namespace NodeController.Patches.TMPE {
     using HarmonyLib;
     using TrafficManager.API.Traffic.Enums;
     using KianCommons.Patches;
+    using KianCommons;
 
     [HarmonyPatch]
     public static class CanToggleTrafficLight {
+        static bool Prepare() => PluginUtil.GetPlugin("TrafficManagerMod").IsActive();
+
         public static MethodBase TargetMethod() {
             return typeof(TrafficLightManager).
                 GetMethod(nameof(TrafficLightManager.CanToggleTrafficLight));

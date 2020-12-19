@@ -7,6 +7,8 @@ namespace NodeController.Patches.HideCrosswalksMod {
 
     [HarmonyPatch]
     public static class ShouldHideCrossing {
+        static bool Prepare() => PluginUtil.GetHideCrossings();
+
         public static MethodBase TargetMethod() {
             return typeof(HideCrosswalks.Patches.CalculateMaterialCommons).
                 GetMethod(nameof(HideCrosswalks.Patches.CalculateMaterialCommons.ShouldHideCrossing));

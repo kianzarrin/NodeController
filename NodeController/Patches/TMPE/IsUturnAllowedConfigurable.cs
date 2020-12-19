@@ -8,6 +8,8 @@ namespace NodeController.Patches.TMPE {
 
     [HarmonyPatch]
     public static class IsUturnAllowedConfigurable {
+        static bool Prepare() => PluginUtil.GetPlugin("TrafficManagerMod").IsActive();
+
         public static MethodBase TargetMethod() {
             return typeof(JunctionRestrictionsManager).
                 GetMethod(nameof(JunctionRestrictionsManager.IsUturnAllowedConfigurable));
