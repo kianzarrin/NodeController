@@ -18,13 +18,17 @@ namespace NodeController.Util {
             return boundingBox.Contains(Event.current.mousePosition);
         }
 
-        static MethodInfo mGetHandleAlpha => AccessTools.DeclaredMethod(
-                typeof(TrafficManager.UI.TrafficManagerTool),
-                "GetHandleAlpha");
-
+        delegate float dGetHandleAlphaT_(bool hovered);
+        static dGetHandleAlphaT_ dGetHandleAlpha_;
         internal static float GetHandleAlpha(bool hovered) {
-            object[] args = new object[] { hovered };
-            return (float)mGetHandleAlpha.Invoke(null, args);
+            if(dGetHandleAlpha_ == null) {
+                var mGetHandleAlpha = AccessTools.DeclaredMethod(
+                    typeof(TrafficManager.UI.TrafficManagerTool),
+                    "GetHandleAlpha");
+                dGetHandleAlpha_ = (dGetHandleAlphaT_)Delegate.CreateDelegate(
+                    typeof(dGetHandleAlphaT_), mGetHandleAlpha);
+            }
+            return dGetHandleAlpha_(hovered);
         }
 
         internal static float GetBaseZoom() {

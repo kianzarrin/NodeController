@@ -58,8 +58,10 @@ namespace NodeController.Patches {
 
             ushort nodeID = segmentID.ToSegment().GetNode(start);
             bool middle = nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Middle);
+            bool untouchable = nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Untouchable);
             if (!middle) { 
-                bool flatJunctions = data?.FlatJunctions ?? segmentID.ToSegment().Info.m_flatJunctions;
+                bool flatJunctions = data?.FlatJunctions ??
+                    !untouchable && segmentID.ToSegment().Info.m_flatJunctions;
                 bool slope = !flatJunctions;
                 if (slope) {
                     FixCornerPos(

@@ -14,7 +14,7 @@ namespace NodeController {
     using CSURUtil = Util.CSURUtil;
     using Log = KianCommons.Log;
     using static KianCommons.HelpersExtensions;
-    using static KianCommons.AssemblyTypeExtensions;
+    using static KianCommons.ReflectionHelpers;
     using static KianCommons.Assertion;
     using System.Linq;
 
@@ -64,7 +64,8 @@ namespace NodeController {
 
         // defaults
         public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(SegmentID, NodeID);
-        public bool DefaultFlatJunctions => Info.m_flatJunctions; // TODO can this be based on config?
+        public bool DefaultFlatJunctions => Info.m_flatJunctions
+            && !Node.m_flags.IsFlagSet(NetNode.Flags.Untouchable);
         public bool DefaultTwist => DefaultFlatJunctions;
         public NetSegment.Flags DefaultFlags;
 
