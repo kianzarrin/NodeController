@@ -61,7 +61,7 @@ namespace NodeController.Patches {
             bool untouchable = nodeID.ToNode().m_flags.IsFlagSet(NetNode.Flags.Untouchable);
             if (!middle) { 
                 bool flatJunctions = data?.FlatJunctions ??
-                    !untouchable && segmentID.ToSegment().Info.m_flatJunctions;
+                    untouchable || segmentID.ToSegment().Info.m_flatJunctions;
                 bool slope = !flatJunctions;
                 if (slope) {
                     FixCornerPos(
@@ -80,7 +80,7 @@ namespace NodeController.Patches {
                     if (data != null)
                         twist = data.CanModifyTwist() && data.Twist;
                     else {
-                        twist = segmentID.ToSegment().Info.m_flatJunctions;
+                        twist = !untouchable && segmentID.ToSegment().Info.m_flatJunctions;
                         twist = twist && SegmentEndData.CanTwist(segmentID: segmentID, nodeID: nodeID);
                     }
                     

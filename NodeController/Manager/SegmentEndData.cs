@@ -65,8 +65,9 @@ namespace NodeController {
         // defaults
         public float DefaultCornerOffset => CSURUtil.GetMinCornerOffset(SegmentID, NodeID);
         public bool DefaultFlatJunctions => Info.m_flatJunctions
+            || Node.m_flags.IsFlagSet(NetNode.Flags.Untouchable);
+        public bool DefaultTwist => DefaultFlatJunctions
             && !Node.m_flags.IsFlagSet(NetNode.Flags.Untouchable);
-        public bool DefaultTwist => DefaultFlatJunctions;
         public NetSegment.Flags DefaultFlags;
 
         // cache
