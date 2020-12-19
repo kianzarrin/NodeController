@@ -128,8 +128,5 @@ namespace NodeController.Patches {
             Assertion.Assert(IsStLoc(code), $"IsStLoc(code) | code={code}");
             return code.BuildLdLocFromStLoc();
         }
-
-
-
     }
 }

@@ -9,7 +9,7 @@ namespace NodeController.Patches.TMPE {
 
     [HarmonyPatch]
     public static class IsEnteringBlockedJunctionAllowedConfigurable {
-        static bool Prepare() => PluginUtil.GetPlugin("TrafficManagerMod").IsActive();
+        static bool Prepare() => PluginUtil.GetTrafficManager().IsActive();
         public static MethodBase TargetMethod() {
             return typeof(JunctionRestrictionsManager).
                 GetMethod(nameof(JunctionRestrictionsManager.IsEnteringBlockedJunctionAllowedConfigurable));

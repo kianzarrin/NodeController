@@ -40,7 +40,7 @@ namespace NodeController.Patches {
         static MethodInfo targetMethod_ = TargetMethod() as MethodInfo;
 
         [HarmonyBefore(CSURUtil.HARMONY_ID)]
-        public static IEnumerable<CodeInstruction> Transpiler(ILGenerator il, IEnumerable<CodeInstruction> instructions) {
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
             // apply the flat junctions traspiler
              instructions = FlatJunctionsCommons.ModifyFlatJunctionsTranspiler(instructions, targetMethod_);
 
