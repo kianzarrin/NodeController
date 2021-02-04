@@ -6,8 +6,9 @@ namespace NodeController.GUI {
     using System;
     using UnityEngine;
     using static KianCommons.HelpersExtensions;
+    using NodeController.Tool;
 
-    public class UICornerTextField : UITextField, IDataControllerUI {
+    public class UICornerTextField : UITextField, IDataControllerUI, IToolUpdate {
         //UIResetButton resetButton_;
         UIPanelBase root_;
         bool started_ = false;
@@ -114,8 +115,7 @@ namespace NodeController.GUI {
             return Color.Lerp(Color.grey, Color.white, 0.60f);
         }
 
-        public override void Update() {
-            base.Update();
+        public void OnToolUpdate() {
             var c = GetColor();
             color = Color.Lerp(c, Color.white, 0.70f);
             if (MixedValues)

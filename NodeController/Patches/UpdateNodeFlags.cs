@@ -8,7 +8,7 @@ namespace NodeController {
 
     [HarmonyPatch(typeof(RoadBaseAI))]
     [HarmonyPatch(nameof(RoadBaseAI.UpdateNodeFlags))]
-    class UpdateNodeFlags {
+    static class UpdateNodeFlags {
         static void Postfix(ref NetNode data) {
             if (data.CountSegments() != 2)return;
             

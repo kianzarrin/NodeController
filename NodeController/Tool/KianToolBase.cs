@@ -10,11 +10,6 @@ namespace NodeController.Tool {
         protected override void OnDestroy() {
             DisableTool();
             base.OnDestroy();
-            if (this) {
-                Log.Error($"Failed to destroy object {GetType().Name} V{this.VersionOf()}");
-            } else {
-                Log.Debug($"Sucessfully destroyed object {GetType().Name} V{this.VersionOf()}");
-            }
         }
 
         protected abstract void OnPrimaryMouseClicked();

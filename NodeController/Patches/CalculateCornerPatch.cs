@@ -1,13 +1,13 @@
 namespace NodeController.Patches {
-    using KianCommons;
     using HarmonyLib;
     using JetBrains.Annotations;
+    using KianCommons;
+    using NodeController.Util;
     using System;
     using System.Collections.Generic;
     using System.Reflection;
     using System.Reflection.Emit;
     using static KianCommons.Patches.TranspilerUtils;
-    using NodeController.Util;
 
     [UsedImplicitly]
     [HarmonyPatch]
@@ -33,20 +33,18 @@ namespace NodeController.Patches {
             typeof(NetInfo).GetField(nameof(NetInfo.m_minCornerOffset)) ??
             throw new Exception("f_minCornerOffset is null");
 
-        static MethodInfo mGetMinCornerOffset = AccessTools.DeclaredMethod(
-            typeof(CalculateCornerPatch), nameof(GetMinCornerOffset)) ??
-            throw new Exception("mGetMinCornerOffset is null");
-
-        static MethodInfo targetMethod_ = TargetMethod() as MethodInfo;
+        static MethodInfo mGetMinCornerOffset = ReflectionHelpers.GetMethod(
+            typeof(CalculateCornerPatch), nameof(GetMinCornerOffset));
 
         [HarmonyBefore(CSURUtil.HARMONY_ID)]
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
+        public static IEnumerable<CodeInstruction> Transpiler(
+            IEnumerable<CodeInstruction> instructions, MethodBase original) {
             // apply the flat junctions traspiler
-             instructions = FlatJunctionsCommons.ModifyFlatJunctionsTranspiler(instructions, targetMethod_);
+            instructions = FlatJunctionsCommons.ModifyFlatJunctionsTranspiler(instructions, original);
 
-            CodeInstruction ldarg_startNodeID = GetLDArg(targetMethod_, "startNodeID"); // push startNodeID into stack,
-            CodeInstruction ldarg_segmentID = GetLDArg(targetMethod_, "ignoreSegmentID");
-            CodeInstruction ldarg_leftSide = GetLDArg(targetMethod_, "leftSide");
+            CodeInstruction ldarg_startNodeID = GetLDArg(original, "startNodeID"); // push startNodeID into stack,
+            CodeInstruction ldarg_segmentID = GetLDArg(original, "ignoreSegmentID");
+            CodeInstruction ldarg_leftSide = GetLDArg(original, "leftSide");
             CodeInstruction call_GetMinCornerOffset = new CodeInstruction(OpCodes.Call, mGetMinCornerOffset);
 
             int n = 0;

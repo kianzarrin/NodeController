@@ -15,7 +15,7 @@ namespace NodeController.GUI {
     /// Class handles rendering of priority signs overlay.
     /// Create one and set its fields before calling DrawSignHandles
     /// </summary>
-    public struct TrafficRulesOverlay {
+    internal struct TrafficRulesOverlay {
         private const float SIGN_SIZE_PIXELS = 60;
         private const float AVERAGE_METERS_PER_PIXEL = 0.075f;
         private const float SIGN_SIZE_METERS = SIGN_SIZE_PIXELS * AVERAGE_METERS_PER_PIXEL;

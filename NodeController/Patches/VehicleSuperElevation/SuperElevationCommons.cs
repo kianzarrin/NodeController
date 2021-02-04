@@ -1,15 +1,17 @@
 namespace NodeController.Patches.VehicleSuperElevation {
-    using System.Reflection;
-    using UnityEngine;
-    using KianCommons;
     using ColossalFramework;
-    using static KianCommons.Patches.TranspilerUtils;
     using HarmonyLib;
-    using System.Runtime.CompilerServices;
+    using KianCommons;
     using System;
     using System.Collections.Generic;
-    using static KianCommons.Assertion;
+    using System.Reflection;
     using System.Reflection.Emit;
+    using System.Runtime.CompilerServices;
+    using UnityEngine;
+    using static KianCommons.Assertion;
+    using static KianCommons.Patches.TranspilerUtils;
+    using static KianCommons.ReflectionHelpers;
+
 
     public static class SuperElevationCommons {
         delegate void SimulationStepDelegate(
@@ -25,15 +27,26 @@ namespace NodeController.Patches.VehicleSuperElevation {
 
         static PathUnit[] pathUnitBuffer => Singleton<PathManager>.instance.m_pathUnits.m_buffer;
 
+        static string ToSTR(this ref PathUnit.Position pathPos) {
+            var info = pathPos.m_segment.ToSegment().Info;
+            return
+                $"segment:{pathPos.m_segment} " +
+                $"info:{info} " +
+                $"nLanes={info.m_lanes.Length} " +
+                $"laneIndex={pathPos.m_lane} ";
+        }
+
         public static void Postfix(ref Vehicle vehicleData, ref Vehicle.Frame frameData) {
             if (!vehicleData.GetCurrentPathPos(out var pathPos))
                 return;
+            try {
+                float se = GetCurrentSE(pathPos, vehicleData.m_lastPathOffset * (1f / 255f), ref vehicleData);
 
-            float se = GetCurrentSE(pathPos, vehicleData.m_lastPathOffset*(1f/255f), ref vehicleData);
-
-
-            var rot = Quaternion.Euler(0, 0f, se);
-            frameData.m_rotation *= rot;
+                var rot = Quaternion.Euler(0, 0f, se);
+                frameData.m_rotation *= rot;
+            } catch (Exception ex) {
+                Log.Exception(ex, pathPos.ToSTR() , showInPanel: false);
+            }
         }
 
         internal static bool GetCurrentPathPos(this ref Vehicle vehicleData, out PathUnit.Position pathPos) {
@@ -45,6 +58,7 @@ namespace NodeController.Patches.VehicleSuperElevation {
         internal static NetInfo.Lane GetLaneInfo(this ref PathUnit.Position pathPos) =>
             pathPos.m_segment.ToSegment().Info.m_lanes[pathPos.m_lane];
 
+
         internal static float GetCurrentSE(PathUnit.Position pathPos, float offset, ref Vehicle vehicleData) {
             if (float.IsNaN(offset) || float.IsInfinity(offset)) return 0;
             // bezier is always from start to end node regardless of direction.
@@ -52,15 +66,17 @@ namespace NodeController.Patches.VehicleSuperElevation {
             SegmentEndData segEnd = SegmentEndManager.Instance.GetAt(pathPos.m_segment, false);
             float startSE = segStart == null ? 0f : segStart.CachedSuperElevationDeg;
             float endSE = segEnd == null ? 0f : -segEnd.CachedSuperElevationDeg;
-            float se = startSE * (1-offset) + endSE * offset;
-           
+            float se = startSE * (1 - offset) + endSE * offset;
+
+            var lane = pathPos.GetLaneInfo();
+            if (lane is null) return 0;
             bool invert = pathPos.m_segment.ToSegment().m_flags.IsFlagSet(NetSegment.Flags.Invert);
-            bool backward = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.Backward;
+            bool backward = lane.m_finalDirection == NetInfo.Direction.Backward;
             bool reversed = vehicleData.m_flags.IsFlagSet(Vehicle.Flags.Reversed);
 
-            bool bidirectional = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.Both;
-            bool avoidForward = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.AvoidForward;
-            bool avoidBackward = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.AvoidBackward;
+            bool bidirectional = lane.m_finalDirection == NetInfo.Direction.Both;
+            bool avoidForward = lane.m_finalDirection == NetInfo.Direction.AvoidForward;
+            bool avoidBackward = lane.m_finalDirection == NetInfo.Direction.AvoidBackward;
             bool avoid = avoidForward | avoidBackward;
 
             if (invert) se = -se;
@@ -73,7 +89,7 @@ namespace NodeController.Patches.VehicleSuperElevation {
 
         #region rotation updated
 
-        internal static FieldInfo fRotation = AccessTools.DeclaredField(
+        internal static FieldInfo fRotation = GetField(
             typeof(Vehicle.Frame), nameof(Vehicle.Frame.m_rotation));
 
         internal static bool RotationUpdated = false;
@@ -83,13 +99,11 @@ namespace NodeController.Patches.VehicleSuperElevation {
 
 
         static FieldInfo f_rotation =
-            AccessTools.DeclaredField(typeof(Vehicle.Frame), nameof(Vehicle.Frame.m_rotation)) ??
-            throw new Exception("f_rotation is null");
+            GetField(typeof(Vehicle.Frame), nameof(Vehicle.Frame.m_rotation));
 
 
-        static MethodInfo mOnRotationUpdated = AccessTools.DeclaredMethod(
-            typeof(SuperElevationCommons), nameof(OnRotationUpdated)) ??
-            throw new Exception("mOnRotationUpdated is null");
+        static MethodInfo mOnRotationUpdated = ReflectionHelpers.GetMethod(
+            typeof(SuperElevationCommons), nameof(OnRotationUpdated));
 
         public static IEnumerable<CodeInstruction> OnRotationUpdatedTranspiler(
             IEnumerable<CodeInstruction> instructions,

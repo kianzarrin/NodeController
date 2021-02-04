@@ -8,7 +8,7 @@ namespace NodeController.GUI {
     using System.Collections.Generic;
     using UnityEngine;
 
-    public class HintBox : UILabel {
+    public class HintBox : UILabel, IToolUpdate {
         UIPanelBase root_;
         IEnumerable<IDataControllerUI> controlls_ => root_?.Controls;
         NodeControllerTool tool_;
@@ -78,10 +78,9 @@ namespace NodeController.GUI {
         // tool 
         public string Hint3;
 
-        public override void Update() {
-            base.Update();
+        public void OnToolUpdate() {
             try {
-                string rootname = root_?.GetType()?.Name ?? "null";
+                //string rootname = root_?.GetType()?.Name ?? "null";
                 //var version = this?.VersionOf()?.ToString() ?? "null";
                 //string id = $"{rootname} V{this.VersionOf()}";
                 //Log.DebugWait($"HintBox.Update() called", id);

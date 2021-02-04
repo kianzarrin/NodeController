@@ -7,7 +7,7 @@ namespace NodeController.Patches.TMPE {
     using HarmonyLib;
 
     [HarmonyPatch]
-    public static class IsPedestrianCrossingAllowedConfigurable {
+    static class IsPedestrianCrossingAllowedConfigurable {
         static bool Prepare() => PluginUtil.GetTrafficManager().IsActive();
 
         public static MethodBase TargetMethod() {

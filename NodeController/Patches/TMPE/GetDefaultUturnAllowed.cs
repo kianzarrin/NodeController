@@ -7,7 +7,7 @@ namespace NodeController.Patches.TMPE {
     using HarmonyLib;
 
     [HarmonyPatch]
-    public static class GetDefaultUturnAllowed {
+    static class GetDefaultUturnAllowed {
         static bool Prepare() => PluginUtil.GetTrafficManager().IsActive();
         public static MethodBase TargetMethod() {
             return typeof(JunctionRestrictionsManager).

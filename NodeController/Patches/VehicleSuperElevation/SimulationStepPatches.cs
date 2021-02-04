@@ -1,20 +1,18 @@
 namespace NodeController.Patches.VehicleSuperElevation {
-    using HarmonyLib;
-    using System.Reflection;
     using ColossalFramework;
-    using TrafficManager.Custom.AI;
+    using HarmonyLib;
     using KianCommons;
+    using System.Collections.Generic;
+    using System.Reflection;
+    using System.Reflection.Emit;
+    using TrafficManager.Custom.AI;
     using UnityEngine;
     using static SuperElevationCommons;
-    using System.IO;
-    using System.Reflection.Emit;
-    using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
 
     //public override void SimulationStep(ushort vehicleID, ref Vehicle vehicleData, ref Vehicle.Frame frameData,
     //                                    ushort leaderID, ref Vehicle leaderData, int lodPhysics)
     [HarmonyPatch]
-    public static class CarAI_SimulationStepPatch {
+    static class CarAI_SimulationStepPatch {
         internal static MethodBase TargetMethod() => TargetMethod<CarAI>();
 
         internal static IEnumerable<CodeInstruction> Transpiler(ILGenerator il, IEnumerable<CodeInstruction> instructions) =>
@@ -28,14 +26,14 @@ namespace NodeController.Patches.VehicleSuperElevation {
     }
 
     [HarmonyPatch]
-    public static class CarTrailerAI_SimulationStepPatch {
+    static class CarTrailerAI_SimulationStepPatch {
         internal static MethodBase TargetMethod() => TargetMethod<CarTrailerAI>();
 
         internal static IEnumerable<CodeInstruction> Transpiler(ILGenerator il, IEnumerable<CodeInstruction> instructions) =>
             OnRotationUpdatedTranspiler(instructions, TargetMethod() as MethodInfo);
 
         static Vehicle[] VehicleBuffer = VehicleManager.instance.m_vehicles.m_buffer;
-        internal static void Postfix( ref Vehicle vehicleData, ref Vehicle.Frame frameData) {
+        internal static void Postfix(ref Vehicle vehicleData, ref Vehicle.Frame frameData) {
             if (vehicleData.Info.m_leanMultiplier < 0)
                 return; // motor cycle.
 
@@ -66,14 +64,14 @@ namespace NodeController.Patches.VehicleSuperElevation {
     }
 
     [HarmonyPatch]
-    public static class TrainAI_SimulationStepPatch {
+    static class TrainAI_SimulationStepPatch {
         internal static MethodBase TargetMethod() => TargetTMPEMethod<CustomTrainAI>();
         internal static void Postfix(ref Vehicle vehicleData, ref Vehicle.Frame frameData) =>
             SuperElevationCommons.Postfix(ref vehicleData, ref frameData);
     }
 
     [HarmonyPatch]
-    public static class TramBaseAI_SimulationStepPatch {
+    static class TramBaseAI_SimulationStepPatch {
         internal static MethodBase TargetMethod() => TargetTMPEMethod<CustomTramBaseAI>();
         internal static void Postfix(ref Vehicle vehicleData, ref Vehicle.Frame frameData) =>
             SuperElevationCommons.Postfix(ref vehicleData, ref frameData);

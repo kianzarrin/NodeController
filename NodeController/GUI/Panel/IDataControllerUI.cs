@@ -1,7 +1,3 @@
-using ColossalFramework.UI;
-using System;
-using TrafficManager.API.Util;
-
 namespace NodeController.GUI {
     public enum NetworkTypeT {
         None,

@@ -20,13 +20,12 @@ namespace NodeController.Patches {
             typeof(NetInfo).GetField(nameof(NetInfo.m_flatJunctions)) ??
             throw new Exception("f_flatJunctions is null");
 
-        static MethodInfo mGetFlatJunctions = AccessTools.DeclaredMethod(
-            typeof(FlatJunctionsCommons), nameof(GetFlatJunctions)) ??
-            throw new Exception("mGetFlatJunctions is null");
+        static MethodInfo mGetFlatJunctions = ReflectionHelpers.GetMethod(
+            typeof(FlatJunctionsCommons), nameof(GetFlatJunctions));
 
         public static IEnumerable<CodeInstruction> ModifyFlatJunctionsTranspiler(
             IEnumerable<CodeInstruction> instructions,
-            MethodInfo targetMethod) {
+            MethodBase targetMethod) {
             AssertNotNull(targetMethod, "targetMethod");
             //Log.Debug("targetMethod=" + targetMethod);
             CodeInstruction ldarg_nodeID =
