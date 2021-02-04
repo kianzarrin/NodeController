@@ -7,7 +7,7 @@ namespace NodeController.Patches.TMPE {
     using KianCommons;
 
     [HarmonyPatch]
-    public static class GetDefaultEnteringBlockedJunctionAllowed {
+    static class GetDefaultEnteringBlockedJunctionAllowed {
         static bool Prepare() => PluginUtil.GetTrafficManager().IsActive();
 
         public static MethodBase TargetMethod() {

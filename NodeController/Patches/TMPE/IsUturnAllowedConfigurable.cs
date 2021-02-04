@@ -7,7 +7,7 @@ namespace NodeController.Patches.TMPE {
     using KianCommons.Patches;
 
     [HarmonyPatch]
-    public static class IsUturnAllowedConfigurable {
+    static class IsUturnAllowedConfigurable {
         static bool Prepare() => PluginUtil.GetTrafficManager().IsActive();
 
         public static MethodBase TargetMethod() {

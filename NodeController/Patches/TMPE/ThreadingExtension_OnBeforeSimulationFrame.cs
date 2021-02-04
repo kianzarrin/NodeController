@@ -6,7 +6,7 @@ namespace NodeController.Patches.TMPE {
 
     // TODO: remove this when TMPE is updated.
     [HarmonyPatch(typeof(ThreadingExtension), nameof(ThreadingExtension.OnBeforeSimulationFrame))]
-    public static class ThreadingExtension_OnBeforeSimulationFrame {
+    static class ThreadingExtension_OnBeforeSimulationFrame {
         static bool Prepare() => PluginUtil.GetTrafficManager().IsActive();
 
         static FieldInfo field_firstFrame =>
