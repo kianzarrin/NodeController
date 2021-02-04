@@ -44,8 +44,20 @@ namespace NodeController.Patches.VehicleSuperElevation {
             return pathUnitBuffer[vehicleData.m_path].GetPosition(pathIndex >> 1, out pathPos);
         }
 
-        internal static NetInfo.Lane GetLaneInfo(this ref PathUnit.Position pathPos) =>
-            pathPos.m_segment.ToSegment().Info.m_lanes[pathPos.m_lane];
+        internal static NetInfo.Lane GetLaneInfo(this ref PathUnit.Position pathPos) {
+            try {
+                return pathPos.m_segment.ToSegment().Info.m_lanes[pathPos.m_lane];
+            }catch (Exception ex) {
+                var info = pathPos.m_segment.ToSegment().Info;
+                string strPath =
+                    $"segment:{pathPos.m_segment} " +
+                    $"info:{info}" +
+                    $"nLanes={info.m_lanes.Length}" +
+                    $"laneIndex={pathPos.m_lane}";
+                Log.Exception(ex, strPath, showInPanel: false);
+                return null;
+            }
+        }
 
         internal static float GetCurrentSE(PathUnit.Position pathPos, float offset, ref Vehicle vehicleData) {
             if (float.IsNaN(offset) || float.IsInfinity(offset)) return 0;
@@ -55,14 +67,16 @@ namespace NodeController.Patches.VehicleSuperElevation {
             float startSE = segStart == null ? 0f : segStart.CachedSuperElevationDeg;
             float endSE = segEnd == null ? 0f : -segEnd.CachedSuperElevationDeg;
             float se = startSE * (1-offset) + endSE * offset;
-           
+
+            var lane = pathPos.GetLaneInfo();
+            if (lane is null) return 0;
             bool invert = pathPos.m_segment.ToSegment().m_flags.IsFlagSet(NetSegment.Flags.Invert);
-            bool backward = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.Backward;
+            bool backward = lane.m_finalDirection == NetInfo.Direction.Backward;
             bool reversed = vehicleData.m_flags.IsFlagSet(Vehicle.Flags.Reversed);
 
-            bool bidirectional = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.Both;
-            bool avoidForward = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.AvoidForward;
-            bool avoidBackward = pathPos.GetLaneInfo().m_finalDirection == NetInfo.Direction.AvoidBackward;
+            bool bidirectional = lane.m_finalDirection == NetInfo.Direction.Both;
+            bool avoidForward = lane.m_finalDirection == NetInfo.Direction.AvoidForward;
+            bool avoidBackward = lane.m_finalDirection == NetInfo.Direction.AvoidBackward;
             bool avoid = avoidForward | avoidBackward;
 
             if (invert) se = -se;
