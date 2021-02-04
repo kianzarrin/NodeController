@@ -6,6 +6,7 @@ namespace NodeController {
     using UnityEngine.Assertions;
     using UnityEngine;
     using static KianCommons.Assertion;
+    using KianCommons.Serialization;
 
     [Serializable]
     public class SegmentEndManager {

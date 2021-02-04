@@ -12,7 +12,7 @@ namespace NodeController {
         static void Postfix(ref NetNode data) {
             if (data.CountSegments() != 2)return;
             
-            ushort nodeID = NetUtil.GetID(data);
+            ushort nodeID = data.GetID();
             NodeData nodeData = NodeManager.Instance.buffer[nodeID];
 
             if (nodeData == null) return;

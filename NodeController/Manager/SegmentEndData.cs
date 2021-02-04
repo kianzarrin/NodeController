@@ -17,6 +17,7 @@ namespace NodeController {
     using static KianCommons.ReflectionHelpers;
     using static KianCommons.Assertion;
     using System.Linq;
+    using KianCommons.Serialization;
 
     [Serializable]
     public class SegmentEndData : INetworkData, INetworkData<SegmentEndData>, ISerializable {

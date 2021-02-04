@@ -3,6 +3,7 @@ namespace NodeController {
     using NodeController.Tool;
     using System;
     using static KianCommons.Assertion;
+    using KianCommons.Serialization;
 
     [Serializable]
     public class NodeManager {
