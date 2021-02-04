@@ -81,12 +81,12 @@ namespace NodeController.GUI {
         public override void Update() {
             base.Update();
             try {
-                string rootname = root_?.GetType()?.Name ?? "null";
+                //string rootname = root_?.GetType()?.Name ?? "null";
                 //var version = this?.VersionOf()?.ToString() ?? "null";
                 //string id = $"{rootname} V{this.VersionOf()}";
                 //Log.DebugWait($"HintBox.Update() called", id);
 
-                if (root_ == null || !root_.isVisible)
+                if (root_ == null || !root_.FPSOptimisedIsVisble())
                     return;
                 if (containsMouse)
                     return; // prevent flickering on mouse hover

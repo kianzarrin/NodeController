@@ -116,6 +116,7 @@ namespace NodeController.GUI {
 
         public override void Update() {
             base.Update();
+            if (!this.FPSOptimisedIsVisble()) return;
             var c = GetColor();
             color = Color.Lerp(c, Color.white, 0.70f);
             if (MixedValues)

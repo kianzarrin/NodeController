@@ -32,8 +32,10 @@ namespace NodeController.GUI {
             return Color.Lerp(Color.grey, Color.white, 0.50f);
         }
 
+
         public override void Update() {
             base.Update();
+            if (!this.FPSOptimisedIsVisble()) return;
             var c = GetColor();
             label.textColor = Color.Lerp(c, Color.white, 0.70f);
         }

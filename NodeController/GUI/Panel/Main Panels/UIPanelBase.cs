@@ -183,6 +183,7 @@ namespace NodeController.GUI {
 
         public override void Update() {
             base.Update();
+            if (!this.FPSOptimisedIsVisble()) return;
             var del = Input.GetKeyDown(KeyCode.Delete);
             if (del) {
                 IDataControllerUI control = GethoveredController();
