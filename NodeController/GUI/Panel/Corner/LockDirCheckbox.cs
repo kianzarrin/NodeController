@@ -6,8 +6,9 @@ namespace NodeController.GUI {
     using KianCommons.UI;
     using UnityEngine;
     using ColossalFramework.UI;
+    using NodeController.Tool;
 
-    public class LockDirCheckbox :UICheckBoxExt, IDataControllerUI {
+    public class LockDirCheckbox :UICheckBoxExt, IDataControllerUI, IToolUpdate {
         public override void Awake() {
             base.Awake();
             name = nameof(LockDirCheckbox);
@@ -33,9 +34,7 @@ namespace NodeController.GUI {
         }
 
 
-        public override void Update() {
-            base.Update();
-            if (!this.FPSOptimisedIsVisble()) return;
+        public void OnToolUpdate() {
             var c = GetColor();
             label.textColor = Color.Lerp(c, Color.white, 0.70f);
         }

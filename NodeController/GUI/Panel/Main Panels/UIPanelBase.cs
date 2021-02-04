@@ -7,8 +7,9 @@ namespace NodeController.GUI {
     using KianCommons;
     using KianCommons.UI;
     using System;
+    using NodeController.Tool;
 
-    public abstract class UIPanelBase : UIAutoSizePanel, IDataControllerUI {
+    public abstract class UIPanelBase : UIAutoSizePanel, IDataControllerUI, IToolUpdate {
         public static UIPanelBase ActivePanel;
 
         public static readonly SavedFloat SavedX = new SavedFloat(
@@ -181,9 +182,13 @@ namespace NodeController.GUI {
             return null;
         }
 
-        public override void Update() {
-            base.Update();
-            if (!this.FPSOptimisedIsVisble()) return;
+        public void OnToolUpdate() {
+            foreach (IDataControllerUI c in this.Controls) {
+                if (c is IToolUpdate c2)
+                    c2.OnToolUpdate();
+            }
+            Hintbox.OnToolUpdate();
+
             var del = Input.GetKeyDown(KeyCode.Delete);
             if (del) {
                 IDataControllerUI control = GethoveredController();

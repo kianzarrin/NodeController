@@ -343,6 +343,11 @@ namespace NodeController.Tool {
 
         protected override void OnToolUpdate() {
             base.OnToolUpdate();
+            if (SECPanel != null && SECPanel.isVisible)
+                SECPanel.OnToolUpdate();
+            if (NCPanel != null && NCPanel.isVisible)
+                NCPanel.OnToolUpdate();
+
             ToolCursor = GetCursor();
             Hint = GetHint();
 
