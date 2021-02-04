@@ -1,16 +1,16 @@
 namespace NodeController.Patches.VehicleSuperElevation {
-    using System.Reflection;
-    using UnityEngine;
-    using KianCommons;
     using ColossalFramework;
-    using static KianCommons.Patches.TranspilerUtils;
-    using static KianCommons.ReflectionHelpers;
     using HarmonyLib;
-    using System.Runtime.CompilerServices;
+    using KianCommons;
     using System;
     using System.Collections.Generic;
-    using static KianCommons.Assertion;
+    using System.Reflection;
     using System.Reflection.Emit;
+    using System.Runtime.CompilerServices;
+    using UnityEngine;
+    using static KianCommons.Assertion;
+    using static KianCommons.Patches.TranspilerUtils;
+    using static KianCommons.ReflectionHelpers;
 
 
     public static class SuperElevationCommons {
@@ -27,15 +27,26 @@ namespace NodeController.Patches.VehicleSuperElevation {
 
         static PathUnit[] pathUnitBuffer => Singleton<PathManager>.instance.m_pathUnits.m_buffer;
 
+        static string ToSTR(this ref PathUnit.Position pathPos) {
+            var info = pathPos.m_segment.ToSegment().Info;
+            return
+                $"segment:{pathPos.m_segment} " +
+                $"info:{info} " +
+                $"nLanes={info.m_lanes.Length} " +
+                $"laneIndex={pathPos.m_lane} ";
+        }
+
         public static void Postfix(ref Vehicle vehicleData, ref Vehicle.Frame frameData) {
             if (!vehicleData.GetCurrentPathPos(out var pathPos))
                 return;
+            try {
+                float se = GetCurrentSE(pathPos, vehicleData.m_lastPathOffset * (1f / 255f), ref vehicleData);
 
-            float se = GetCurrentSE(pathPos, vehicleData.m_lastPathOffset*(1f/255f), ref vehicleData);
-
-
-            var rot = Quaternion.Euler(0, 0f, se);
-            frameData.m_rotation *= rot;
+                var rot = Quaternion.Euler(0, 0f, se);
+                frameData.m_rotation *= rot;
+            } catch (Exception ex) {
+                Log.Exception(ex, pathPos.ToSTR() , showInPanel: false);
+            }
         }
 
         internal static bool GetCurrentPathPos(this ref Vehicle vehicleData, out PathUnit.Position pathPos) {
@@ -44,20 +55,9 @@ namespace NodeController.Patches.VehicleSuperElevation {
             return pathUnitBuffer[vehicleData.m_path].GetPosition(pathIndex >> 1, out pathPos);
         }
 
-        internal static NetInfo.Lane GetLaneInfo(this ref PathUnit.Position pathPos) {
-            try {
-                return pathPos.m_segment.ToSegment().Info.m_lanes[pathPos.m_lane];
-            }catch (Exception ex) {
-                var info = pathPos.m_segment.ToSegment().Info;
-                string strPath =
-                    $"segment:{pathPos.m_segment} " +
-                    $"info:{info}" +
-                    $"nLanes={info.m_lanes.Length}" +
-                    $"laneIndex={pathPos.m_lane}";
-                Log.Exception(ex, strPath, showInPanel: false);
-                return null;
-            }
-        }
+        internal static NetInfo.Lane GetLaneInfo(this ref PathUnit.Position pathPos) =>
+            pathPos.m_segment.ToSegment().Info.m_lanes[pathPos.m_lane];
+
 
         internal static float GetCurrentSE(PathUnit.Position pathPos, float offset, ref Vehicle vehicleData) {
             if (float.IsNaN(offset) || float.IsInfinity(offset)) return 0;
@@ -66,7 +66,7 @@ namespace NodeController.Patches.VehicleSuperElevation {
             SegmentEndData segEnd = SegmentEndManager.Instance.GetAt(pathPos.m_segment, false);
             float startSE = segStart == null ? 0f : segStart.CachedSuperElevationDeg;
             float endSE = segEnd == null ? 0f : -segEnd.CachedSuperElevationDeg;
-            float se = startSE * (1-offset) + endSE * offset;
+            float se = startSE * (1 - offset) + endSE * offset;
 
             var lane = pathPos.GetLaneInfo();
             if (lane is null) return 0;
