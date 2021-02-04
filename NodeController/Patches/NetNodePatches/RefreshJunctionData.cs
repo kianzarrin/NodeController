@@ -45,7 +45,7 @@ namespace NodeController.Patches
         [UsedImplicitly]
         static void Postfix(ref NetNode __instance, ref RenderManager.Instance data)
         {
-            ushort nodeID = NetUtil.GetID(__instance);
+            ushort nodeID = __instance.GetID();
             NodeData blendData = NodeManager.Instance.buffer[nodeID];
             if (blendData == null)
                 return;

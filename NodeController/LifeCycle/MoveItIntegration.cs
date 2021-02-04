@@ -2,6 +2,7 @@ using KianCommons;
 using MoveItIntegration;
 using System;
 using System.Collections.Generic;
+using KianCommons.Serialization;
 
 namespace NodeController.LifeCycle {
     [Serializable]
@@ -39,7 +40,7 @@ namespace NodeController.LifeCycle {
         }
 
         public override object Copy(InstanceID sourceInstanceID) {
-            Log.Debug($"MoveItIntegration.Copy({sourceInstanceID.STR()}) called");
+            Log.Debug($"MoveItIntegration.Copy({sourceInstanceID.ToSTR()}) called");
             switch (sourceInstanceID.Type) {
                 case InstanceType.NetNode:
                     return CopyNode(sourceInstanceID.NetNode);
@@ -53,7 +54,7 @@ namespace NodeController.LifeCycle {
 
         public override void Paste(InstanceID targetrInstanceID, object record, Dictionary<InstanceID, InstanceID> map) {
             string strRecord = record == null ? "null" : record.ToString();
-            string strInstanceID = targetrInstanceID.STR();
+            string strInstanceID = targetrInstanceID.ToSTR();
             Log.Debug($"MoveItIntegration.Paste({strInstanceID}, record:{strRecord}, map) was called");
             switch (targetrInstanceID.Type) {
                 case InstanceType.NetNode:

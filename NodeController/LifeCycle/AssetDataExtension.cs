@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using static NodeController.LifeCycle.MoveItIntegration;
 using static KianCommons.Assertion;
+using KianCommons.Serialization;
 
 namespace NodeController.LifeCycle {
     using HarmonyLib;

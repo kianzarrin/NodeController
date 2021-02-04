@@ -51,6 +51,7 @@
     <Compile Remove="DecompiledSources\VehicleAI.cs" />
     <Compile Remove="GUI\Panel\Corner\MassFlattenNodeCheckbox.cs" />
     <Compile Remove="KianCommons\KianCommons\Properties\AssemblyInfo.cs" />
+    <Compile Remove="KianCommons\KianCommons\Serialization\JsonUtil.cs" />
     <Compile Remove="KianCommons\KianCommons\Util\AssemblyTypeExtensions.cs" />
     <Compile Remove="KianCommons\KianCommons\Util\CSURUtil.cs" />
     <Compile Remove="Patches\NetSegmentPatches\RenderInstance.cs" />

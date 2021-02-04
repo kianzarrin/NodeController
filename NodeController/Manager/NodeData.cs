@@ -12,6 +12,7 @@ namespace NodeController {
     using static KianCommons.HelpersExtensions;
     using static KianCommons.ReflectionHelpers;
     using static KianCommons.Assertion;
+    using KianCommons.Serialization;
 
     using KianCommons.Math;
     using NodeController.Tool;

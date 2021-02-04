@@ -5,6 +5,7 @@ namespace NodeController.LifeCycle
     using KianCommons;
     using System;
     using NodeController.GUI;
+    using KianCommons.Serialization;
 
     [Serializable]
     public class NCState {
