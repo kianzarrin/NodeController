@@ -6,6 +6,7 @@ namespace NodeController.Patches._NetManager
     using ColossalFramework;
     using NodeController.LifeCycle;
     using KianCommons;
+    using static KianCommons.ReflectionHelpers;
 
     [HarmonyPatch]
     public static class ReleaseSegmentImplementationPatch
@@ -21,8 +22,8 @@ namespace NodeController.Patches._NetManager
         }
 
         public static MoveItSegmentData UpgradingSegmentData;
-        static FieldInfo f_upgrading = AccessTools.DeclaredField( typeof(NetTool), "m_upgrading");
-        public static bool m_upgrading => (bool)f_upgrading.GetValue(Singleton<NetTool>.instance);
+        public static bool m_upgrading =>
+            (bool)GetFieldValue(Singleton<NetTool>.instance, "m_upgrading");
 
         public static void Prefix(ushort segment)
         {

@@ -4,12 +4,14 @@ namespace NodeController.Patches.VehicleSuperElevation {
     using KianCommons;
     using ColossalFramework;
     using static KianCommons.Patches.TranspilerUtils;
+    using static KianCommons.ReflectionHelpers;
     using HarmonyLib;
     using System.Runtime.CompilerServices;
     using System;
     using System.Collections.Generic;
     using static KianCommons.Assertion;
     using System.Reflection.Emit;
+
 
     public static class SuperElevationCommons {
         delegate void SimulationStepDelegate(
@@ -73,7 +75,7 @@ namespace NodeController.Patches.VehicleSuperElevation {
 
         #region rotation updated
 
-        internal static FieldInfo fRotation = AccessTools.DeclaredField(
+        internal static FieldInfo fRotation = GetField(
             typeof(Vehicle.Frame), nameof(Vehicle.Frame.m_rotation));
 
         internal static bool RotationUpdated = false;
@@ -83,13 +85,11 @@ namespace NodeController.Patches.VehicleSuperElevation {
 
 
         static FieldInfo f_rotation =
-            AccessTools.DeclaredField(typeof(Vehicle.Frame), nameof(Vehicle.Frame.m_rotation)) ??
-            throw new Exception("f_rotation is null");
+            GetField(typeof(Vehicle.Frame), nameof(Vehicle.Frame.m_rotation));
 
 
-        static MethodInfo mOnRotationUpdated = AccessTools.DeclaredMethod(
-            typeof(SuperElevationCommons), nameof(OnRotationUpdated)) ??
-            throw new Exception("mOnRotationUpdated is null");
+        static MethodInfo mOnRotationUpdated = ReflectionHelpers.GetMethod(
+            typeof(SuperElevationCommons), nameof(OnRotationUpdated));
 
         public static IEnumerable<CodeInstruction> OnRotationUpdatedTranspiler(
             IEnumerable<CodeInstruction> instructions,

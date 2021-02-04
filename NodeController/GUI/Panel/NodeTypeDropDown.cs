@@ -5,9 +5,9 @@ namespace NodeController.GUI {
     using static KianCommons.HelpersExtensions;
     using static KianCommons.EnumBitMaskExtensions;
     using static KianCommons.Assertion;
-
     using KianCommons;
     using KianCommons.UI;
+    using KianCommons.UI.Helpers;
     using System.Reflection;
     using HarmonyLib;
 
@@ -88,24 +88,11 @@ namespace NodeController.GUI {
             set => selectedValue = value.ToString();
         }
 
-        FieldInfo fPopop = AccessTools.DeclaredField(typeof(UIDropDown), "m_Popup")
-            ?? throw new Exception("m_Popup not found");
-
-        public UIListBox Popup => fPopop.GetValue(this) as UIListBox;
-
-        FieldInfo fHoverIndex = AccessTools.DeclaredField(typeof(UIListBox), "m_HoverIndex")
-            ?? throw new Exception("m_HoverIndex not found");
-
-        int GetHoverIndex() {
-            //Log.Debug("GetHoverIndex() popup=" + Popup);
-            if (Popup == null || !Popup.isVisible)
-                return -1;
-            return (int)fHoverIndex.GetValue(Popup);
-        }
+        public UIListBox Popup => this.GetPopup();
 
         public NodeTypeT GetHoveredItem() {
             //Log.Debug("GetHoveredItem() called" );
-            int index = GetHoverIndex();
+            int index = this.GetHoverIndex();
             //Log.Debug("GetHoveredItem index = " + index);
             if (index == -1)
                 return SelectedItem;
