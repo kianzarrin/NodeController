@@ -4,6 +4,7 @@ namespace NodeController.Patches.HideCrosswalksMod {
     using KianCommons.Patches;
     using HarmonyLib;
     using KianCommons;
+    using KianCommons.Plugins;
 
     [HarmonyPatch]
     public static class ShouldHideCrossing {

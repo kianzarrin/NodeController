@@ -6,6 +6,7 @@ namespace NodeController.Patches.TMPE {
     using NodeController;
     using HarmonyLib;
     using ColossalFramework;
+    using KianCommons.Plugins;
 
     [HarmonyPatch]
     static class IsEnteringBlockedJunctionAllowedConfigurable {

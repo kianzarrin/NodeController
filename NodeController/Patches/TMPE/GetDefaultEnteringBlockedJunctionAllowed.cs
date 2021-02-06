@@ -5,6 +5,7 @@ namespace NodeController.Patches.TMPE {
     using HarmonyLib;
     using KianCommons.Patches;
     using KianCommons;
+    using KianCommons.Plugins;
 
     [HarmonyPatch]
     static class GetDefaultEnteringBlockedJunctionAllowed {

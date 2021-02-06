@@ -5,6 +5,7 @@ namespace NodeController.Patches.TMPE {
     using KianCommons;
     using NodeController;
     using HarmonyLib;
+    using KianCommons.Plugins;
 
     [HarmonyPatch]
     static class GetDefaultUturnAllowed {

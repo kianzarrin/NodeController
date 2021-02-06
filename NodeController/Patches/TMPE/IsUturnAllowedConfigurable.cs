@@ -5,6 +5,7 @@ namespace NodeController.Patches.TMPE {
     using KianCommons;
     using HarmonyLib;
     using KianCommons.Patches;
+    using KianCommons.Plugins;
 
     [HarmonyPatch]
     static class IsUturnAllowedConfigurable {

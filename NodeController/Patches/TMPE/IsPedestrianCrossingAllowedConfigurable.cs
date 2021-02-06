@@ -5,6 +5,7 @@ namespace NodeController.Patches.TMPE {
     using KianCommons.Patches;
     using KianCommons;
     using HarmonyLib;
+    using KianCommons.Plugins;
 
     [HarmonyPatch]
     static class IsPedestrianCrossingAllowedConfigurable {
