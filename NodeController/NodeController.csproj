@@ -7,28 +7,31 @@
     <Product>NodeController</Product>
     <Copyright>Copyright ©  2020</Copyright>
     <Deterministic>false</Deterministic>
-    <AssemblyVersion>2.2.1.*</AssemblyVersion>
+    <AssemblyVersion>2.2.2.*</AssemblyVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>latest</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <Configurations>Debug;Release;Workshop</Configurations>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Workshop|AnyCPU'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DefineConstants />
-    <DebugType>pdbonly</DebugType>
-    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
-    <MangedDLLPath>..\dependencies</MangedDLLPath>
+    <ContentID>2085403475</ContentID>
+    <ManagedDLLPath>..\dependencies</ManagedDLLPath>
     <SteamPath>~/Library/Application Support/Steam/</SteamPath>
     <SteamPath Condition="! Exists ('$(SteamPath)')">$(ProgramFiles)\Steam</SteamPath>
     <SteamPath Condition="! Exists ('$(SteamPath)')">$(Registry:HKEY_CURRENT_USER\Software\Valve\Steam@SteamPath)</SteamPath>
     <CSPath>$(SteamPath)\steamapps\common\Cities_Skylines</CSPath>
-    <MangedDLLPath Condition="!  Exists ('$(MangedDLLPath)')">$(CSPath)\Cities_Data\Managed</MangedDLLPath>
+    <ContentPath>$(SteamPath)\steamapps\workshop\content\255710\$(ContentID)</ContentPath>
+    <ManagedDLLPath Condition="!  Exists ('$(ManagedDLLPath)')">$(CSPath)\Cities_Data\Managed</ManagedDLLPath>
     <AssemblyName>NodeController</AssemblyName>
     <RootNamespace>NodeController</RootNamespace>
   </PropertyGroup>
@@ -62,15 +65,15 @@
     <None Remove="KianCommons\.gitignore" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CitiesHarmony.API" Version="1.0.6" />
+    <PackageReference Include="CitiesHarmony.API" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>$(MangedDLLPath)\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(ManagedDLLPath)\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ColossalManaged">
-      <HintPath>$(MangedDLLPath)\ColossalManaged.dll</HintPath>
+      <HintPath>$(ManagedDLLPath)\ColossalManaged.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="CSURToolBox">
@@ -87,7 +90,7 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="ICities">
-      <HintPath>$(MangedDLLPath)\ICities.dll</HintPath>
+      <HintPath>$(ManagedDLLPath)\ICities.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MoveItIntegration">
@@ -103,15 +106,15 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>$(MangedDLLPath)\UnityEngine.dll</HintPath>
+      <HintPath>$(ManagedDLLPath)\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.Networking">
-      <HintPath>$(MangedDLLPath)\UnityEngine.Networking.dll</HintPath>
+      <HintPath>$(ManagedDLLPath)\UnityEngine.Networking.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>$(MangedDLLPath)\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(ManagedDLLPath)\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
@@ -175,5 +178,14 @@
     <Delete Files="$(DeployDir)$(TargetFileName)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DeployDir)" />
     <Message Importance="high" Text="AssemblyVersion=@(VersionNumber) time=$(Now)" />
+  </Target>
+  <Target Name="DeployToWorkshop" AfterTargets="DeployToModDirectory" Condition="'$(Configuration)|$(Platform)'=='Workshop|AnyCPU'">
+    <ItemGroup>
+      <FilesToDelete Include="$(ContentPath)\*.*" Exclude="$(ContentPath)\PreviewImage.png" />
+      <FilesToCopy Include="$(DeployDir)\*.*" />
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" />
+    <Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(ContentPath)" />
+    <RemoveDir Directories="$(DeployDir)" />
   </Target>
 </Project>
