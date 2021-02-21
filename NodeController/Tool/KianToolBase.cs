@@ -58,10 +58,12 @@ namespace NodeController.Tool {
             base.OnToolGUI(e);
             if (leftMouseWasDown_ && e.type == EventType.MouseUp && m_mouseRayValid) {
                 if (e.button == 0) OnPrimaryMouseClicked();
-                else if (e.button == 1) OnSecondaryMouseClicked();
             }
             if(e.type == EventType.MouseDown || e.type == EventType.MouseUp)
                 leftMouseWasDown_ = e.type == EventType.MouseDown && e.button == 0 && m_mouseRayValid;
+
+            if (e.type == EventType.MouseDown && m_mouseRayValid && e.button == 1)
+                OnSecondaryMouseClicked();
 
             if (e.type == EventType.keyDown && e.keyCode == KeyCode.Escape) {
                 e.Use();
