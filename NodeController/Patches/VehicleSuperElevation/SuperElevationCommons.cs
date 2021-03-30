@@ -2,6 +2,7 @@ namespace NodeController.Patches.VehicleSuperElevation {
     using ColossalFramework;
     using HarmonyLib;
     using KianCommons;
+    using KianCommons.Plugins;
     using System;
     using System.Collections.Generic;
     using System.Reflection;
@@ -21,9 +22,16 @@ namespace NodeController.Patches.VehicleSuperElevation {
         public static MethodBase TargetMethod<T>() =>
             DeclaredMethod<SimulationStepDelegate>(typeof(T), "SimulationStep");
 
-        public static MethodBase TargetTMPEMethod<T>() =>
-            DeclaredMethod<SimulationStepDelegate>(typeof(T), "CustomSimulationStep");
+        public static MethodBase TargetTMPEMethod<T>() {
+            string typeName = "TrafficManager.Custom.AI.Custom" + typeof(T);
+            Type customType =
+                PluginUtil.GetTrafficManager().GetMainAssembly()
+                .GetType(typeName, throwOnError: false);
 
+            if(customType != null)
+                return DeclaredMethod<SimulationStepDelegate>(customType, "CustomSimulationStep");
+            return null;
+        }
 
         static PathUnit[] pathUnitBuffer => Singleton<PathManager>.instance.m_pathUnits.m_buffer;
 

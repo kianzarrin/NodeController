@@ -2,10 +2,10 @@ namespace NodeController.Patches.VehicleSuperElevation {
     using ColossalFramework;
     using HarmonyLib;
     using KianCommons;
+    using System;
     using System.Collections.Generic;
     using System.Reflection;
     using System.Reflection.Emit;
-    using TrafficManager.Custom.AI;
     using UnityEngine;
     using static SuperElevationCommons;
 
@@ -65,14 +65,26 @@ namespace NodeController.Patches.VehicleSuperElevation {
 
     [HarmonyPatch]
     static class TrainAI_SimulationStepPatch {
-        internal static MethodBase TargetMethod() => TargetTMPEMethod<CustomTrainAI>();
+        internal static IEnumerable<MethodBase> TargetMethods() {
+            yield return TargetMethod<TrainAI>();
+            var tmpeTarget = TargetTMPEMethod<TrainAI>();
+            if(tmpeTarget != null)
+                yield return tmpeTarget; //old TMPE
+        }
+
         internal static void Postfix(ref Vehicle vehicleData, ref Vehicle.Frame frameData) =>
             SuperElevationCommons.Postfix(ref vehicleData, ref frameData);
     }
 
     [HarmonyPatch]
     static class TramBaseAI_SimulationStepPatch {
-        internal static MethodBase TargetMethod() => TargetTMPEMethod<CustomTramBaseAI>();
+        internal static IEnumerable<MethodBase> TargetMethods() {
+            yield return TargetMethod<TramBaseAI>();
+            var tmpeTarget = TargetTMPEMethod<TramBaseAI>();
+            if(tmpeTarget != null)
+                yield return tmpeTarget; //old TMPE
+        }
+
         internal static void Postfix(ref Vehicle vehicleData, ref Vehicle.Frame frameData) =>
             SuperElevationCommons.Postfix(ref vehicleData, ref frameData);
     }
