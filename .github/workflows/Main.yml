@@ -13,7 +13,7 @@ jobs:
     env:
         ModName: NodeController
         Solution_File: NodeController.sln
-        DeployDir: Deploy/Debug/bin
+        DeployDir: Deploy/Release/bin
         
     steps:
       - name: Get Sources
@@ -35,7 +35,7 @@ jobs:
       - name: Build Solution
         id: build_solution
         run: | 
-            msbuild "${{ env.Solution_File }}" /m /verbosity:normal /restore /p:Configuration=Debug /p:DeployDir="$env:GITHUB_WORKSPACE/$env:DeployDir"
+            msbuild "${{ env.Solution_File }}" /m /verbosity:normal /restore /p:Configuration=Release /p:DeployDir="$env:GITHUB_WORKSPACE/$env:DeployDir"
             echo ::set-output name=ZIP_FILE::${$env:GITHUB_WORKSPACE/$env:DeployDir/../*.zip}
 
       - name: Test vars
