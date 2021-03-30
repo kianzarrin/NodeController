@@ -6,6 +6,7 @@ namespace NodeController.Patches.TMPE {
     using TrafficManager.API.Traffic.Enums;
     using KianCommons.Patches;
     using KianCommons;
+    using KianCommons.Plugins;
 
     [HarmonyPatch]
     static class CanToggleTrafficLight {

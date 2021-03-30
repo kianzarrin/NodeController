@@ -3,6 +3,7 @@ namespace NodeController.Patches.TMPE {
     using KianCommons;
     using System.Reflection;
     using TrafficManager;
+    using KianCommons.Plugins;
 
     // TODO: remove this when TMPE is updated.
     [HarmonyPatch(typeof(ThreadingExtension), nameof(ThreadingExtension.OnBeforeSimulationFrame))]

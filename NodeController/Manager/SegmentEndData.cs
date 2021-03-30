@@ -18,6 +18,7 @@ namespace NodeController {
     using static KianCommons.Assertion;
     using System.Linq;
     using KianCommons.Serialization;
+    using Vector3Serializable = KianCommons.Math.Vector3Serializable;
 
     [Serializable]
     public class SegmentEndData : INetworkData, INetworkData<SegmentEndData>, ISerializable {
@@ -46,10 +47,10 @@ namespace NodeController {
                 LeftCorner.Left = true;
                 RightCorner.Left = false;
 
-                LeftCorner.DeltaPos = info.GetVector3("DeltaLeftCornerPos");
-                LeftCorner.DeltaDir = info.GetVector3("DeltaLeftCornerDir");
-                RightCorner.DeltaPos = info.GetVector3("DeltaRightCornerPos");
-                RightCorner.DeltaDir = info.GetVector3("DeltaRightCornerDir");
+                LeftCorner.DeltaPos = info.GetValue<Vector3Serializable>("DeltaLeftCornerPos");
+                LeftCorner.DeltaDir = info.GetValue<Vector3Serializable>("DeltaLeftCornerDir");
+                RightCorner.DeltaPos = info.GetValue<Vector3Serializable>("DeltaRightCornerPos");
+                RightCorner.DeltaDir = info.GetValue<Vector3Serializable>("DeltaRightCornerDir");
             }
             Update();
         }
