@@ -4,17 +4,31 @@ namespace NodeController.Patches.TMPE {
     using System.Reflection;
     using TrafficManager;
     using KianCommons.Plugins;
+    using System;
+    using System.Linq;
 
     // TODO: remove this when TMPE is updated.
-    [HarmonyPatch(typeof(ThreadingExtension), nameof(ThreadingExtension.OnBeforeSimulationFrame))]
     static class ThreadingExtension_OnBeforeSimulationFrame {
-        static bool Prepare() => PluginUtil.GetTrafficManager().IsActive();
+        static MethodBase TargetMethod() {
+            return typeof(ThreadingExtension).GetMethod(
+                nameof(ThreadingExtension.OnBeforeSimulationFrame),
+                throwOnError: true);
+        }
 
-        static FieldInfo field_firstFrame =>
-            AccessTools.Field(typeof(ThreadingExtension), "firstFrame");
-        public static void Prefix(ThreadingExtension __instance) {
-            //Util.Log.Debug("ThreadingExtension_OnBeforeSimulationFrame.Prefix called");
-            field_firstFrame?.SetValue(__instance, false);
+        static bool Prepare() {
+            var tmpe = PluginUtil.GetTrafficManager();
+            return
+                tmpe != null
+                && tmpe.isEnabled &&
+                tmpe.GetMainAssembly().VersionOf() < new Version("11.5.3");
+        }
+
+        static void Prefix(ref bool ___firstFrame) => ___firstFrame = false;
+
+        public static Exception Cleanup(Exception ex) {
+            if(ex !=null)
+                Log.Info($"(this message is harmless) Suppressing for new TMPE: {ex.Message}");
+            return null;
         }
     }
 }
