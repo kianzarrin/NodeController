@@ -8,6 +8,7 @@ namespace NodeController.Patches.TMPE {
     using System.Linq;
 
     // TODO: remove this when TMPE is updated.
+    [HarmonyPatch]
     static class ThreadingExtension_OnBeforeSimulationFrame {
         static MethodBase TargetMethod() {
             return typeof(ThreadingExtension).GetMethod(
