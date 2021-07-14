@@ -23,6 +23,12 @@ namespace NodeController.GUI {
         public List<IDataControllerUI> Controls;
         public UIResetButton ResetButton;
 
+        public string AtlasName => "NCIcon_rev" + this.VersionOf();
+        const string NodeControllerButtonBg = "NodeControllerButtonBg";
+        const string NodeControllerButtonBgActive = "NodeControllerButtonBgFocused";
+        const string NodeControllerButtonBgHovered = "NodeControllerButtonBgHovered";
+        internal const string NodeControllerIcon = "NodeControllerIcon";
+        internal const string NodeControllerIconActive = "NodeControllerIconPressed";
         public string Caption {
             get => lblCaption_.text;
             set => lblCaption_.text = value;
@@ -74,9 +80,25 @@ namespace NodeController.GUI {
                 sprite_ = dragHandle_.AddUIComponent<UISprite>();
                 sprite_.size = new Vector2(40, 40);
                 sprite_.relativePosition = new Vector2(5, 3);
-                sprite_.atlas = TextureUtil.GetAtlas(NodeControllerButton.AtlasName);
-                sprite_.spriteName = NodeControllerButton.NodeControllerIconActive;
+                sprite_.atlas = GetAtlas();
+                sprite_.spriteName = NodeControllerIconActive;
             }
+        }
+
+        UITextureAtlas GetAtlas() {
+            string[] spriteNames = new string[] {
+                NodeControllerButtonBg,
+                NodeControllerButtonBgActive,
+                NodeControllerButtonBgHovered,
+                NodeControllerIcon,
+                NodeControllerIconActive
+            };
+
+            var atlas = TextureUtil.GetAtlas(AtlasName);
+            if (atlas == UIView.GetAView().defaultAtlas) {
+                atlas = TextureUtil.CreateTextureAtlas("sprites.png", AtlasName, spriteNames);
+            }
+            return atlas;
         }
 
         protected virtual UIAutoSizePanel AddPanel() {

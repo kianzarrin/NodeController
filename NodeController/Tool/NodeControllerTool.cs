@@ -1,5 +1,6 @@
 namespace NodeController.Tool {
     using ColossalFramework;
+    using ColossalFramework.UI;
     using KianCommons;
     using KianCommons.UI;
     using NodeController.GUI;
@@ -8,6 +9,7 @@ namespace NodeController.Tool {
     using UnityEngine;
     using static KianCommons.HelpersExtensions;
     using static KianCommons.UI.RenderUtil;
+    using UnifiedUI.Helpers;
 
     public sealed class NodeControllerTool : KianToolBase {
         public static readonly SavedInputKey ActivationShortcut = new SavedInputKey(
@@ -25,7 +27,7 @@ namespace NodeController.Tool {
         public static bool LockMode => ControlIsPressed && !AltIsPressed;
         public static bool InvertLockMode => ControlIsPressed && AltIsPressed;
 
-        NodeControllerButton Button => NodeControllerButton.Instace;
+        UIComponent button_;
         UINodeControllerPanel NCPanel;
         UISegmentEndControllerPanel SECPanel;
 
@@ -47,7 +49,14 @@ namespace NodeController.Tool {
             Log.Info("NodeControllerTool.Awake() called");
             base.Awake();
 
-            NodeControllerButton.CreateButton();
+            button_ = UUIHelpers.RegisterToolButton(
+                name:"NodeController",
+                groupName:null,
+                tooltip:"Node Controller",
+                spritefile:"uui_node_controller.png",
+                tool:this,
+                activationKey: ActivationShortcut);
+
             NCPanel = UINodeControllerPanel.Create();
             SECPanel = UISegmentEndControllerPanel.Create();
 
@@ -117,11 +126,9 @@ namespace NodeController.Tool {
         protected override void OnDestroy() {
             Log.Info("NodeControllerTool.OnDestroy() " +
                 $"this.version={this.VersionOf()} NodeControllerTool.version={typeof(NodeControllerTool).VersionOf()}");
-
-            Button?.Hide();
-            Destroy(Button);
-            Destroy(NCPanel);
-            Destroy(SECPanel);
+            button_?.Destroy();
+            Destroy(NCPanel?.gameObject);
+            Destroy(SECPanel?.gameObject);
             base.OnDestroy();
 
         }
@@ -130,7 +137,6 @@ namespace NodeController.Tool {
             try {
                 Log.Info("NodeControllerTool.OnEnable",true);
                 base.OnEnable();
-                Button?.Activate();
                 SelectedNodeID = 0;
                 SelectedSegmentID = 0;
                 handleHovered_ = false;
@@ -149,7 +155,6 @@ namespace NodeController.Tool {
             ToolCursor = null;
             Hint = null;
             base.OnDisable();
-            Button?.Deactivate();
             SelectedNodeID = 0;
             SelectedSegmentID = 0;
             NCPanel?.Close();
