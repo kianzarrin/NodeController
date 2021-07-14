@@ -167,6 +167,44 @@ namespace NodeController {
             return true;
         }
         #endregion
+        #region nodeless
+        public bool Nodeless {
+            get {
+                for (int i = 0; i < 8; ++i) {
+                    ushort segmentID = Node.GetSegment(i);
+                    if (segmentID == 0) continue;
+                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                    if (segEnd.Nodeless)
+                        return true;
+                }
+                return false;
+            }
+            set {
+                //Log.Debug($"ClearMarkings.set() called for node:{NodeID}" + Environment.StackTrace);
+                for (int i = 0; i < 8; ++i) {
+                    ushort segmentID = Node.GetSegment(i);
+                    if (segmentID == 0) continue;
+                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                    segEnd.Nodeless = value;
+                }
+            }
+        }
+
+        public bool HasUniformNodeless() {
+            bool? nodeless0 = null;
+            for (int i = 0; i < 8; ++i) {
+                ushort segmentID = Node.GetSegment(i);
+                if (segmentID == 0) continue;
+                var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                if (nodeless0 == null)
+                    nodeless0 = segEnd.Nodeless;
+                else if (nodeless0 != segEnd.Nodeless)
+                    return false;
+            }
+            return true;
+        }
+        #endregion
+
         #region flatten node
 
         static int CompareSegments(ushort seg1Id, ushort seg2Id) {
@@ -577,7 +615,9 @@ namespace NodeController {
         public bool CanModifyFlatJunctions() => !NeedMiddleFlag();
         public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
         public bool CanModifyTextures() => IsRoad && !IsCSUR;
-        public bool ShowNoMarkingsToggle() => CanModifyTextures() && NodeType == NodeTypeT.Custom ;
+        public bool ShowNoMarkingsToggle() => CanModifyTextures() && NodeType == NodeTypeT.Custom;
+        public bool CanModifyNodeless() => NodeType == NodeTypeT.Custom;
+        public bool ShowNodelessToggle() => CanModifyNodeless();
 
         bool CrossingIsRemoved(ushort segmentId) =>
             HideCrosswalks.Patches.CalculateMaterialCommons.
