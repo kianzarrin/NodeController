@@ -8,8 +8,6 @@ namespace NodeController.GUI {
     using KianCommons;
     using KianCommons.UI;
     using KianCommons.UI.Helpers;
-    using System.Reflection;
-    using HarmonyLib;
 
     public class NodeTypeDropDown : UIDropDown, IDataControllerUI {
         bool awakened_ = false;
