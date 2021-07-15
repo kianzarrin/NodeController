@@ -77,7 +77,7 @@ namespace NodeController.GUI {
             NodeData data = (root_ as UINodeControllerPanel).NodeData;
             if (data == null)
                 return;
-            data.NoMarkings = this.isChecked;
+            data.Nodeless = this.isChecked;
             Assert(!refreshing_, "!refreshing_");
             data.Update();
             (root_ as IDataControllerUI).Refresh();
@@ -88,10 +88,10 @@ namespace NodeController.GUI {
             SegmentEndData data = (root_ as UISegmentEndControllerPanel).SegmentEndData;
             if (data == null)
                 return;
-            data.NoMarkings = this.isChecked;
+            data.Nodeless = this.isChecked;
             Log.Debug($"NodelessCheckBox.ApplySegmentEnd(): {data}" +
                 $"isChecked={isChecked} " +
-                $"data.NoMarkings is set to {data.NoMarkings}");
+                $"data.Nodeless is set to {data.Nodeless}");
             data.Update();
         }
 
@@ -108,7 +108,7 @@ namespace NodeController.GUI {
         }
 
         public void RefreshNode(NodeData data) {
-            if (data.HasUniformNoMarkings()) {
+            if (data.HasUniformNodeless()) {
                 checkedBoxObject.color = Color.white;
             } else {
                 checkedBoxObject.color = Color.grey;
