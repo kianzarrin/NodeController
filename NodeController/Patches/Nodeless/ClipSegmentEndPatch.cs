@@ -23,13 +23,11 @@ namespace NodeController.Patches.Nodeless {
         }
 
         [UsedImplicitly]
-        static IEnumerable<MethodBase> TargetMethods() {
-            yield return typeof(NetSegment).GetMethod(
+        static MethodBase TargetMethod() {
+            return typeof(NetSegment).GetMethod(
                     nameof(NetSegment.CalculateCorner),
                     BindingFlags.Public | BindingFlags.Static,
                     throwOnError: true);
-
-            // yield return typeof(NetSegment).GetMethod(nameof(NetSegment.OverlapQuad), throwOnError: true);
         }
 
         static FieldInfo f_clipSegmentEnds =>
@@ -38,26 +36,51 @@ namespace NodeController.Patches.Nodeless {
         static MethodInfo mGetClipSegmentEnd = ReflectionHelpers.GetMethod(
             typeof(ClipSegmentEndPatch), nameof(GetClipSegmentEnd));
 
-        public static IEnumerable<CodeInstruction> Transpiler(
-            IEnumerable<CodeInstruction> instructions, MethodBase original) {
-
-            CodeInstruction ldarg_nodeID = GetLDArg(original, "startNodeID");
-            CodeInstruction ldarg_segmentID = GetLDArg(original, "ignoreSegmentID");
-            CodeInstruction call_GetMinCornerOffset = new CodeInstruction(OpCodes.Call, mGetClipSegmentEnd);
-
-            int n = 0;
-            foreach (var instruction in instructions) {
-                yield return instruction;
-                if (instruction.LoadsField(f_clipSegmentEnds)) {
-                    n++;
-                    yield return ldarg_nodeID;
-                    yield return ldarg_segmentID;
-                    yield return call_GetMinCornerOffset;
-                }
+        public static IEnumerable<CodeInstruction> Transpiler(MethodBase original, IEnumerable<CodeInstruction> instructions) {
+            try {
+                var codes = TranspilerUtils.ToCodeList(instructions);
+                Patch1(original, codes, occurance: 1);
+                Patch1(original, codes, occurance: 2);
+                Patch2(original, codes, occurance: 3);
+                Patch1(original, codes, occurance: 4);
+                Patch2(original, codes, occurance: 5);
+                return codes;
+            } catch (Exception ex) {
+                ex.Log();
+                throw ex;
             }
+        }
 
-            Log.Succeeded($"f_clipSegmentEnds {n} instances of {f_clipSegmentEnds} in {original}");
-            yield break;
+        public static void Patch1(MethodBase original, List<CodeInstruction> codes, int occurance) {
+            int index = codes.Search(c => c.LoadsField(f_clipSegmentEnds), count: occurance);
+
+            CodeInstruction ldNodeID = GetLDArg(original, "startNodeID");
+            CodeInstruction ldSegmentID = GetLDArg(original, "ignoreSegmentID");
+            CodeInstruction call = new CodeInstruction(OpCodes.Call, mGetClipSegmentEnd);
+
+            var newCodes = new[] {
+                ldNodeID,
+                ldSegmentID,
+                call,
+            };
+
+            codes.InsertInstructions(index + 1, codes, false);
+        }
+
+        public static void Patch2(MethodBase original, List<CodeInstruction> codes, int occurance) {
+            int index = codes.Search(c => c.LoadsField(f_clipSegmentEnds), count: occurance);
+
+            CodeInstruction ldNodeID = GetLDArg(original, "startNodeID");
+            CodeInstruction ldSegmentID = NodesLengthCommons.BuildSegmentLDLocFromPrevSTLoc(codes, index);
+            CodeInstruction call = new CodeInstruction(OpCodes.Call, mGetClipSegmentEnd);
+
+            var newCodes = new[] {
+                ldNodeID,
+                ldSegmentID,
+                call,
+            };
+
+            codes.InsertInstructions(index + 1, codes, false);
         }
     }
 }

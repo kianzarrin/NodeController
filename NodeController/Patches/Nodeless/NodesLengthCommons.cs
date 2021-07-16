@@ -58,10 +58,7 @@ namespace NodeController.Patches.Nodeless {
         static MethodInfo mGetSegment => typeof(NetNode).GetMethod("GetSegment", throwOnError: true);
         public static CodeInstruction BuildSegmentLDLocFromPrevSTLoc(
             List<CodeInstruction> codes, int index, int counter = 1) {
-            if (counter == 0)
-                return new CodeInstruction(OpCodes.Ldc_I4_0); // load 0u
-
-            index = codes.Search(c => c.Calls(mGetSegment), startIndex: index, count: counter * -1);
+            index = codes.Search(c => c.Calls(mGetSegment), startIndex: index, count: -counter);
             index = codes.Search(c => c.IsStloc(), startIndex: index);
             return codes[index].BuildLdLocFromStLoc();
         }
