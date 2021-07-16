@@ -76,7 +76,7 @@ namespace NodeController.LifeCycle {
                     }
                 }
 
-                HarmonyUtil.InstallHarmony(HARMONY_ID); // game config is checked in patch.
+                HarmonyUtil.InstallHarmony(HARMONY_ID, null); // game config is checked in patch.
 
                 NodeManager.Instance.OnLoad();
                 SegmentEndManager.Instance.OnLoad();
