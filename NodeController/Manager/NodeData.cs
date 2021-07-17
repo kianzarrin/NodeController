@@ -540,7 +540,7 @@ namespace NodeController {
                 return newNodeType == NodeTypeT.End;
 
             if (SegmentCount > 2 || IsCSUR)
-                return newNodeType == NodeTypeT.Custom;
+                return newNodeType == NodeTypeT.Custom || newNodeType == NodeTypeT.Nodeless;
 
             bool middle = DefaultFlags.IsFlagSet(NetNode.Flags.Middle);
             // segmentCount == 2 at this point.
