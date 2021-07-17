@@ -14,6 +14,10 @@ namespace NodeController.Patches {
     static class CalculateCornerPatch {
         /// <param name="leftSide">left side going away from the junction</param>
         static float GetMinCornerOffset(float cornerOffset0, ushort nodeID, ushort segmentID, bool leftSide) {
+            var nodeData = NodeManager.Instance.buffer[nodeID];
+            bool nodeless = nodeData?.IsNodelessJunction() ?? false;
+            if (nodeless)
+                return 0;
             var segmentData = SegmentEndManager.Instance.
                 GetAt(segmentID: segmentID, nodeID: nodeID);
             if (segmentData == null)
