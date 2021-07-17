@@ -52,9 +52,7 @@ namespace NodeController {
                 RightCorner.DeltaPos = info.GetValue<Vector3Serializable>("DeltaRightCornerPos");
                 RightCorner.DeltaDir = info.GetValue<Vector3Serializable>("DeltaRightCornerDir");
             }
-            if (SerializationUtil.DeserializationVersion < new Version(2, 3)) {
-                Nodeless = DefaultNodeless;
-            }
+
             Update();
         }
 
@@ -73,7 +71,6 @@ namespace NodeController {
             || Node.m_flags.IsFlagSet(NetNode.Flags.Untouchable);
         public bool DefaultTwist => DefaultFlatJunctions
             && !Node.m_flags.IsFlagSet(NetNode.Flags.Untouchable);
-        public bool DefaultNodeless => !Info.m_clipSegmentEnds;
 
         public NetSegment.Flags DefaultFlags;
 
@@ -86,7 +83,6 @@ namespace NodeController {
         // Configurable
         public bool NoCrossings;
         public bool NoMarkings;
-        public bool Nodeless;
         public bool NoJunctionTexture;
         public bool NoJunctionProps; // excluding TL
         public bool NoTLProps;
@@ -119,7 +115,6 @@ namespace NodeController {
             Calculate();
             CornerOffset = DefaultCornerOffset;
             FlatJunctions = DefaultFlatJunctions;
-            Nodeless = DefaultNodeless;
             Twist = DefaultTwist;
             if(VERBOSE)
                 Log.Debug($"SegmentEndData() Direction={Direction} Slope={SlopeAngleDeg}");
@@ -131,7 +126,6 @@ namespace NodeController {
             $"LeftCorner.IsDefault():{LeftCorner.IsDefault()} " +
             $"RightCorner.IsDefault():{RightCorner.IsDefault()} \n" +
             $"FlatJunctions:{FlatJunctions} == {DefaultFlatJunctions} " +
-            $"Nodeless:{Nodeless} == {DefaultNodeless} " +
             $"Twist:{Twist} == {DefaultTwist} \n" +
             $"NoCrossings:{NoCrossings} == false; " +
             $"NoMarkings:{NoMarkings} == false; " +
@@ -164,9 +158,6 @@ namespace NodeController {
             }
             if (!CanModifyFlatJunctions()) {
                 FlatJunctions = DefaultFlatJunctions;
-            }
-            if (!CanModifyNodeless()) {
-                Nodeless = DefaultNodeless;
             }
             if (!CanModifyTwist()) {
                 Twist = DefaultTwist;
@@ -245,7 +236,6 @@ namespace NodeController {
             ret &= Stretch == 0;
             ret &= EmbankmentAngleDeg == 0;
             ret &= FlatJunctions == DefaultFlatJunctions;
-            ret &= Nodeless == DefaultNodeless;
             ret &= Twist == DefaultTwist;
             ret &= LeftCorner.IsDefault();
             ret &= RightCorner.IsDefault();
@@ -262,7 +252,6 @@ namespace NodeController {
             CornerOffset = DefaultCornerOffset;
             DeltaSlopeAngleDeg = 0;
             FlatJunctions = DefaultFlatJunctions;
-            Nodeless = DefaultNodeless;
             Twist = DefaultTwist;
             NoCrossings = false;
             NoMarkings = false;
@@ -421,9 +410,8 @@ namespace NodeController {
         public NetInfo Info => Segment.Info;
         public bool CanModifyOffset() => NodeData?.CanModifyOffset() ?? false;
         public bool CanModifyCorners() => NodeData != null &&
-            (CanModifyOffset() || NodeType == NodeTypeT.End || NodeType == NodeTypeT.Middle);
+            (CanModifyOffset() || NodeType == NodeTypeT.End || NodeType == NodeTypeT.Nodeless);
         public bool CanModifyFlatJunctions() => NodeData?.CanModifyFlatJunctions() ?? false;
-        public bool CanModifyNodeless() => NodeData?.CanModifyNodeless() ?? false;
         public bool CanModifyTwist() => CanTwist(SegmentID, NodeID);
         public static bool CanTwist(ushort segmentID, ushort nodeID) {
             // can be twisted but not by default
@@ -465,8 +453,6 @@ namespace NodeController {
             if (NodeData == null) return true;
             return NodeData.NodeType == NodeTypeT.Custom;
         }
-
-        public bool ShowNodelessToggle() => CanModifyNodeless();
         #endregion
 
         public static float AngleDeg(float y) => Mathf.Atan(y) * Mathf.Rad2Deg;

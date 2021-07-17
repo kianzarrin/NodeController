@@ -64,7 +64,7 @@ namespace NodeController.Patches.Nodeless {
                 call,
             };
 
-            codes.InsertInstructions(index + 1, codes, false);
+            codes.InsertInstructions(index + 1, newCodes, false);
         }
 
         public static void Patch2(MethodBase original, List<CodeInstruction> codes, int occurance) {
@@ -80,7 +80,7 @@ namespace NodeController.Patches.Nodeless {
                 call,
             };
 
-            codes.InsertInstructions(index + 1, codes, false);
+            codes.InsertInstructions(index + 1, newCodes, false);
         }
     }
 }

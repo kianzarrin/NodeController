@@ -20,7 +20,7 @@ namespace NodeController {
     using System.Linq;
 
     public enum NodeTypeT {
-        Middle,
+        Nodeless,
         Bend,
         Stretch,
         Crossing, // change dataMatrix.w to render crossings in the middle.
@@ -48,6 +48,7 @@ namespace NodeController {
 
             // corner offset and clear markings
             SerializationUtil.SetObjectProperties(info, this);
+
             Update();
         }
 
@@ -167,44 +168,6 @@ namespace NodeController {
             return true;
         }
         #endregion
-        #region nodeless
-        public bool Nodeless {
-            get {
-                for (int i = 0; i < 8; ++i) {
-                    ushort segmentID = Node.GetSegment(i);
-                    if (segmentID == 0) continue;
-                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
-                    if (segEnd.Nodeless)
-                        return true;
-                }
-                return false;
-            }
-            set {
-                //Log.Debug($"ClearMarkings.set() called for node:{NodeID}" + Environment.StackTrace);
-                for (int i = 0; i < 8; ++i) {
-                    ushort segmentID = Node.GetSegment(i);
-                    if (segmentID == 0) continue;
-                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
-                    segEnd.Nodeless = value;
-                }
-            }
-        }
-
-        public bool HasUniformNodeless() {
-            bool? nodeless0 = null;
-            for (int i = 0; i < 8; ++i) {
-                ushort segmentID = Node.GetSegment(i);
-                if (segmentID == 0) continue;
-                var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
-                if (nodeless0 == null)
-                    nodeless0 = segEnd.Nodeless;
-                else if (nodeless0 != segEnd.Nodeless)
-                    return false;
-            }
-            return true;
-        }
-        #endregion
-
         #region flatten node
 
         static int CompareSegments(ushort seg1Id, ushort seg2Id) {
@@ -441,7 +404,7 @@ namespace NodeController {
             DefaultFlags = NodeID.ToNode().m_flags;
 
             if (DefaultFlags.IsFlagSet(NetNode.Flags.Middle))
-                DefaultNodeType = NodeTypeT.Middle;
+                DefaultNodeType = NodeTypeT.Nodeless;
             else if (DefaultFlags.IsFlagSet(NetNode.Flags.Bend))
                 DefaultNodeType = NodeTypeT.Bend;
             else if (DefaultFlags.IsFlagSet(NetNode.Flags.Junction))
@@ -527,7 +490,6 @@ namespace NodeController {
             }
         }
 
-
         static ushort SelectedNodeID => NodeControllerTool.Instance.SelectedNodeID;
         public bool IsSelected() => NodeID == SelectedNodeID;
 
@@ -591,8 +553,9 @@ namespace NodeController {
                     return CanModifyTextures() && !middle && IsStraight;
                 case NodeTypeT.Bend:
                     return !middle;
-                case NodeTypeT.Middle:
-                    return IsStraight || Is180;
+                case NodeTypeT.Nodeless:
+                    //return IsStraight || Is180;
+                    return true; // all junctions can be nodeless
                 case NodeTypeT.Custom:
                     return true;
                 case NodeTypeT.End:
@@ -606,18 +569,17 @@ namespace NodeController {
         public NetInfo Info => NodeID.ToNode().Info;
         public bool IsRoad => Info.m_netAI is RoadBaseAI;
         public bool EndNode() => NodeType == NodeTypeT.End;
-        public bool NeedMiddleFlag() => NodeType == NodeTypeT.Middle;
+        public bool NeedMiddleFlag() => NodeType == NodeTypeT.Nodeless && (IsStraight || Is180);
+        public bool IsNodelessJunction() => NodeType == NodeTypeT.Nodeless && !NeedMiddleFlag();
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Bend || NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
         public bool CanMassEditNodeCorners() => SegmentCount == 2;
-        public bool CanModifyFlatJunctions() => !NeedMiddleFlag();
+        public bool CanModifyFlatJunctions() => !NeedMiddleFlag(); // && !IsNodelessJunction() ?
         public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
         public bool CanModifyTextures() => IsRoad && !IsCSUR;
         public bool ShowNoMarkingsToggle() => CanModifyTextures() && NodeType == NodeTypeT.Custom;
-        public bool CanModifyNodeless() => NodeType == NodeTypeT.Custom;
-        public bool ShowNodelessToggle() => CanModifyNodeless();
 
         bool CrossingIsRemoved(ushort segmentId) =>
             HideCrosswalks.Patches.CalculateMaterialCommons.
@@ -637,8 +599,8 @@ namespace NodeController {
             switch (nodeType) {
                 case NodeTypeT.Crossing:
                     return "Crossing node.";
-                case NodeTypeT.Middle:
-                    return "Middle: No node.";
+                case NodeTypeT.Nodeless:
+                    return "Nodeless: No node.";
                 case NodeTypeT.Bend:
                     if (IsAsymRevert())
                         return "Bend: Asymmetrical road changes direction.";
@@ -669,7 +631,8 @@ namespace NodeController {
                     return TernaryBool.Undefined; // default on
                 case NodeTypeT.Stretch:
                     return TernaryBool.False; // always off
-                case NodeTypeT.Middle:
+                case NodeTypeT.Nodeless:
+                    return TernaryBool.False; // always off
                 case NodeTypeT.Bend:
                     return TernaryBool.False; // always default
                 case NodeTypeT.Custom:
@@ -689,7 +652,8 @@ namespace NodeController {
                     return TernaryBool.True; // default on
                 case NodeTypeT.Stretch:
                     return TernaryBool.False; // always off
-                case NodeTypeT.Middle:
+                case NodeTypeT.Nodeless:
+                    return TernaryBool.False; // always off
                 case NodeTypeT.Bend:
                     return TernaryBool.Undefined; // don't care
                 case NodeTypeT.Custom:
@@ -709,7 +673,7 @@ namespace NodeController {
                     return TernaryBool.False; // always off
                 case NodeTypeT.Stretch:
                     return TernaryBool.False; // always off
-                case NodeTypeT.Middle:
+                case NodeTypeT.Nodeless:
                 case NodeTypeT.Bend:
                     return TernaryBool.False; // always off
                 case NodeTypeT.Custom:
@@ -732,7 +696,7 @@ namespace NodeController {
                     return TernaryBool.False; // default off
                 case NodeTypeT.Stretch:
                     return TernaryBool.False; // always off
-                case NodeTypeT.Middle:
+                case NodeTypeT.Nodeless:
                 case NodeTypeT.Bend:
                     return TernaryBool.False; // always off
                 case NodeTypeT.Custom:
@@ -756,7 +720,13 @@ namespace NodeController {
                 case NodeTypeT.UTurn:
                     return TernaryBool.Undefined;
                 case NodeTypeT.Stretch:
-                case NodeTypeT.Middle:
+                case NodeTypeT.Nodeless:
+                    if (IsNodelessJunction()) {
+                        return TernaryBool.Undefined;
+                    } else {
+                        reason = ToggleTrafficLightError.NoJunction;
+                        return TernaryBool.False;
+                    }
                 case NodeTypeT.Bend:
                     reason = ToggleTrafficLightError.NoJunction;
                     return TernaryBool.False;
@@ -777,7 +747,7 @@ namespace NodeController {
                     return TernaryBool.Undefined; // default
                 case NodeTypeT.Stretch:
                     return TernaryBool.False; // always on
-                case NodeTypeT.Middle:
+                case NodeTypeT.Nodeless:
                 case NodeTypeT.Bend:
                     return TernaryBool.False; // always default
                 case NodeTypeT.Custom:
@@ -803,7 +773,7 @@ namespace NodeController {
                     return TernaryBool.Undefined; // default
                 case NodeTypeT.Stretch:
                     return TernaryBool.True; // always on
-                case NodeTypeT.Middle:
+                case NodeTypeT.Nodeless:
                 case NodeTypeT.Bend:
                     return TernaryBool.Undefined; // don't care
                 case NodeTypeT.Custom:
