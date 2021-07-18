@@ -619,6 +619,8 @@ namespace NodeController {
             return null;
         }
 
+        public Vector3 GetPosition() => Node.m_position + Vector3.up * (Node.m_heightOffset / 64f);
+
         #region External Mods
         // undefined -> don't touch prev value
         // true -> force true
