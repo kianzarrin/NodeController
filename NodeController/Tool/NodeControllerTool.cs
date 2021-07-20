@@ -10,6 +10,7 @@ namespace NodeController.Tool {
     using static KianCommons.HelpersExtensions;
     using static KianCommons.UI.RenderUtil;
     using UnifiedUI.Helpers;
+    using NodeController.LifeCycle;
 
     public sealed class NodeControllerTool : KianToolBase {
         public static readonly SavedInputKey ActivationShortcut = new SavedInputKey(
@@ -48,12 +49,12 @@ namespace NodeController.Tool {
         protected override void Awake() {
             Log.Info("NodeControllerTool.Awake() called");
             base.Awake();
-
+            string path = UUIHelpers.GetFullPath<NodeControllerMod>("uui_node_controller.png");
             button_ = UUIHelpers.RegisterToolButton(
                 name:"NodeController",
                 groupName:null,
                 tooltip:"Node Controller",
-                spritefile:"uui_node_controller.png",
+                spritefile: path,
                 tool:this,
                 activationKey: ActivationShortcut);
 
