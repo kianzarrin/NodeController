@@ -7,7 +7,7 @@
     <Product>NodeController</Product>
     <Copyright>Copyright ©  2020</Copyright>
     <Deterministic>false</Deterministic>
-    <AssemblyVersion>2.3.2.*</AssemblyVersion>
+    <AssemblyVersion>2.3.3.*</AssemblyVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>latest</LangVersion>
     <DebugType>full</DebugType>
@@ -137,6 +137,9 @@
     <None Update="Resources\cursor_searching.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\PreviewImage.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\sprites.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -150,7 +153,7 @@
       <Output TaskParameter="Assemblies" ItemName="Targets" />
     </GetAssemblyIdentity>
     <ItemGroup>
-      <AuxiliaryFiles Include="$(TargetDir)Resources\*.png;$(TargetDir)MoveItIntegration.dll;$(TargetDir)CitiesHarmony.API.dll;../UnifiedUILib.*" />
+      <AuxiliaryFiles Include="$(TargetDir)Resources\*.png;$(TargetDir)MoveItIntegration.dll;$(TargetDir)CitiesHarmony.API.dll;../libs/UnifiedUILib.*" />
       <VersionNumber Include="@(Targets->'%(Version)')" />
     </ItemGroup>
     <PropertyGroup>
