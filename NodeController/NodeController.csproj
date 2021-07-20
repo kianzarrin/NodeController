@@ -150,7 +150,7 @@
       <Output TaskParameter="Assemblies" ItemName="Targets" />
     </GetAssemblyIdentity>
     <ItemGroup>
-      <AuxiliaryFiles Include="$(TargetDir)Resources\*.png;$(TargetDir)MoveItIntegration.dll;$(TargetDir)CitiesHarmony.API.dll" />
+      <AuxiliaryFiles Include="$(TargetDir)Resources\*.png;$(TargetDir)MoveItIntegration.dll;$(TargetDir)CitiesHarmony.API.dll;../UnifiedUILib.*" />
       <VersionNumber Include="@(Targets->'%(Version)')" />
     </ItemGroup>
     <PropertyGroup>
