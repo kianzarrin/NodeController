@@ -521,9 +521,9 @@ namespace NodeController {
             float cosEmbankmentAngle = Mathf.Cos(embankmentAngleRad);
             float hw0 = Info.m_halfWidth;
             float stretch = Stretch * 0.01f;
-            float hw_total = hw0 * (1 + stretch);
+            float hw_total = hw0 /** (1 + stretch) // stretch will be taken care of. */;
             deltaPos.x += -hw_total * (1 - cosEmbankmentAngle); // outward
-            deltaPos.y = hw_total * sinEmbankmentAngle;
+            deltaPos.y = hw_total * sinEmbankmentAngle; // vertical
 
             // Stretch:
             deltaPos.x += hw0 * stretch * cosEmbankmentAngle; // outward
