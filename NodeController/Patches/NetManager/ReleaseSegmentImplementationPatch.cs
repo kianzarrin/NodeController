@@ -23,7 +23,7 @@ namespace NodeController.Patches._NetManager
 
         public static MoveItSegmentData UpgradingSegmentData;
         public static bool m_upgrading =>
-            (bool)GetFieldValue(Singleton<NetTool>.instance, "m_upgrading");
+            (bool)GetFieldValue(NetUtil.netTool, "m_upgrading");
 
         public static void Prefix(ushort segment)
         {
