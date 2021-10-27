@@ -9,6 +9,11 @@
             Register custom button
             </summary>
         </member>
+        <member name="M:UnifiedUI.API.UUIAPI.Register(System.String,System.String,System.String,UnityEngine.Texture2D,System.Action{System.Boolean},System.Action{ToolBase},ColossalFramework.SavedInputKey,System.Collections.Generic.Dictionary{ColossalFramework.SavedInputKey,System.Func{System.Boolean}})">
+            <summary>
+            Register custom button
+            </summary>
+        </member>
         <member name="P:UnifiedUI.Helpers.UUICustomButton.Button">
             <summary>
             UUI button. you can hide this if necessary.
@@ -100,6 +105,25 @@
             <param name="onToolChanged">call-back for when any active tool changes.</param>
             <returns>wrapper for the button which you can use to change the its state.</returns>
         </member>
+        <member name="M:UnifiedUI.Helpers.UUIHelpers.RegisterToolButton(System.String,System.String,System.String,ToolBase,UnityEngine.Texture2D,UnifiedUI.Helpers.UUIHotKeys)">
+            <summary>
+            register a button to tie to the given tool.
+            </summary>
+            <param name="name">game object name for button. must be unique.</param>
+            <param name="groupName">the group under which button will be added. use null to addd to the default gorup.</param>
+            <param name="tool">the tool to tie the buttont to.</param>
+            <returns>component containing the button. you can hide this component if necessary.</returns>
+        </member>
+        <member name="M:UnifiedUI.Helpers.UUIHelpers.RegisterCustomButton(System.String,System.String,System.String,UnityEngine.Texture2D,System.Action{System.Boolean},System.Action{ToolBase},UnifiedUI.Helpers.UUIHotKeys)">
+            <summary>
+            register a custom button .
+            </summary>
+            <param name="name">game object name for button</param>
+            <param name="groupName">the group under which button will be added. use null to addd to the default gorup.</param>
+            <param name="onToggle">call-back for when the button is activated/deactivated</param>
+            <param name="onToolChanged">call-back for when any active tool changes.</param>
+            <returns>wrapper for the button which you can use to change the its state.</returns>
+        </member>
         <member name="M:UnifiedUI.Helpers.UUIHelpers.RegisterHotkeys(System.Action,ColossalFramework.SavedInputKey,System.Collections.Generic.Dictionary{ColossalFramework.SavedInputKey,System.Func{System.Boolean}})">
             <summary>
             register hotkeys.
@@ -142,7 +166,7 @@
             test if UnifiedUI is present and enable.
             </summary>
         </member>
-        <member name="M:UnifiedUI.Helpers.UUIHotKeys.AddInToolKeys(ColossalFramework.SavedInputKey)">
+        <member name="M:UnifiedUI.Helpers.UUIHotKeys.AddInToolKey(ColossalFramework.SavedInputKey)">
             <summary>
             add in-mod hotkey. this will take priority over (suppress) the activation key of other mods.
             when your mod is active.
@@ -314,6 +338,16 @@
             <param name="segmentId"></param>
             <param name="cut">The lenght of the highlight [0~1] </param>
             <param name="bStartNode">Determines the direction of the half sausage.</param>
+        </member>
+        <member name="M:KianCommons.UI.TextureExtensions.GetReadableCopy(UnityEngine.Texture2D,System.Boolean)">
+            <summary>
+            reteurns a copy of the texture with the differenc that: mipmap=false, linear=false, readable=true;
+            </summary>
+        </member>
+        <member name="M:KianCommons.UI.TextureUtil.CreateTextureAtlas(System.String,UnityEngine.Texture2D[])">
+            <summary>
+            Create a new atlas.
+            </summary>
         </member>
         <member name="M:KianCommons.EnumBitMaskExtensions.ToUInt64(System.IConvertible)">
             <summary>
@@ -671,46 +705,46 @@
             <summary>Branch: master</summary>
         </member>
         <member name="F:ThisAssembly.Git.Commit">
-            <summary>Commit: c5ab542</summary>
+            <summary>Commit: d9b3023</summary>
         </member>
         <member name="F:ThisAssembly.Git.Sha">
-            <summary>Sha: c5ab5423ca70fb5ce2d0f3217733bbc270938a68</summary>
+            <summary>Sha: d9b3023ba1871ef342b198dfb31a28b895492633</summary>
         </member>
         <member name="F:ThisAssembly.Git.CommitDate">
-            <summary>Commit date: 2021-07-21T00:12:48+03:00</summary>
+            <summary>Commit date: 2021-10-12T19:36:41+03:00</summary>
         </member>
         <member name="F:ThisAssembly.Git.Commits">
-            <summary>Commits on top of base version: 3</summary>
+            <summary>Commits on top of base version: 0</summary>
         </member>
         <member name="F:ThisAssembly.Git.Tag">
-            <summary>Tag: V1.3.4-3-gc5ab542</summary>
+            <summary>Tag: V2.1.10</summary>
         </member>
         <member name="F:ThisAssembly.Git.BaseTag">
-            <summary>Base tag: V1.3.4</summary>
+            <summary>Base tag: V2.1.10</summary>
         </member>
         <member name="T:ThisAssembly.Git.BaseVersion">
             <summary>Provides access to the base version information used to determine the <see cref="T:ThisAssembly.Git.SemVer" />.</summary>      
         </member>
         <member name="F:ThisAssembly.Git.BaseVersion.Major">
-            <summary>Major: 1</summary>
+            <summary>Major: 2</summary>
         </member>
         <member name="F:ThisAssembly.Git.BaseVersion.Minor">
-            <summary>Minor: 3</summary>
+            <summary>Minor: 1</summary>
         </member>
         <member name="F:ThisAssembly.Git.BaseVersion.Patch">
-            <summary>Patch: 4</summary>
+            <summary>Patch: 10</summary>
         </member>
         <member name="T:ThisAssembly.Git.SemVer">
             <summary>Provides access to SemVer information for the current assembly.</summary>
         </member>
         <member name="F:ThisAssembly.Git.SemVer.Major">
-            <summary>Major: 1</summary>
+            <summary>Major: 2</summary>
         </member>
         <member name="F:ThisAssembly.Git.SemVer.Minor">
-            <summary>Minor: 3</summary>
+            <summary>Minor: 1</summary>
         </member>
         <member name="F:ThisAssembly.Git.SemVer.Patch">
-            <summary>Patch: 7</summary>
+            <summary>Patch: 10</summary>
         </member>
         <member name="F:ThisAssembly.Git.SemVer.Label">
             <summary>Label: </summary>
