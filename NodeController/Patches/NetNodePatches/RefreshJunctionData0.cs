@@ -10,20 +10,21 @@ using System.Linq;
 using ColossalFramework;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-
-
 namespace NodeController.Patches
 {
+    // modify corner offset to fix center pos.
+    // this patch is not necessary because center pos is calculated in NodeData.GetPosition()
     [UsedImplicitly]
-    [HarmonyPatch]
-    class RefreshJunctionData2 {
+    //[HarmonyPatch]
+    class RefreshJunctionData0 {
+        // main
         delegate void dRefreshJunctionData(ushort nodeID, NetInfo info, uint instanceIndex);
         static MethodInfo mGetSegment = GetMethod(typeof(NetNode), "GetSegment");
         static FieldInfo f_minCornerOffset =
             typeof(NetInfo).GetField(nameof(NetInfo.m_minCornerOffset)) ??
             throw new Exception("f_minCornerOffset is null");
         static MethodInfo mGetMinCornerOffset =
-            GetMethod(typeof(RefreshJunctionData2), nameof(GetMinCornerOffset));
+            GetMethod(typeof(RefreshJunctionData0), nameof(GetMinCornerOffset));
 
         [UsedImplicitly]
         static MethodBase TargetMethod() =>

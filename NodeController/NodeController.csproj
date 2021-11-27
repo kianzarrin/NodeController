@@ -110,6 +110,7 @@
     <Compile Remove="KianCommons\KianCommons\Util\DCUtil.cs" />
     <Compile Remove="KianCommons\KianCommons\Util\MeshUtil.cs" />
     <Compile Remove="LifeCycle\ThreadingExtension.cs" />
+    <Compile Remove="Patches\NetNodePatches\RefreshJunctionData0.cs" />
     <Compile Remove="Patches\NetSegmentPatches\RenderInstance.cs" />
     <None Remove="KianCommons\.git" />
     <None Remove="KianCommons\.gitattributes" />
