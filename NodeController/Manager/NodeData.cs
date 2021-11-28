@@ -570,7 +570,10 @@ namespace NodeController {
         public bool IsRoad => Info.m_netAI is RoadBaseAI;
         public bool EndNode() => NodeType == NodeTypeT.End;
         public bool NeedMiddleFlag() => NodeType == NodeTypeT.Nodeless && (IsStraight || Is180);
-        public bool IsNodelessJunction() => NodeType == NodeTypeT.Nodeless && !NeedMiddleFlag();
+        public bool IsNodelessJunction() =>
+            !NeedMiddleFlag() &&
+            (NodeType == NodeTypeT.Nodeless ||
+            IterateSegmentEndDatas().All(item => item.IsNodeless)) ;
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;

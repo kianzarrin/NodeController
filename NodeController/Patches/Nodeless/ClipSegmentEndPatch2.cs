@@ -17,10 +17,10 @@ namespace NodeController.Patches.Nodeless {
         }
 
         static bool GetClipSegmentStart(bool clipSegmentEnd0, ushort segmentID) =>
-            ClipSegmentEndPatch.GetClipSegmentEnd(clipSegmentEnd0, segmentID.ToSegment().m_startNode);
+            ClipSegmentEndPatch.GetClipSegmentEnd(clipSegmentEnd0, segmentID.ToSegment().m_startNode, segmentID);
 
         static bool GetClipSegmentEnd(bool clipSegmentEnd0, ushort segmentID) =>
-            ClipSegmentEndPatch.GetClipSegmentEnd(clipSegmentEnd0, segmentID.ToSegment().m_endNode);
+            ClipSegmentEndPatch.GetClipSegmentEnd(clipSegmentEnd0, segmentID.ToSegment().m_endNode, segmentID);
 
         static FieldInfo f_clipSegmentEnds =>
             ReflectionHelpers.GetField<NetInfo>(nameof(NetInfo.m_clipSegmentEnds));
@@ -51,7 +51,7 @@ namespace NodeController.Patches.Nodeless {
                             yield return callGetClipSegmentEnd.Clone();
                             break;
                         default:
-                            new Exception("expected only 2 occurances").Log();
+                            new Exception("expected only 2 occurrences").Log();
                             break;
                     }
 
