@@ -415,8 +415,8 @@ namespace NodeController {
         public bool CanModifyOffset() => (!IsNodeless) && (NodeData?.CanModifyOffset() ?? false);
         public bool CanModifyCorners() => NodeData != null &&
             (CanModifyOffset() || NodeType == NodeTypeT.End || IsNodeless);
-        public bool CanModifyNodeless() => NodeData.NodeType == NodeTypeT.Custom;
-        public bool IsNodeless => (NodeData.NodeType == NodeTypeT.Nodeless) || (CanModifyNodeless() && Nodeless);
+        public bool CanModifyNodeless() => NodeData?.NodeType == NodeTypeT.Custom;
+        public bool IsNodeless => (NodeData?.NodeType == NodeTypeT.Nodeless) || (CanModifyNodeless() && Nodeless);
 
         public bool CanModifyFlatJunctions() => NodeData?.CanModifyFlatJunctions() ?? false;
         public bool CanModifyTwist() => CanTwist(SegmentID, NodeID);
