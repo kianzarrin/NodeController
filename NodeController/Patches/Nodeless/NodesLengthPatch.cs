@@ -9,7 +9,10 @@ namespace NodeController.Patches.Nodeless {
     using static KianCommons.Patches.TranspilerUtils;
 
     /// <summary>
-    /// sets node length to 0 when nodeless to avoid glitches. 
+    /// sets node length to 0 when node-less to avoid glitches.
+    /// at close up camera, I check for node-less on a per segment basis.
+    /// at far away camera, small glitches are not noticeable and no need for a complicated transpiler.
+    /// I settle for only hiding glitches when all segment end are node-less.
     /// </summary>
     [HarmonyPatch]
     static class NodesLengthPatch {
@@ -21,16 +24,26 @@ namespace NodeController.Patches.Nodeless {
         static IEnumerable<MethodBase> TargetMethods() {
             yield return DeclaredMethod<RenderInstance0>(typeof(NetNode), nameof(NetNode.RenderInstance));
             yield return DeclaredMethod<RenderInstance>(typeof(NetNode));
-            yield return DeclaredMethod<RenderInstance>(typeof(NetNode));
             yield return DeclaredMethod<CalculateGroupData>(typeof(NetNode));
             yield return DeclaredMethod<PopulateGroupData>(typeof(NetNode));
         }
 
-        static int NodesLength(int length0, ushort nodeID) {
-            var nodeData = NodeManager.Instance.buffer[nodeID];
-            bool nodeless = nodeData?.IsNodelessJunction() ?? false;
+        static int NodesLength(int length0, ushort nodeID, uint instanceIndex) {
+            bool nodeless;
+            if(instanceIndex == ushort.MaxValue) {
+                var nodeData = NodeManager.Instance.buffer[nodeID];
+                nodeless = nodeData?.IsNodelessJunction() ?? false;
+            } else {
+                ref var renderData = ref RenderManager.instance.m_instances[instanceIndex];
+                ref var node = ref nodeID.ToNode();
+                ushort segmentID = node.GetSegment(renderData.m_dataInt0 & 7);
+                ushort segmentID2 = node.GetSegment(renderData.m_dataInt0 >> 4);
+                var segmentData = SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: nodeID);
+                var segmentData2 = SegmentEndManager.Instance.GetAt(segmentID: segmentID2, nodeID: nodeID);
+                nodeless = (segmentData?.IsNodeless ?? false) || (segmentData2?.IsNodeless ?? false);
+            }
             if (nodeless)
-                return 0; // set node length to 0 when nodeless
+                return 0; 
             else
                 return length0;
         }
@@ -44,7 +57,10 @@ namespace NodeController.Patches.Nodeless {
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase original) {
             CodeInstruction ldargNodeID = GetLDArg(original, "nodeID");
             CodeInstruction callNodesLength = new CodeInstruction(OpCodes.Call, mNodesLength);
-
+            CodeInstruction LoadRenderIndex =
+                GetLDArg(original, "instanceIndex", throwOnError:false) ?? // when camera is close, we can easily get segmentID from render data.
+                new CodeInstruction(OpCodes.Ldc_I4, (uint)ushort.MaxValue); // getting segmentIDs is too complicated and not worth it from far camera range.
+    
             bool isLdNodes_prev = false;
             int n = 0;
             foreach (var instruction in instructions) {
@@ -52,6 +68,7 @@ namespace NodeController.Patches.Nodeless {
                 if (isLdNodes_prev && instruction.opcode == OpCodes.Ldlen) {
                     n++;
                     yield return ldargNodeID.Clone();
+                    yield return LoadRenderIndex.Clone();
                     yield return callNodesLength.Clone();
                 }
 

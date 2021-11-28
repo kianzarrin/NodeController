@@ -58,13 +58,14 @@ namespace NodeController.GUI {
                 panel.padding = new RectOffset(10, 10, 5, 5);
                 panel.autoLayoutPadding = default;
 
-                var checkBox1 = panel.AddUIComponent<UIUnFlattenJunctionsCheckbox>();
-                Controls.Add(checkBox1);
+
+                Controls.Add(panel.AddUIComponent<NodelessCheckbox>());
+
+                Controls.Add(panel.AddUIComponent<UIUnFlattenJunctionsCheckbox>());
 
                 var panel2 = panel.AddUIComponent<UIAutoSizePanel>();
                 panel2.padding = new RectOffset(20, 0, 4, 0);
-                var checkBox2 = panel2.AddUIComponent<TwistCheckbox>();
-                Controls.Add(checkBox2);
+                Controls.Add(panel2.AddUIComponent<TwistCheckbox>());
             }
 
             { // offset
@@ -102,7 +103,7 @@ namespace NodeController.GUI {
             { // embankment
                 embankmentPanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
                 label.text = "Embankment";
-                label.tooltip = "twist road sideways (superelevation)";
+                label.tooltip = "twist road sideways (super-elevation)";
                 var slider_ = panel0.AddUIComponent<EmbankmentSlider>();
                 Controls.Add(slider_);
 
@@ -371,7 +372,7 @@ namespace NodeController.GUI {
                 row4panel.AutoSize2 = true;
                 rlock = row4panel.AddUIComponent<LockDirCheckbox>();
                 rlock.size = CELL_SIZE;
-                rlock.Left = true; // ui left is the opposite of backend left.
+                rlock.Left = true; // ui left is the opposite of back-end left.
                 Controls.Add(rlock);
             }
 

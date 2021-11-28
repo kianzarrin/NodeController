@@ -92,6 +92,7 @@ namespace NodeController {
         public float Stretch;
         public float EmbankmentAngleDeg;
         public float DeltaSlopeAngleDeg;
+        public bool Nodeless;
 
         // shortcuts
         public ref NetSegment Segment => ref SegmentID.ToSegment();
@@ -131,7 +132,8 @@ namespace NodeController {
             $"NoMarkings:{NoMarkings} == false; " +
             $"NoJunctionTexture:{NoJunctionTexture} == false; " +
             $"NoJunctionProps:{NoJunctionProps} == false; "+
-            $"NoTLProps:{NoTLProps} == false "
+            $"NoTLProps:{NoTLProps} == false; "+
+            $"NoTLProps:{Nodeless} == false "
             );
 
             Update();
@@ -194,7 +196,7 @@ namespace NodeController {
             //Log.Debug("SegmentEndData.OnAfterCalculate() called for " + this);
             insideAfterCalcualte_ = true;
             // left and right is when you go away form junction
-            // both in SegmentEndData Cahced* and NetSegment.CalculateCorner()
+            // both in SegmentEndData Cached* and NetSegment.CalculateCorner()
 
             Segment.CalculateCorner(SegmentID, true, IsStartNode, leftSide: true,
                 cornerPos: out var lpos, cornerDirection: out var ldir, out _);
@@ -202,7 +204,7 @@ namespace NodeController {
                 cornerPos: out var rpos, cornerDirection: out var rdir, out _);
 
             // useful for putting segment names on the segment when slope has changed by user.
-            // Direction.y = (ldir.y + rdir.y) * 0.5f; // messes up with middle ndoes
+            // Direction.y = (ldir.y + rdir.y) * 0.5f; // messes up with middle nodes
 
             LeftCorner.CachedPos = lpos;
             RightCorner.CachedPos = rpos;
@@ -245,6 +247,7 @@ namespace NodeController {
             ret &= NoJunctionTexture == false;
             ret &= NoJunctionProps == false;
             ret &= NoTLProps == false;
+            ret &= Nodeless == false;
             return ret;
         }
 
@@ -253,6 +256,7 @@ namespace NodeController {
             DeltaSlopeAngleDeg = 0;
             FlatJunctions = DefaultFlatJunctions;
             Twist = DefaultTwist;
+            Nodeless = false;
             NoCrossings = false;
             NoMarkings = false;
             NoJunctionTexture = false;
@@ -374,7 +378,7 @@ namespace NodeController {
             }
 
             /// <summary>
-            /// all directions going away fromt he junction
+            /// all directions going away from the junction
             /// </summary>
             public static void CalculateTransformVectors(Vector3 dir, bool left, out Vector3 outward, out Vector3 forward) {
                 Vector3 rightward = Vector3.Cross(Vector3.up, dir).normalized; // going away from the junction
@@ -384,7 +388,7 @@ namespace NodeController {
             }
 
             /// <summary>
-            /// tranforms input vector from relative (to x y z inputs) coordinate to absulute coodinate.
+            /// transforms input vector from relative (to x y z inputs) coordinate to absolute coordinate.
             /// </summary>
             public static Vector3 TransformCoordinates(Vector3 v, Vector3 x, Vector3 y, Vector3 z)
                 => v.x * x + v.y * y + v.z * z;
@@ -408,9 +412,12 @@ namespace NodeController {
         #region show/hide in UI
         public bool IsCSUR => NetUtil.IsCSUR(Info);
         public NetInfo Info => Segment.Info;
-        public bool CanModifyOffset() => NodeData?.CanModifyOffset() ?? false;
+        public bool CanModifyOffset() => (!IsNodeless) && (NodeData?.CanModifyOffset() ?? false);
         public bool CanModifyCorners() => NodeData != null &&
-            (CanModifyOffset() || NodeType == NodeTypeT.End || NodeType == NodeTypeT.Nodeless);
+            (CanModifyOffset() || NodeType == NodeTypeT.End || IsNodeless);
+        public bool CanModifyNodeless() => NodeData.NodeType == NodeTypeT.Custom;
+        public bool IsNodeless => (NodeData.NodeType == NodeTypeT.Nodeless) || (CanModifyNodeless() && Nodeless);
+
         public bool CanModifyFlatJunctions() => NodeData?.CanModifyFlatJunctions() ?? false;
         public bool CanModifyTwist() => CanTwist(SegmentID, NodeID);
         public static bool CanTwist(ushort segmentID, ushort nodeID) {
@@ -424,7 +431,7 @@ namespace NodeController {
 
             if (segmentCount == 1) return false;
 
-            // get neighbouring segment data
+            // get neighboring segment data
             ushort segmentID1 = segmentID.ToSegment().GetLeftSegment(nodeID);
             ushort segmentID2 = segmentID.ToSegment().GetRightSegment(nodeID);
             var segEnd1 = SegmentEndManager.Instance.GetAt(segmentID1, nodeID);

@@ -13,9 +13,9 @@ namespace NodeController.Patches.Nodeless {
     [UsedImplicitly]
     [HarmonyPatch]
     internal static class ClipSegmentEndPatch {
-        internal static bool GetClipSegmentEnd(bool clipSegmentEnd0, ushort nodeID) {
-            var nodeData = NodeManager.Instance.buffer[nodeID];
-            bool nodeless = nodeData?.IsNodelessJunction() ?? false;
+        internal static bool GetClipSegmentEnd(bool clipSegmentEnd0, ushort nodeID, ushort segmentID) {
+            var segmentData = SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: nodeID);
+            bool nodeless = segmentData?.IsNodeless ?? false;
             return clipSegmentEnd0 && !nodeless;
         }
 
@@ -35,6 +35,7 @@ namespace NodeController.Patches.Nodeless {
 
         public static IEnumerable<CodeInstruction> Transpiler(MethodBase original, IEnumerable<CodeInstruction> instructions) {
             CodeInstruction ldNodeID = GetLDArg(original, "startNodeID");
+            CodeInstruction ldSegmentID = GetLDArg(original, "ignoreSegmentID");
             CodeInstruction callGetClipSegmentEnd = new CodeInstruction(OpCodes.Call, mGetClipSegmentEnd);
 
             int n = 0;
@@ -43,6 +44,7 @@ namespace NodeController.Patches.Nodeless {
                 if (instruction.LoadsField(f_clipSegmentEnds)) {
                     n++;
                     yield return ldNodeID.Clone();
+                    yield return ldSegmentID.Clone();
                     yield return callGetClipSegmentEnd.Clone();
                 }
             }

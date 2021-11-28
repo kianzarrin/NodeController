@@ -15,13 +15,12 @@ namespace NodeController.Patches {
         /// <param name="leftSide">left side going away from the junction</param>
         static float GetMinCornerOffset(float cornerOffset0, ushort nodeID, ushort segmentID, bool leftSide) {
             var nodeData = NodeManager.Instance.buffer[nodeID];
-            bool nodeless = nodeData?.IsNodelessJunction() ?? false;
-            if (nodeless)
-                return 0;
             var segmentData = SegmentEndManager.Instance.
                 GetAt(segmentID: segmentID, nodeID: nodeID);
             if (segmentData == null)
                 return cornerOffset0;
+            if(segmentData.IsNodeless)
+                return 0;
             return segmentData.Corner(leftSide).Offset;
         }
 
@@ -43,7 +42,7 @@ namespace NodeController.Patches {
         [HarmonyBefore(CSURUtil.HARMONY_ID)]
         public static IEnumerable<CodeInstruction> Transpiler(
             IEnumerable<CodeInstruction> instructions, MethodBase original) {
-            // apply the flat junctions traspiler
+            // apply the flat junctions transpiler
             instructions = FlatJunctionsCommons.ModifyFlatJunctionsTranspiler(instructions, original);
 
             CodeInstruction ldarg_startNodeID = GetLDArg(original, "startNodeID"); // push startNodeID into stack,
