@@ -68,7 +68,7 @@ namespace NodeController.GUI {
                 NodeControllerTool.Hide_TMPE_Overlay.value,
                 val => NodeControllerTool.Hide_TMPE_Overlay.value = val) as UICheckBox;
             TMPE_Overlay.tooltip = "Holding control hides all TMPE overlay.\n" +
-                "but if this is checked, you don't have to (excluding Corssings/Uturn)";
+                "but if this is checked, you don't have to (excluding Crossings/Uturn)";
             FixTooltipAlignment(TMPE_Overlay);
 
         }

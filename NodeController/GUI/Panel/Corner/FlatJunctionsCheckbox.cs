@@ -9,7 +9,7 @@ namespace NodeController.GUI {
     public class UIUnFlattenJunctionsCheckbox : UICheckBox, IDataControllerUI {
         public string HintHotkeys => "del => reset hovered value to default";
         public string HintDescription =>
-            "uncheck give slope to junction/transition. Useful for highway intersections. " +
+            "uncheck to give slope to junction/transition. Useful for highway intersections. " +
             "the two bigger segments should turn off flat junction. " +
             "minor roads joining a sloped intersection twist sideways to match the slope of the intersection.";
 
@@ -75,7 +75,7 @@ namespace NodeController.GUI {
             root_.Refresh();
         }
 
-        // protection against unncessary apply/refresh/infinite recursion.
+        // protection against unnecessary apply/refresh/infinite recursion.
         bool refreshing_ = false;
 
         public void Refresh() {

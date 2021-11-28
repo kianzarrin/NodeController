@@ -78,7 +78,7 @@ namespace NodeController {
         public bool IsStraight;
         public bool Is180;
         ushort segmentID1, segmentID2;
-        public List<ushort> SortedSegmentIDs; //sorted by how big semgent is.
+        public List<ushort> SortedSegmentIDs; //sorted by how big segment is.
         public SegmentEndData SegmentEnd1 => SegmentEndManager.Instance.GetAt(segmentID1, NodeID);
         public SegmentEndData SegmentEnd2 => SegmentEndManager.Instance.GetAt(segmentID2, NodeID);
 
@@ -129,7 +129,7 @@ namespace NodeController {
         #endregion
         #region no markings
 
-        [Obsolete("this is only for backward compatiblity")]
+        [Obsolete("this is only for backward compatibility")]
         public bool ClearMarkings { set => NoMarkings = value; }
 
         public bool NoMarkings {
@@ -362,7 +362,7 @@ namespace NodeController {
             Assert(SegmentCount == 2);
             return SegmentEnd1.Stretch == SegmentEnd2.Stretch;
         }
-        #endregion Strech
+        #endregion Stretch
         #endregion bulk edit
 
         public bool FirstTimeTrafficLight; // turn on traffic light when inserting pedestrian node for the first time.
@@ -555,7 +555,7 @@ namespace NodeController {
                     return !middle;
                 case NodeTypeT.Nodeless:
                     //return IsStraight || Is180;
-                    return true; // all junctions can be nodeless
+                    return true; // all junctions can be node-less
                 case NodeTypeT.Custom:
                     return true;
                 case NodeTypeT.End:
@@ -612,7 +612,7 @@ namespace NodeController {
                 case NodeTypeT.UTurn:
                     return "U-Turn: node with enough space for U-Turn.";
                 case NodeTypeT.Custom:
-                    return "Custom: transition size and traffic rules are configrable.";
+                    return "Custom: transition size and traffic rules are configurable.";
                 case NodeTypeT.End:
                     return "when there is only one segment at the node.";
             }

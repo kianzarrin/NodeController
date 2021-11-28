@@ -62,7 +62,7 @@ namespace NodeController.GUI {
             root_ = GetRootContainer() as UIPanelBase;
         }
 
-        // protection against unncessary apply/refresh/infinite recursion.
+        // protection against unnecessary apply/refresh/infinite recursion.
         bool refreshing_ = false;
 
         public void Apply() {

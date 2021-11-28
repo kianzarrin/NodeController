@@ -42,7 +42,7 @@ namespace NodeController.GUI {
             root_.Refresh();
         }
 
-        // protection against unncessary apply/refresh/infinite recursion.
+        // protection against unnecessary apply/refresh/infinite recursion.
         bool refreshing_ = false;
 
         public void Refresh() {

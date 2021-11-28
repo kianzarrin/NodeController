@@ -27,7 +27,7 @@ namespace NodeController.GUI {
         public override void ApplySegmentEnd(SegmentEndData data)
             => data.SlopeAngleDeg = value;
 
-        public override string TooltipPostfix => " degress";
+        public override string TooltipPostfix => " degrees";
 
         public override void RefreshNode(NodeData data) =>
             MixedValues = !data.HasUniformSlopeAngle();

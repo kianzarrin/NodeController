@@ -21,7 +21,7 @@ namespace NodeController.GUI {
         private const float SIGN_SIZE_METERS = SIGN_SIZE_PIXELS * AVERAGE_METERS_PER_PIXEL;
         private const float VIEW_SIZE_RATIO = 0.8f;
 
-        // are sprites clickable?
+        // are sprites click-able?
         private readonly bool handleClick_;
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace NodeController.GUI {
 
                 dirX_ = (segmentEnd.LeftCorner - segmentEnd.RightCorner).normalized;
 
-                // for curved angled segements, corner1Direction may slightly differ from corner2Direction
+                // for curved angled segments, corner1Direction may slightly differ from corner2Direction
                 dirY_ = (segmentEnd.LeftCornerDir + segmentEnd.RightCornerDir) * 0.5f;
 
                 // origin point to start drawing sprites from.
@@ -112,7 +112,7 @@ namespace NodeController.GUI {
 
                 bool hoveredHandle = handleClick && TMPEUtils.IsMouseOver(boundingBox);
                 if (!handleClick) {
-                    // Readonly signs look grey-ish
+                    // Read-only signs look Grey-ish
                     guiColor = Color.Lerp(guiColor, Color.gray, 0.5f);
                     guiColor.a = TMPEUtils.GetHandleAlpha(hovered: false);
                 } else {
@@ -166,7 +166,7 @@ namespace NodeController.GUI {
 
             bool hoveredHandle = handleClick && TMPEUtils.IsMouseOver(boundingBox);
             if (!handleClick) {
-                // Readonly signs look grey-ish
+                // Read-only signs look Grey-ish
                 guiColor = Color.Lerp(guiColor, Color.gray, 0.5f);
                 guiColor.a = TMPEUtils.GetHandleAlpha(hovered: false);
             } else {
@@ -200,7 +200,7 @@ namespace NodeController.GUI {
         }
 
         /// <summary>
-        /// Draws clickable or readonly sign handles for all segments in the junction.
+        /// Draws click-able or read-only sign handles for all segments in the junction.
         /// </summary>
         /// <param name="nodeId">Junction node id.</param>
         /// <param name="node">Junction node ref.</param>
@@ -351,7 +351,7 @@ namespace NodeController.GUI {
                 //    //TernaryBool saved_allowed = jrMan.GetPedestrianCrossingAllowed(segmentId, isStartNode);
 
                 //    Log.Debug($"pedestrian crossing for segment:segmentId node:{nodeId}\n" +
-                //        $"    configuragle={configurable} IsAllowed={allowed}  GetDefault={defaultVal}\n" +
+                //        $"    configurable={configurable} IsAllowed={allowed}  GetDefault={defaultVal}\n" +
                 //        $"    saved_allowed={flags.pedestrianCrossingAllowed} saved_default={flags.defaultPedestrianCrossingAllowed}");
 
                 //}
