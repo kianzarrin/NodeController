@@ -2,6 +2,7 @@ namespace NodeController.Patches.Nodeless {
     using HarmonyLib;
     using KianCommons;
     using KianCommons.Patches;
+    using System;
     using System.Collections.Generic;
     using System.Reflection;
     using System.Reflection.Emit;
@@ -29,23 +30,26 @@ namespace NodeController.Patches.Nodeless {
         }
 
         static int NodesLength(int length0, ushort nodeID, uint instanceIndex) {
-            bool nodeless;
-            if(instanceIndex == ushort.MaxValue) {
-                var nodeData = NodeManager.Instance.buffer[nodeID];
-                nodeless = nodeData?.IsNodelessJunction() ?? false;
-            } else {
-                ref var renderData = ref RenderManager.instance.m_instances[instanceIndex];
-                ref var node = ref nodeID.ToNode();
-                ushort segmentID = node.GetSegment(renderData.m_dataInt0 & 7);
-                ushort segmentID2 = node.GetSegment(renderData.m_dataInt0 >> 4);
-                var segmentData = SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: nodeID);
-                var segmentData2 = SegmentEndManager.Instance.GetAt(segmentID: segmentID2, nodeID: nodeID);
-                nodeless = (segmentData?.IsNodeless ?? false) || (segmentData2?.IsNodeless ?? false);
+            try {
+                bool nodeless;
+                if(instanceIndex == ushort.MaxValue) {
+                    var nodeData = NodeManager.Instance.buffer[nodeID];
+                    nodeless = nodeData?.IsNodelessJunction() ?? false;
+                } else {
+                    ref var renderData = ref RenderManager.instance.m_instances[instanceIndex];
+                    ref var node = ref nodeID.ToNode();
+                    ushort segmentID = node.GetSegment(renderData.m_dataInt0 & 7);
+                    ushort segmentID2 = node.GetSegment(renderData.m_dataInt0 >> 4);
+                    var segmentData = SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: nodeID);
+                    var segmentData2 = SegmentEndManager.Instance.GetAt(segmentID: segmentID2, nodeID: nodeID);
+                    nodeless = (segmentData?.IsNodeless ?? false) || (segmentData2?.IsNodeless ?? false);
+                }
+                if(nodeless)
+                    return 0;
+            } catch(Exception ex) {
+                ex.Log();
             }
-            if (nodeless)
-                return 0; 
-            else
-                return length0;
+            return length0;
         }
 
         static FieldInfo f_nodes =>
@@ -59,8 +63,8 @@ namespace NodeController.Patches.Nodeless {
             CodeInstruction callNodesLength = new CodeInstruction(OpCodes.Call, mNodesLength);
             CodeInstruction LoadRenderIndex =
                 GetLDArg(original, "instanceIndex", throwOnError:false) ?? // when camera is close, we can easily get segmentID from render data.
-                new CodeInstruction(OpCodes.Ldc_I4, (uint)ushort.MaxValue); // getting segmentIDs is too complicated and not worth it from far camera range.
-    
+                new CodeInstruction(OpCodes.Ldc_I4, (int)ushort.MaxValue); // getting segmentIDs is too complicated and not worth it from far camera range.
+
             bool isLdNodes_prev = false;
             int n = 0;
             foreach (var instruction in instructions) {
@@ -69,6 +73,8 @@ namespace NodeController.Patches.Nodeless {
                     n++;
                     yield return ldargNodeID.Clone();
                     yield return LoadRenderIndex.Clone();
+                    if(LoadRenderIndex.IsLdarg())
+                        yield return new CodeInstruction(OpCodes.Ldind_U4); // convert ref uint to uint
                     yield return callNodesLength.Clone();
                 }
 
