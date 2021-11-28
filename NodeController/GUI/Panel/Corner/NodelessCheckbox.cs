@@ -36,7 +36,7 @@ namespace NodeController.GUI {
             checkedBoxObject.relativePosition = Vector3.zero;
 
             label = AddUIComponent<UILabel>();
-            label.text = "No junction markings";
+            label.text = "node-less";
             label.textScale = 0.9f;
             label.relativePosition = new Vector2(sprite.width + 5f, (height - label.height) / 2 + 1);
 
@@ -67,10 +67,15 @@ namespace NodeController.GUI {
             if(VERBOSE) Log.Debug(ThisMethod + " called\n" + Environment.StackTrace);
             if(root_ is UINodeControllerPanel)
                 throw new NotImplementedException();
-            else if(root_ is UISegmentEndControllerPanel)
+            else if(root_ is UISegmentEndControllerPanel segPanel) {
                 ApplySegmentEnd();
-            else
+                Assertion.Assert(!refreshing_, "!refreshing_");
+                SegmentEndData data = segPanel.SegmentEndData;
+                data?.RefreshAndUpdate();
+                segPanel.Refresh();
+            } else {
                 throw new Exception("Unreachable code. root_=" + root_);
+            }
         }
 
         public void ApplySegmentEnd() {
