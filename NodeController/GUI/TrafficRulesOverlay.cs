@@ -9,6 +9,7 @@ namespace NodeController.GUI {
     using Log = KianCommons.Log;
     using NodeController.Util;
     using ColossalFramework.Math;
+    using System;
 
 
     /// <summary>
@@ -80,6 +81,7 @@ namespace NodeController.GUI {
                                  ref Vector3 camPos,
                                  Color guiColor,
                                  Texture2D signTexture) {
+                Assertion.Assert(signTexture, "signTexture");
                 int col = counter_ / signsPerRow_;
                 int row = counter_ - (col * signsPerRow_);
                 counter_++;
@@ -211,228 +213,248 @@ namespace NodeController.GUI {
                                     ushort segmentId,
                                     ref Vector3 camPos,
                                     out bool stateUpdated) {
-            ref NetNode node = ref nodeId.ToNode();
-            bool isAnyHovered = false;
-            stateUpdated = false;
-
-            NodeData nodeData = NodeManager.Instance.buffer[nodeId];
-            if (nodeData == null) {
-                return false;
+            if (typeof(TrafficManager.Constants).VersionOf() >= new Version(11, 6, 2)) {
+                stateUpdated = default;
+                return default;
             }
 
-            // NetManager netManager = Singleton<NetManager>.instance;
-            Color guiColor = GUI.color;
-            // Vector3 nodePos = Singleton<NetManager>.instance.m_nodes.m_buffer[nodeId].m_position;
-            IExtSegmentEndManager segEndMan = ExtSegmentEndManager.Instance;
+            try {
+                ref NetNode node = ref nodeId.ToNode();
+                bool isAnyHovered = false;
+                stateUpdated = false;
 
-            for (int i = 0; i < 8; ++i) {
-                ushort segmentId2 = nodeId.ToNode().GetSegment(i);
-
-                if (segmentId2 == 0) continue;
-
-                // show only segmentId iff segmentId == 0
-                if (segmentId != 0 && segmentId != segmentId2) continue;
-
-                bool isStartNode =
-                    (bool)NetUtil.IsStartNode(segmentId2, nodeId);
-
-                bool isIncoming = segEndMan
-                                  .ExtSegmentEnds[segEndMan.GetIndex(segmentId2, isStartNode)]
-                                  .incoming;
-
-                NetInfo segmentInfo = Singleton<NetManager>
-                                      .instance
-                                      .m_segments
-                                      .m_buffer[segmentId2]
-                                      .Info;
-
-                ItemClass connectionClass = segmentInfo.GetConnectionClass();
-
-                if (connectionClass.m_service != ItemClass.Service.Road) {
-                    continue; // only for road junctions
+                NodeData nodeData = NodeManager.Instance.buffer[nodeId];
+                if (nodeData == null) {
+                    return false;
                 }
 
-                SignsLayout signsLayout = new SignsLayout(
-                    segmentId: segmentId2,
-                    startNode: isStartNode,
-                    signsPerRow: isIncoming ? 2 : 1,
-                    baseZoom: TMPEUtils.GetBaseZoom());
+                // NetManager netManager = Singleton<NetManager>.instance;
+                Color guiColor = GUI.color;
+                // Vector3 nodePos = Singleton<NetManager>.instance.m_nodes.m_buffer[nodeId].m_position;
+                IExtSegmentEndManager segEndMan = ExtSegmentEndManager.Instance;
 
-                JunctionRestrictionsManager jrMan = JunctionRestrictionsManager.Instance;
+                for (int i = 0; i < 8; ++i) {
+                    ushort segmentId2 = nodeId.ToNode().GetSegment(i);
 
-                #region UTURN
-                // draw "u-turns allowed" sign at (1; 0)
-                bool allowed = jrMan.IsUturnAllowed(segmentId2, isStartNode);
-                bool configurable = jrMan.IsUturnAllowedConfigurable(
-                    segmentId: segmentId2,
-                    startNode: isStartNode,
-                    node: ref node);
-                bool isDefault = allowed == jrMan.GetDefaultUturnAllowed(
-                    segmentId: segmentId2, startNode: isStartNode, node: ref node);
+                    if (segmentId2 == 0) continue;
 
-                {
-                    bool signHovered = signsLayout.DrawSign(
-                        handleClick: configurable && handleClick_,
-                        camPos: ref camPos,
-                        guiColor: guiColor,
-                        signTexture: allowed
-                                         ? JunctionRestrictions.UturnAllowed
-                                         : JunctionRestrictions.UturnForbidden);
+                    // show only segmentId iff segmentId == 0
+                    if (segmentId != 0 && segmentId != segmentId2) continue;
 
-                    if (signHovered && handleClick_ && configurable) {
-                        isAnyHovered = true;
+                    bool isStartNode =
+                        (bool)NetUtil.IsStartNode(segmentId2, nodeId);
 
-                        if (CheckClicked) {
-                            if (!jrMan.ToggleUturnAllowed(
-                                    segmentId2,
-                                    isStartNode)) {
-                                // TODO MainTool.ShowTooltip(Translation.GetString("..."), Singleton<NetManager>.instance.m_nodes.m_buffer[nodeId].m_position);
-                            } else {
+                    bool isIncoming = segEndMan
+                                      .ExtSegmentEnds[segEndMan.GetIndex(segmentId2, isStartNode)]
+                                      .incoming;
+
+                    NetInfo segmentInfo = Singleton<NetManager>
+                                          .instance
+                                          .m_segments
+                                          .m_buffer[segmentId2]
+                                          .Info;
+
+                    ItemClass connectionClass = segmentInfo.GetConnectionClass();
+
+                    if (connectionClass.m_service != ItemClass.Service.Road) {
+                        continue; // only for road junctions
+                    }
+
+                    SignsLayout signsLayout = new SignsLayout(
+                        segmentId: segmentId2,
+                        startNode: isStartNode,
+                        signsPerRow: isIncoming ? 2 : 1,
+                        baseZoom: TMPEUtils.GetBaseZoom());
+
+                    JunctionRestrictionsManager jrMan = JunctionRestrictionsManager.Instance;
+
+                    #region UTURN
+                    // draw "u-turns allowed" sign at (1; 0)
+                    bool allowed = jrMan.IsUturnAllowed(segmentId2, isStartNode);
+                    bool configurable = jrMan.IsUturnAllowedConfigurable(
+                        segmentId: segmentId2,
+                        startNode: isStartNode,
+                        node: ref node);
+                    bool isDefault = allowed == jrMan.GetDefaultUturnAllowed(
+                        segmentId: segmentId2, startNode: isStartNode, node: ref node);
+                    try
+                    {
+                        bool signHovered = signsLayout.DrawSign(
+                            handleClick: configurable && handleClick_,
+                            camPos: ref camPos,
+                            guiColor: guiColor,
+                            signTexture: allowed
+                                             ? JunctionRestrictions.UturnAllowed
+                                             : JunctionRestrictions.UturnForbidden);
+
+                        if (signHovered && handleClick_ && configurable) {
+                            isAnyHovered = true;
+
+                            if (CheckClicked) {
+                                if (!jrMan.ToggleUturnAllowed(
+                                        segmentId2,
+                                        isStartNode)) {
+                                    // TODO MainTool.ShowTooltip(Translation.GetString("..."), Singleton<NetManager>.instance.m_nodes.m_buffer[nodeId].m_position);
+                                } else {
+                                    stateUpdated = true;
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ex.Log("failed to render u-turn sign", false);
+                    }
+                    #endregion
+
+                    #region keep clear
+                    // draw "entering blocked junctions allowed" sign at (0; 1)
+                    allowed = jrMan.IsEnteringBlockedJunctionAllowed(
+                        segmentId: segmentId2,
+                        startNode: isStartNode);
+                    configurable = jrMan.IsEnteringBlockedJunctionAllowedConfigurable(
+                        segmentId: segmentId2,
+                        startNode: isStartNode,
+                        node: ref node);
+                    isDefault = allowed == jrMan.GetDefaultEnteringBlockedJunctionAllowed(
+                        segmentId2, isStartNode, ref node);
+                    try
+                    {
+                        bool signHovered = signsLayout.DrawSign(
+                            handleClick: configurable && handleClick_,
+                            camPos: ref camPos,
+                            guiColor: guiColor,
+                            signTexture: allowed
+                                             ? JunctionRestrictions.EnterBlockedJunctionAllowed
+                                             : JunctionRestrictions.EnterBlockedJunctionForbidden);
+
+                        if (signHovered && this.handleClick_ && configurable) {
+                            isAnyHovered = true;
+
+                            if (CheckClicked) {
+                                Log.Debug($"calling ToggleEnteringBlockedJunctionAllowed() for {segmentId2} ...");
+                                jrMan.ToggleEnteringBlockedJunctionAllowed(
+                                    segmentId: segmentId2,
+                                    startNode: isStartNode);
                                 stateUpdated = true;
                             }
                         }
+                    } catch (Exception ex) {
+                        ex.Log("failed to render keep-clear sign", false);
                     }
-                }
-                #endregion
+                    #endregion
 
-                #region keep clear
-                // draw "entering blocked junctions allowed" sign at (0; 1)
-                allowed = jrMan.IsEnteringBlockedJunctionAllowed(
-                    segmentId: segmentId2,
-                    startNode: isStartNode);
-                configurable = jrMan.IsEnteringBlockedJunctionAllowedConfigurable(
-                    segmentId: segmentId2,
-                    startNode: isStartNode,
-                    node: ref node);
-                isDefault = allowed == jrMan.GetDefaultEnteringBlockedJunctionAllowed(
-                    segmentId2, isStartNode, ref node);
-                {
-                    bool signHovered = signsLayout.DrawSign(
-                        handleClick: configurable && handleClick_,
-                        camPos: ref camPos,
-                        guiColor: guiColor,
-                        signTexture: allowed
-                                         ? JunctionRestrictions.EnterBlockedJunctionAllowed
-                                         : JunctionRestrictions.EnterBlockedJunctionForbidden);
+                    #region Zebra crossings
+                    // draw "pedestrian crossing allowed" sign at (1; 1)
+                    allowed = jrMan.IsPedestrianCrossingAllowed(
+                        segmentId: segmentId2,
+                        startNode: isStartNode);
+                    configurable = jrMan.IsPedestrianCrossingAllowedConfigurable(
+                        segmentId: segmentId2,
+                        startNode: isStartNode,
+                        node: ref node);
 
-                    if (signHovered && this.handleClick_ && configurable) {
-                        isAnyHovered = true;
 
-                        if (CheckClicked) {
-                            Log.Debug($"calling ToggleEnteringBlockedJunctionAllowed() for {segmentId2} ...");
-                            jrMan.ToggleEnteringBlockedJunctionAllowed(
-                                segmentId: segmentId2,
-                                startNode: isStartNode);
-                            stateUpdated = true;
+
+                    //{
+                    //    bool defaultVal = jrMan.GetDefaultPedestrianCrossingAllowed(
+                    //        segmentId, isStartNode, ref node);
+                    //    isDefault = allowed == defaultVal;
+
+                    //    SegmentEndFlags flags = jrMan.GetFlags(segmentId, isStartNode);
+
+                    //    //TernaryBool saved_allowed = jrMan.GetPedestrianCrossingAllowed(segmentId, isStartNode);
+
+                    //    Log.Debug($"pedestrian crossing for segment:segmentId node:{nodeId}\n" +
+                    //        $"    configurable={configurable} IsAllowed={allowed}  GetDefault={defaultVal}\n" +
+                    //        $"    saved_allowed={flags.pedestrianCrossingAllowed} saved_default={flags.defaultPedestrianCrossingAllowed}");
+
+                    //}
+
+                    try {
+                        bool signHovered = signsLayout.DrawSign(
+                            handleClick: configurable && handleClick_,
+                            camPos: ref camPos,
+                            guiColor: guiColor,
+                            signTexture: allowed
+                                ? JunctionRestrictions.PedestrianCrossingAllowed
+                                : JunctionRestrictions.PedestrianCrossingForbidden);
+
+                        if (signHovered && this.handleClick_ && configurable) {
+                            isAnyHovered = true;
+
+                            if (CheckClicked) {
+                                jrMan.TogglePedestrianCrossingAllowed(
+                                    segmentId2,
+                                    isStartNode);
+                                stateUpdated = true;
+                            }
                         }
+                    } catch (Exception ex) {
+                        ex.Log("failed to render pedestrian-crossing sign", false);
                     }
+                    #endregion
+
                 }
-                #endregion
-
-                #region Zebra crossings
-                // draw "pedestrian crossing allowed" sign at (1; 1)
-                allowed = jrMan.IsPedestrianCrossingAllowed(
-                    segmentId: segmentId2,
-                    startNode: isStartNode);
-                configurable = jrMan.IsPedestrianCrossingAllowedConfigurable(
-                    segmentId: segmentId2,
-                    startNode: isStartNode,
-                    node: ref node);
 
 
-
-                //{
-                //    bool defaultVal = jrMan.GetDefaultPedestrianCrossingAllowed(
-                //        segmentId, isStartNode, ref node);
-                //    isDefault = allowed == defaultVal;
-
-                //    SegmentEndFlags flags = jrMan.GetFlags(segmentId, isStartNode);
-
-                //    //TernaryBool saved_allowed = jrMan.GetPedestrianCrossingAllowed(segmentId, isStartNode);
-
-                //    Log.Debug($"pedestrian crossing for segment:segmentId node:{nodeId}\n" +
-                //        $"    configurable={configurable} IsAllowed={allowed}  GetDefault={defaultVal}\n" +
-                //        $"    saved_allowed={flags.pedestrianCrossingAllowed} saved_default={flags.defaultPedestrianCrossingAllowed}");
-
-                //}
-
+                #region traffic light
                 {
-                    bool signHovered = signsLayout.DrawSign(
-                        handleClick: configurable && handleClick_,
-                        camPos: ref camPos,
-                        guiColor: guiColor,
-                        signTexture: allowed
-                            ? JunctionRestrictions.PedestrianCrossingAllowed
-                            : JunctionRestrictions.PedestrianCrossingForbidden);
+                    var tlman = TrafficLightManager.Instance;
+                    // draw "entering blocked junctions allowed" sign at (0; 1)
+                    bool allowed = tlman.HasTrafficLight(
+                            nodeId,
+                            ref node);
 
-                    if (signHovered && this.handleClick_ && configurable) {
-                        isAnyHovered = true;
-
-                        if (CheckClicked) {
-                            jrMan.TogglePedestrianCrossingAllowed(
-                                segmentId2,
-                                isStartNode);
-                            stateUpdated = true;
+                    bool configurable = tlman.CanToggleTrafficLight(
+                        nodeId: nodeId,
+                        flag: !allowed,
+                        ref node,
+                        out _);
+                    try {
+                        Texture2D overlayTex;
+                        if (TrafficLightSimulationManager.Instance.HasTimedSimulation(nodeId)) {
+                            overlayTex = TrafficLightTextures.TrafficLightEnabledTimed;
+                        } else if (allowed) {
+                            // Render traffic light icon
+                            overlayTex = TrafficLightTextures.TrafficLightEnabled;
+                        } else {
+                            // Render traffic light possible but disabled icon
+                            overlayTex = TrafficLightTextures.TrafficLightDisabled;
                         }
+
+                        bool signHovered = DrawTrafficLightSign(
+                            nodeId: nodeId,
+                            baseZoom: TMPEUtils.GetBaseZoom(),
+                            handleClick: configurable && handleClick_,
+                            camPos: ref camPos,
+                            guiColor: guiColor,
+                            signTexture: overlayTex);
+
+                        if (signHovered && this.handleClick_ && configurable) {
+                            isAnyHovered = true;
+
+                            if (CheckClicked) {
+                                Log.Debug($"calling ToggleTrafficLight() for {nodeId} ...");
+                                tlman.ToggleTrafficLight(nodeId, ref node);
+                                stateUpdated = true;
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ex.Log("failed to render traffic-lights sign", false);
                     }
                 }
                 #endregion
 
+
+
+                guiColor.a = 1f;
+                GUI.color = guiColor;
+
+                return isAnyHovered;
+            } catch (Exception ex) {
+                ex.Log(false);
+                stateUpdated = default;
+                return default;
             }
-
-
-            #region traffic light
-            {
-                var tlman = TrafficLightManager.Instance;
-                // draw "entering blocked junctions allowed" sign at (0; 1)
-                bool allowed = tlman.HasTrafficLight(
-                        nodeId,
-                        ref node);
-
-                bool configurable = tlman.CanToggleTrafficLight(
-                    nodeId: nodeId,
-                    flag: !allowed,
-                    ref node,
-                    out _);
-                {
-                    Texture2D overlayTex;
-                    if (TrafficLightSimulationManager.Instance.HasTimedSimulation(nodeId)) {
-                        overlayTex = TrafficLightTextures.TrafficLightEnabledTimed;
-                    } else if (allowed) {
-                        // Render traffic light icon
-                        overlayTex = TrafficLightTextures.TrafficLightEnabled;
-                    } else {
-                        // Render traffic light possible but disabled icon
-                        overlayTex = TrafficLightTextures.TrafficLightDisabled;
-                    }
-
-                    bool signHovered = DrawTrafficLightSign(
-                        nodeId:nodeId,
-                        baseZoom: TMPEUtils.GetBaseZoom(),
-                        handleClick: configurable && handleClick_,
-                        camPos: ref camPos,
-                        guiColor: guiColor,
-                        signTexture: overlayTex);
-
-                    if (signHovered && this.handleClick_ && configurable) {
-                        isAnyHovered = true;
-
-                        if (CheckClicked) {
-                            Log.Debug($"calling ToggleTrafficLight() for {nodeId} ...");
-                            tlman.ToggleTrafficLight(nodeId, ref node);
-                            stateUpdated = true;
-                        }
-                    }
-                }
-            }
-            #endregion
-
-
-
-            guiColor.a = 1f;
-            GUI.color = guiColor;
-
-            return isAnyHovered;
         }
     } // end class
 }
