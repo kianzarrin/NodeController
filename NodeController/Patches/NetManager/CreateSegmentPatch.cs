@@ -1,17 +1,20 @@
 namespace NodeController.Patches._NetManager
 {
-    using HarmonyLib;
     using NodeController;
     using NodeController.LifeCycle;
     using KianCommons;
     using static KianCommons.HelpersExtensions;
     using NodeController.Patches._NetTool;
     using System;
+    using ColossalFramework.Math;
+    using UnityEngine;
+    using KianCommons.Patches;
 
-    // TODO check compat with ParallelRoadTool
-    [HarmonyPatch(typeof(global::NetManager), nameof(NetManager.CreateSegment))]
+    [HarmonyPatch2(typeof(NetManager), typeof(CreateSegment))]
     public static class CreateSegmentPatch
     {
+        delegate bool CreateSegment(out ushort segment, ref Randomizer randomizer, NetInfo info, TreeInfo treeInfo, ushort startNode, ushort endNode, Vector3 startDirection, Vector3 endDirection, uint buildIndex, uint modifiedIndex, bool invert);
+
         // pastes segment ends that:
         // 1- not nullnot null and
         // 2- its nodeID matches input start/end nodeID.
