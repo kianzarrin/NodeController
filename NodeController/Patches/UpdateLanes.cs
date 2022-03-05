@@ -1,12 +1,10 @@
-using ColossalFramework;
-using HarmonyLib;
-
 namespace NodeController {
+    using HarmonyLib;
     using KianCommons;
 
     [HarmonyPatch(typeof(RoadBaseAI))]
     [HarmonyPatch(nameof(RoadBaseAI.UpdateLanes))]
-    [HarmonyBefore("de.viathinksoft.tmpe")]
+    [HarmonyBefore("de.viathinksoft.tmpe", "me.tmpe")]
     class UpdateLanes {
         public static bool AllFlagsAreForward(ushort segmentID, bool startNode) {
             NetLane.Flags flags = 0;
