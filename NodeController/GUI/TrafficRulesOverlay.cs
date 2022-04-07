@@ -213,11 +213,6 @@ namespace NodeController.GUI {
                                     ushort segmentId,
                                     ref Vector3 camPos,
                                     out bool stateUpdated) {
-            if (typeof(TrafficManager.Constants).VersionOf() >= new Version(11, 6, 2)) {
-                stateUpdated = default;
-                return default;
-            }
-
             try {
                 ref NetNode node = ref nodeId.ToNode();
                 bool isAnyHovered = false;
@@ -284,8 +279,8 @@ namespace NodeController.GUI {
                             camPos: ref camPos,
                             guiColor: guiColor,
                             signTexture: allowed
-                                             ? JunctionRestrictions.UturnAllowed
-                                             : JunctionRestrictions.UturnForbidden);
+                                             ? JunctionRestrictions.Instance.UturnAllowed
+                                             : JunctionRestrictions.Instance.UturnForbidden);
 
                         if (signHovered && handleClick_ && configurable) {
                             isAnyHovered = true;
@@ -323,8 +318,8 @@ namespace NodeController.GUI {
                             camPos: ref camPos,
                             guiColor: guiColor,
                             signTexture: allowed
-                                             ? JunctionRestrictions.EnterBlockedJunctionAllowed
-                                             : JunctionRestrictions.EnterBlockedJunctionForbidden);
+                                             ? JunctionRestrictions.Instance.EnterBlockedJunctionAllowed
+                                             : JunctionRestrictions.Instance.EnterBlockedJunctionForbidden);
 
                         if (signHovered && this.handleClick_ && configurable) {
                             isAnyHovered = true;
@@ -375,8 +370,8 @@ namespace NodeController.GUI {
                             camPos: ref camPos,
                             guiColor: guiColor,
                             signTexture: allowed
-                                ? JunctionRestrictions.PedestrianCrossingAllowed
-                                : JunctionRestrictions.PedestrianCrossingForbidden);
+                                ? JunctionRestrictions.Instance.PedestrianCrossingAllowed
+                                : JunctionRestrictions.Instance.PedestrianCrossingForbidden);
 
                         if (signHovered && this.handleClick_ && configurable) {
                             isAnyHovered = true;
@@ -412,13 +407,13 @@ namespace NodeController.GUI {
                     try {
                         Texture2D overlayTex;
                         if (TrafficLightSimulationManager.Instance.HasTimedSimulation(nodeId)) {
-                            overlayTex = TrafficLightTextures.TrafficLightEnabledTimed;
+                            overlayTex = TrafficLightTextures.Instance.TrafficLightEnabledTimed;
                         } else if (allowed) {
                             // Render traffic light icon
-                            overlayTex = TrafficLightTextures.TrafficLightEnabled;
+                            overlayTex = TrafficLightTextures.Instance.TrafficLightEnabled;
                         } else {
                             // Render traffic light possible but disabled icon
-                            overlayTex = TrafficLightTextures.TrafficLightDisabled;
+                            overlayTex = TrafficLightTextures.Instance.TrafficLightDisabled;
                         }
 
                         bool signHovered = DrawTrafficLightSign(
