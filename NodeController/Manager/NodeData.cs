@@ -202,6 +202,7 @@ namespace NodeController {
                 segEnd.FlatJunctions = true;
                 segEnd.Twist = false;
             }
+            NetManager.instance.UpdateNode(NodeID);
         }
 
         public void UnFlatten() {
@@ -213,6 +214,7 @@ namespace NodeController {
                 segEnd.FlatJunctions = sideSegment;
                 segEnd.Twist = sideSegment;
             }
+            NetManager.instance.UpdateNode(NodeID);
         }
 
         //public bool IsFlattened {
@@ -623,6 +625,28 @@ namespace NodeController {
         }
 
         public Vector3 GetPosition() => Node.m_position + Vector3.up * (Node.m_heightOffset / 64f);
+
+        // same code as AN
+        public void ShiftPilar() {
+            ref NetNode node = ref Node;
+            NetInfo info = node.Info;
+            ushort buildingId = node.m_building;
+            ref var building = ref BuildingManager.instance.m_buildings.m_buffer[node.m_building];
+            bool isValid = info != null && buildingId != 0 &&
+                (building.m_flags & (Building.Flags.Created | Building.Flags.Deleted)) == Building.Flags.Created;
+            if (!isValid)
+                return;
+            info.m_netAI.GetNodeBuilding(NodeID, ref node, out BuildingInfo buildingInfo, out float heightOffset);
+            Vector3 center = default;
+            int counter = 0;
+            foreach (var segmentEndData in this.IterateSegmentEndDatas()) {
+                center += segmentEndData.LeftCorner.Pos + segmentEndData.RightCorner.Pos;
+                counter += 2;
+            }
+            center /= counter;
+            center.y += heightOffset;
+            building.m_position = center;
+        }
 
         #region External Mods
         // undefined -> don't touch prev value

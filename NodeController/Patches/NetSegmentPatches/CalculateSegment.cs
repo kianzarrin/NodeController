@@ -9,6 +9,8 @@ namespace NodeController.Patches {
             SegmentEndData segEnd = SegmentEndManager.Instance.GetAt(segmentID, false);
             segStart?.OnAfterCalculate();
             segEnd?.OnAfterCalculate();
+            segStart?.NodeData.ShiftPilar();
+            segEnd?.NodeData.ShiftPilar();
         }
     }
 }
