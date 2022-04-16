@@ -9,6 +9,10 @@ namespace NodeController.GUI {
             base.Start();
             minValue = -20;
             maxValue = +20;
+            LargeScrollStep = 1;
+            LargeDragStep = 0.5f;
+            CourseScrollStep = 0.1f;
+            CourseDragStep = 0.1f;
         }
 
         public override void ApplyNode(NodeData data) 
