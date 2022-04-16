@@ -546,7 +546,6 @@ namespace NodeController {
                 deltaPos.x += Shift; // outward
             }
             
-
             cornerPos += CornerData.TransformCoordinates(deltaPos, outwardDir, Vector3.up, forwardDir);
 
             if (insideAfterCalcualte_) {
