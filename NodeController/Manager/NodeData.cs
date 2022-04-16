@@ -366,37 +366,55 @@ namespace NodeController {
         }
         #endregion Stretch
         #region Shift
-        public bool ReverseShift2 => SegmentEnd1.IsHeadNode == SegmentEnd2.IsHeadNode; // facing each other.
+        public float Shift1 {
+            get {
+                if (SegmentEnd1.IsHeadNode) {
+                    return SegmentEnd1.Shift;
+                } else {
+                    return -SegmentEnd1.Shift;
+                }
+            }
+            set {
+                if (SegmentEnd1.IsHeadNode) {
+                    SegmentEnd1.Shift = value;
+                } else {
+                    SegmentEnd1.Shift = -value;
+                }
+            }
+        }
+        public float Shift2 {
+            get {
+                if (SegmentEnd2.IsHeadNode) {
+                    return SegmentEnd1.Shift;
+                } else {
+                    return -SegmentEnd1.Shift;
+                }
+            }
+            set {
+                if (SegmentEnd2.IsHeadNode) {
+                    SegmentEnd2.Shift = value;
+                } else {
+                    SegmentEnd2.Shift = -value;
+                }
+            }
+        }
         public float Shift {
             get {
                 Assert(CanMassEditNodeCorners());
                 Assert(SegmentCount == 2);
-                if (ReverseShift2) {
-                    return (SegmentEnd1.Shift - SegmentEnd2.Shift) * 0.5f;
-                } else {
-                    return (SegmentEnd1.Shift + SegmentEnd2.Shift) * 0.5f;
-                }
+                return (Shift1 + Shift2) * 0.5f;
             }
             set {
                 Assert(CanMassEditNodeCorners());
                 Assert(SegmentCount == 2);
-                SegmentEnd1.Shift = value;
-                if (ReverseShift2) {
-                    SegmentEnd2.Shift = -value;
-                } else {
-                    SegmentEnd2.Shift = +value;
-                }
+                Shift1 = Shift2 = value;
             }
         }
 
         public bool HasUniformShift() {
             Assert(CanMassEditNodeCorners());
             Assert(SegmentCount == 2);
-            if (ReverseShift2) {
-                return SegmentEnd1.Shift == -SegmentEnd2.Shift;
-            } else {
-                return SegmentEnd1.Shift == +SegmentEnd2.Shift;
-            }
+            return Shift1 == Shift2;
         }
         #endregion Shift
         #endregion bulk edit

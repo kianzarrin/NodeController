@@ -165,12 +165,12 @@ namespace NodeController.GUI {
                 var slider_ = panel0.AddUIComponent<ShiftSlider>();
                 Controls.Add(slider_);
 
-                var fieldPercent = row2.AddUIComponent<UICornerTextField>();
-                if (extendedSlider) fieldPercent.size = CELL_SIZE2;
-                fieldPercent.GetData = () => SegmentEndData.Shift + 100;
-                fieldPercent.SetData = val => SegmentEndData.Shift = val - 100;
-                fieldPercent.PostFix = "%";
-                Controls.Add(fieldPercent);
+                var fieldm = row2.AddUIComponent<UICornerTextField>();
+                if (extendedSlider) fieldm.size = CELL_SIZE2;
+                fieldm.GetData = () => SegmentEndData.Shift;
+                fieldm.SetData = val => SegmentEndData.Shift = val;
+                fieldm.PostFix = "m";
+                Controls.Add(fieldm);
             }
 
             {
