@@ -369,14 +369,14 @@ namespace NodeController {
         public float Shift1 {
             get {
                 if (SegmentEnd1.IsHeadNode) {
-                    return SegmentEnd1.Shift;
+                    return +SegmentEnd1.Shift;
                 } else {
                     return -SegmentEnd1.Shift;
                 }
             }
             set {
                 if (SegmentEnd1.IsHeadNode) {
-                    SegmentEnd1.Shift = value;
+                    SegmentEnd1.Shift = +value;
                 } else {
                     SegmentEnd1.Shift = -value;
                 }
@@ -384,15 +384,15 @@ namespace NodeController {
         }
         public float Shift2 {
             get {
-                if (SegmentEnd2.IsHeadNode) {
-                    return SegmentEnd1.Shift;
+                if (!SegmentEnd1.IsHeadNode) {
+                    return +SegmentEnd2.Shift;
                 } else {
-                    return -SegmentEnd1.Shift;
+                    return -SegmentEnd2.Shift;
                 }
             }
             set {
-                if (SegmentEnd2.IsHeadNode) {
-                    SegmentEnd2.Shift = value;
+                if (!SegmentEnd1.IsHeadNode) {
+                    SegmentEnd2.Shift = +value;
                 } else {
                     SegmentEnd2.Shift = -value;
                 }
