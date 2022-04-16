@@ -33,7 +33,7 @@ namespace NodeController.GUI {
             }
         }
 
-        UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_;
+        UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_, shiftPanel_;
 
         public override void Awake() {
             base.Awake();
@@ -152,6 +152,23 @@ namespace NodeController.GUI {
                 Controls.Add(fieldPercent);
             }
 
+            { // Shift
+                shiftPanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
+                label.text = "Shift";
+                label.tooltip = "change the width of the segment end";
+                if (extendedSlider) panel0.width += CELL_SIZE2.x;
+                var slider_ = panel0.AddUIComponent<ShiftSlider>();
+                Controls.Add(slider_);
+
+                var fieldm = row2.AddUIComponent<UICornerTextField>();
+                if (extendedSlider) fieldm.size = CELL_SIZE2;
+                fieldm.GetData = () => NodeData.Shift;
+                fieldm.SetData = val => NodeData.Shift = val;
+                fieldm.IsMixed = () => !NodeData.HasUniformShift();
+                fieldm.PostFix = "m";
+                Controls.Add(fieldm);
+            }
+
             AddPanel().name = "Space";
 
             {
@@ -187,7 +204,7 @@ namespace NodeController.GUI {
         public override void Refresh() {
             Log.Debug("UINodeControllerPanel.Refresh() called");
             offsetPanel_.isVisible = NodeData?.CanModifyOffset() ?? false;
-            slopePanel_.isVisible = stretchPanel_.isVisible = embankmentPanel_.isVisible =
+            slopePanel_.isVisible = stretchPanel_.isVisible = embankmentPanel_.isVisible = shiftPanel_.isVisible =
                  NodeData?.CanMassEditNodeCorners() ?? false;
 
             base.Refresh();

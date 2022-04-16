@@ -365,6 +365,40 @@ namespace NodeController {
             return SegmentEnd1.Stretch == SegmentEnd2.Stretch;
         }
         #endregion Stretch
+        #region Shift
+        public bool ReverseShift2 => SegmentEnd1.IsHeadNode == SegmentEnd2.IsHeadNode; // facing each other.
+        public float Shift {
+            get {
+                Assert(CanMassEditNodeCorners());
+                Assert(SegmentCount == 2);
+                if (ReverseShift2) {
+                    return (SegmentEnd1.Shift - SegmentEnd2.Shift) * 0.5f;
+                } else {
+                    return (SegmentEnd1.Shift + SegmentEnd2.Shift) * 0.5f;
+                }
+            }
+            set {
+                Assert(CanMassEditNodeCorners());
+                Assert(SegmentCount == 2);
+                SegmentEnd1.Shift = value;
+                if (ReverseShift2) {
+                    SegmentEnd2.Shift = -value;
+                } else {
+                    SegmentEnd2.Shift = +value;
+                }
+            }
+        }
+
+        public bool HasUniformShift() {
+            Assert(CanMassEditNodeCorners());
+            Assert(SegmentCount == 2);
+            if (ReverseShift2) {
+                return SegmentEnd1.Shift == -SegmentEnd2.Shift;
+            } else {
+                return SegmentEnd1.Shift == +SegmentEnd2.Shift;
+            }
+        }
+        #endregion Shift
         #endregion bulk edit
 
         public bool FirstTimeTrafficLight; // turn on traffic light when inserting pedestrian node for the first time.

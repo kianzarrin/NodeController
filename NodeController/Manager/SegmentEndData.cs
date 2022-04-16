@@ -60,6 +60,8 @@ namespace NodeController {
         public ushort NodeID;
         public ushort SegmentID;
         public bool IsStartNode => NetUtil.IsStartNode(segmentId: SegmentID, nodeId: NodeID);
+        public bool IsHeadNode => NetUtil.GetHeadNode(SegmentID) == NodeID;
+        public bool IsTailNode => !IsHeadNode;
 
         public override string ToString() {
             return GetType().Name + $"(segment:{SegmentID} node:{NodeID})";
@@ -91,6 +93,7 @@ namespace NodeController {
         /// <summary>delta width stretch in percent</summary>
         public float Stretch;
         public float EmbankmentAngleDeg;
+        public float Shift;
         public float DeltaSlopeAngleDeg;
         public bool Nodeless;
 
@@ -123,6 +126,7 @@ namespace NodeController {
             $"\n{CornerOffset} == {DefaultCornerOffset} error = 0.1\n" +
             $"DeltaSlopeAngleDeg:{DeltaSlopeAngleDeg} == 0;" +
             $"Stretch:{Stretch} == 0; " +
+            $"Shift:{Shift} == 0; " +
             $"EmbankmentAngleDeg:{EmbankmentAngleDeg} == 0; \n" +
             $"LeftCorner.IsDefault():{LeftCorner.IsDefault()} " +
             $"RightCorner.IsDefault():{RightCorner.IsDefault()} \n" +
@@ -166,7 +170,7 @@ namespace NodeController {
             }
             if (!CanModifyCorners()) {
                 DeltaSlopeAngleDeg = 0;
-                Stretch = EmbankmentAngleDeg = 0;
+                Shift = Stretch = EmbankmentAngleDeg = 0;
             }
             if (!FlatJunctions)
                 Twist = false;
@@ -220,7 +224,7 @@ namespace NodeController {
                 if (activePanel != null) {
                     if (activePanel.NetworkType == NetworkTypeT.Node && NodeID == SelectedNodeID) {
                         activePanel.RefreshValues();
-                    }else if (activePanel.NetworkType == NetworkTypeT.SegmentEnd && this.IsSelected()) {
+                    } else if (activePanel.NetworkType == NetworkTypeT.SegmentEnd && this.IsSelected()) {
                         activePanel.RefreshValues();
                     }
                 }
@@ -236,6 +240,7 @@ namespace NodeController {
             bool ret = Mathf.Abs(CornerOffset - DefaultCornerOffset) < 0.1f;
             ret &= DeltaSlopeAngleDeg == 0;
             ret &= Stretch == 0;
+            ret &= Shift == 0;
             ret &= EmbankmentAngleDeg == 0;
             ret &= FlatJunctions == DefaultFlatJunctions;
             ret &= Twist == DefaultTwist;
@@ -262,7 +267,7 @@ namespace NodeController {
             NoJunctionTexture = false;
             NoJunctionProps = false;
             NoTLProps = false;
-            Stretch = EmbankmentAngleDeg = 0;
+            Shift = Stretch = EmbankmentAngleDeg = 0;
             LeftCorner.ResetToDefault();
             RightCorner.ResetToDefault();
             RefreshAndUpdate();
@@ -289,10 +294,8 @@ namespace NodeController {
             get => DeltaSlopeAngleDeg + AngleDeg(AverageDirY00);
             set => DeltaSlopeAngleDeg = value - AngleDeg(AverageDirY00);
         }
-
-
-
         #endregion
+
         public ref CornerData Corner(bool left) {
             if (left)
                 return ref LeftCorner;
@@ -536,8 +539,15 @@ namespace NodeController {
             deltaPos.x += hw0 * stretch * cosEmbankmentAngle; // outward
             deltaPos.y += hw0 * stretch * sinEmbankmentAngle; // vertical
 
-            cornerPos += CornerData.TransformCoordinates(deltaPos, outwardDir, Vector3.up, forwardDir);
+            // Shift:
+            if(leftSide) {
+                deltaPos.x -= Shift; // outward
+            } else {
+                deltaPos.x += Shift; // outward
+            }
+            
 
+            cornerPos += CornerData.TransformCoordinates(deltaPos, outwardDir, Vector3.up, forwardDir);
 
             if (insideAfterCalcualte_) {
                 // take a snapshot of pos0/dir0 then apply delta pos/dir

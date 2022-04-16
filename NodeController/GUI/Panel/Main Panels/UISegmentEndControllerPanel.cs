@@ -157,6 +157,22 @@ namespace NodeController.GUI {
                 Controls.Add(fieldPercent);
             }
 
+            { // Shift
+                shiftPanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
+                label.text = "Shift";
+                label.tooltip = "change the width of the segment end";
+                if (extendedSlider) panel0.width += CELL_SIZE2.x;
+                var slider_ = panel0.AddUIComponent<ShiftSlider>();
+                Controls.Add(slider_);
+
+                var fieldPercent = row2.AddUIComponent<UICornerTextField>();
+                if (extendedSlider) fieldPercent.size = CELL_SIZE2;
+                fieldPercent.GetData = () => SegmentEndData.Shift + 100;
+                fieldPercent.SetData = val => SegmentEndData.Shift = val - 100;
+                fieldPercent.PostFix = "%";
+                Controls.Add(fieldPercent);
+            }
+
             {
                 var panel = AddPanel();
                 panel.padding = new RectOffset(10, 10, 5, 5);
@@ -185,7 +201,7 @@ namespace NodeController.GUI {
             Close();
         }
 
-        UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_;
+        UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_, shiftPanel_;
         UIAutoSizePanel tableLeft_, tableRight_;
         UICornerTextField leftCornerOffset_, rightCornerOffset_;
 
@@ -407,7 +423,7 @@ namespace NodeController.GUI {
             tableLeft_.isVisible = tableRight_.isVisible =
                 SegmentEndData?.CanModifyCorners() ?? false;
             offsetPanel_.isVisible = SegmentEndData?.CanModifyOffset() ?? false;
-            slopePanel_.isVisible = stretchPanel_.isVisible = embankmentPanel_.isVisible =
+            slopePanel_.isVisible = stretchPanel_.isVisible = embankmentPanel_.isVisible = shiftPanel_.isVisible =
                  SegmentEndData?.CanModifyCorners() ?? false;
 
             base.Refresh();

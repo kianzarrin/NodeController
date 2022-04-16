@@ -29,6 +29,11 @@ namespace NodeController.Patches.NetLanePatches {
             stretch = 1 + stretch * 0.01f; // convert delta-percent to ratio
             pos.x *= stretch;
 
+            float shiftStart = start?.Shift ?? 0;
+            float shiftEnd = end?.Shift ?? 0;
+            float shift = Mathf.Lerp(shiftStart, shiftEnd, t);
+            pos.x *= shift;
+
             float embankStart = start?.EmbankmentPercent ?? 0;
             float embankEnd = start?.EmbankmentPercent ?? 0;
             float embankment = Mathf.Lerp(embankStart, embankEnd, t);
