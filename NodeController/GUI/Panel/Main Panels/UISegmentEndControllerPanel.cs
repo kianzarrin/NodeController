@@ -174,10 +174,14 @@ namespace NodeController.GUI {
             }
 
             {
-                var panel = AddPanel();
-                panel.padding = new RectOffset(10, 10, 5, 5);
-                panel.AutoSize2 = true;
-                MakeCornerTable(panel);
+                var b = AddUIComponent<CollapsorButton>();
+                var cornerTable = AddPanel();
+                b.SetTarget(cornerTable);
+
+                cornerTable.name = "CornerTable";
+                cornerTable.padding = new RectOffset(10, 10, 5, 5);
+                cornerTable.AutoSize2 = true;
+                MakeCornerTable(cornerTable);
             }
 
             AddPanel().name = "Space";
