@@ -533,7 +533,7 @@ namespace NodeController.Tool {
         /// </summary>
         bool ShouldDrawSigns() {
             NodeData nodeData = NodeManager.Instance.buffer[SelectedNodeID];
-            return !Hide_TMPE_Overlay || (nodeData != null && nodeData.SegmentCount <= 2);
+            return !Hide_TMPE_Overlay || (nodeData != null && nodeData.SegmentCount == 2);
         }
 
         bool handleHovered_;
