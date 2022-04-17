@@ -1,11 +1,14 @@
 namespace NodeController.GUI {
+    using ColossalFramework;
     using ColossalFramework.UI;
     using KianCommons.UI;
     using System.Collections;
     using UnityEngine;
 
     public class CollapsorButton : UIButton {
-        UIPanel targetPanel_;
+        private static SavedBool showAdvanced_ = new SavedBool("ShowAdvanced", Settings.FileName, false, true);
+        private UIPanel targetPanel_;
+                
         public override void Awake() {
             base.Awake();
             name = GetType().FullName;
@@ -32,18 +35,22 @@ namespace NodeController.GUI {
 
         public void SetTarget(UIPanel panel) {
             targetPanel_ = panel;
-            targetPanel_.Hide();
+            if (!showAdvanced_.value) {
+                targetPanel_.Hide();
+            }
         }
         public void Collapse() {
             targetPanel_.Hide();
             text = text.Replace("▲", "▼");
             GetComponentInParent<UIPanelBase>().Refresh();
+            showAdvanced_.value = false;
         }
 
         public void Open() {
             targetPanel_.Show();
             text = text.Replace("▼", "▲");
             GetComponentInParent<UIPanelBase>().Refresh();
+            showAdvanced_.value = true;
         }
 
         protected override void OnClick(UIMouseEventParameter p) {
