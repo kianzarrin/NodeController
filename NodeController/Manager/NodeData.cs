@@ -657,7 +657,7 @@ namespace NodeController {
         public bool IsNodelessJunction() =>
             !NeedMiddleFlag() &&
             (NodeType == NodeTypeT.Nodeless ||
-            IterateSegmentEndDatas().All(item => item.IsNodeless)) ;
+            IterateSegmentEndDatas().All(item => item != null && item.IsNodeless)) ;
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
