@@ -5,6 +5,8 @@ using System.Text;
 using UnityEngine;
 using HarmonyLib;
 using System.Reflection;
+using KianCommons.Plugins;
+using KianCommons;
 
 namespace NodeController.Util {
     public static class TMPEUtils {
@@ -34,5 +36,10 @@ namespace NodeController.Util {
         internal static float GetBaseZoom() {
             return Screen.height / 1200f;
         }
+
+        internal static Version TMPEVersion =>
+            PluginUtil.GetTrafficManager().userModInstance.VersionOf();
+
+        internal static Version TMPEThemesVersion = new Version(11, 6, 4);
     }
 }
