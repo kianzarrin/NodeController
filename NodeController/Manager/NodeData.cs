@@ -663,7 +663,7 @@ namespace NodeController {
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Bend || NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
         public bool CanModifySharpCorners() {
-            bool suitable = NodeType == NodeTypeT.Bend || NodeType == NodeTypeT.Custom;
+            bool suitable = NodeType is NodeTypeT.Bend or NodeTypeT.Custom;
             return suitable && AllStraight;
         }
         public bool CanMassEditNodeCorners() => SegmentCount == 2;
