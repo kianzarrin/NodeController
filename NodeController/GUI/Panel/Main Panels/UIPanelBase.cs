@@ -237,7 +237,7 @@ namespace NodeController.GUI {
         /// <param name="panel0">add slider to this</param>
         /// <param name="row1">add text field labels here if any</param>
         /// <param name="row2">add text fields here</param>
-        /// <returns>top contianer of the section. hide this to hide the section</returns>
+        /// <returns>top container of the section. hide this to hide the section</returns>
         public static UIAutoSizePanel MakeSliderSection(UIPanel container,
             out UILabel label, out UIAutoSizePanel panel0, out UIPanel row1, out UIPanel row2) {
             UIAutoSizePanel section = container.AddUIComponent<UIAutoSizePanel>();

@@ -82,11 +82,17 @@ namespace NodeController.GUI {
                 var corner = row2.AddUIComponent<UICornerTextField>();
                 if (extendedSlider) corner.size = CELL_SIZE2;
                 corner.allowNegative = false;
-                corner.name = "NoedCornerOffset";
+                corner.name = "NodeCornerOffset";
                 corner.GetData = () => NodeData.CornerOffset;
                 corner.SetData = val => NodeData.CornerOffset = val > 0 ? val : 0;
                 corner.IsMixed = () => !NodeData.HasUniformCornerOffset();
                 Controls.Add(corner);
+            }
+
+            {
+                var panel = AddPanel();
+                var checkBox = panel.AddUIComponent<SharpCornersCheckbox>();
+                Controls.Add(checkBox);
             }
 
             { // embankment

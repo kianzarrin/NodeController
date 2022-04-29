@@ -7,7 +7,7 @@
     <Product>NodeController</Product>
     <Copyright>Copyright ©  2020</Copyright>
     <Deterministic>false</Deterministic>
-    <AssemblyVersion>2.6.3.*</AssemblyVersion>
+    <AssemblyVersion>2.7.0.*</AssemblyVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>latest</LangVersion>
     <DebugType>full</DebugType>
@@ -101,7 +101,6 @@
     <Compile Remove="DecompiledSources\VehicleAI.cs" />
     <Compile Remove="GUI\NodeControllerButton.cs" />
     <Compile Remove="GUI\Panel\Corner\MassFlattenNodeCheckbox.cs" />
-    <Compile Remove="KianCommons\KianCommons\Plugins\AdaptiveRoadsUtil.cs" />
     <Compile Remove="KianCommons\KianCommons\Serialization\JsonUtil.cs" />
     <Compile Remove="KianCommons\KianCommons\Serialization\SimpleDataSerializer.cs" />
     <Compile Remove="KianCommons\KianCommons\Util\AssemblyTypeExtensions.cs" />

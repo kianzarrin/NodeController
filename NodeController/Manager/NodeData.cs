@@ -18,6 +18,8 @@ namespace NodeController {
     using NodeController.Tool;
     using System.Diagnostics;
     using System.Linq;
+    using KianCommons.Plugins;
+    using ColossalFramework.Math;
 
     public enum NodeTypeT {
         Nodeless,
@@ -31,7 +33,7 @@ namespace NodeController {
 
     [Serializable]
     public class NodeData : ISerializable, INetworkData, INetworkData<NodeData> {
-        public override string ToString() => $"NodeData(id:{NodeID} type:{NodeType})";
+        public override string ToString() => $"NodeData(id:{NodeID} type:{NodeType} sharp:{SharpCorners})";
         #region serialization
         public NodeData() { } // so that the code compiles
 
@@ -66,11 +68,13 @@ namespace NodeController {
         // defaults
         public NetNode.Flags DefaultFlags;
         public NodeTypeT DefaultNodeType;
+        public bool DefaultSharpCorners;
 
         // cache
         public bool HasPedestrianLanes;
         public int SegmentCount;
         public float CurveRaduis0;
+        public bool AllStraight; // no segment is curved.
 
         // cache only for segment count == 2
         public float HWDiff;
@@ -84,6 +88,7 @@ namespace NodeController {
 
         // Configurable
         public NodeTypeT NodeType;
+        public bool SharpCorners;
 
         #region bulk edit
         #region corner offset
@@ -428,8 +433,10 @@ namespace NodeController {
             NodeID = nodeID;
             Calculate();
             NodeType = DefaultNodeType;
+            SharpCorners = DefaultSharpCorners;
             FirstTimeTrafficLight = false;
-            Assert(IsDefault(), $"{this}.IsDefault(): NodeType:{NodeType} == {DefaultNodeType}\n"+
+            Assert(IsDefault(), $"{this}.IsDefault(): NodeType:{NodeType} == {DefaultNodeType} and " +
+                $"SharpCorners:{SharpCorners} == {DefaultSharpCorners}\n" +
                 string.Join("|", IterateSegmentEndDatas()
                 .Where(segEnd => !segEnd.IsDefault())
                 .Select(segEnd => $"{segEnd} is not default")
@@ -457,16 +464,34 @@ namespace NodeController {
             SegmentCount = NodeID.ToNode().CountSegments();
             DefaultFlags = NodeID.ToNode().m_flags;
 
-            if (DefaultFlags.IsFlagSet(NetNode.Flags.Middle))
+            if (DefaultFlags.IsFlagSet(NetNode.Flags.Middle)) {
                 DefaultNodeType = NodeTypeT.Nodeless;
-            else if (DefaultFlags.IsFlagSet(NetNode.Flags.Bend))
+                DefaultSharpCorners = false;
+            } else if (DefaultFlags.IsFlagSet(NetNode.Flags.Bend)) {
                 DefaultNodeType = NodeTypeT.Bend;
-            else if (DefaultFlags.IsFlagSet(NetNode.Flags.Junction))
+                DefaultSharpCorners = AdaptiveRoadsUtil.GetARSharpCorners(Info);
+            } else if (DefaultFlags.IsFlagSet(NetNode.Flags.Junction)) {
                 DefaultNodeType = NodeTypeT.Custom;
-            else if (DefaultFlags.IsFlagSet(NetNode.Flags.End))
+                DefaultSharpCorners = AdaptiveRoadsUtil.GetARSharpCorners(Info);
+            } else if (DefaultFlags.IsFlagSet(NetNode.Flags.End)) {
                 NodeType = DefaultNodeType = NodeTypeT.End;
-            else
+                DefaultSharpCorners = false;
+            } else {
                 throw new NotImplementedException("unsupported node flags: " + DefaultFlags);
+            }
+
+            static bool IsSegmentStraight(ushort segmentId, ushort nodeId) {
+                Vector3 pos1 = nodeId.ToNode().m_position;
+                Vector3 pos2 = segmentId.ToSegment().GetOtherNode(nodeId).ToNode().m_position;
+                Vector3 dir = NormalizeXZ(pos2 - pos1);
+                Vector3 endDir = NormalizeXZ(segmentId.ToSegment().GetDirection(nodeId));
+                return DotXZ(dir, endDir) > 0.95f;
+            }
+
+            AllStraight = Node.IterateSegments().All(_segmentId => IsSegmentStraight(_segmentId, NodeID));
+            if (!DefaultSharpCorners) {
+                DefaultSharpCorners = false;
+            }
 
             if (SegmentCount == 2) {
                 float hw0 = 0;
@@ -521,6 +546,9 @@ namespace NodeController {
                 else if (NodeType == NodeTypeT.Crossing)
                     CornerOffset = 0f;
             }
+            if (!CanModifySharpCorners()) {
+                SharpCorners = false;
+            }
         }
 
         public void Update() {
@@ -548,9 +576,10 @@ namespace NodeController {
         public bool IsSelected() => NodeID == SelectedNodeID;
 
         public bool IsDefault() {
-            bool isDefault = NodeType == DefaultNodeType;
+            bool isDefault = NodeType == DefaultNodeType && SharpCorners == DefaultSharpCorners;
             if (!isDefault)
                 return false;
+
             foreach(var segEnd in IterateSegmentEndDatas()) { 
                 isDefault = segEnd == null || segEnd.IsDefault();
                 if (!isDefault)
@@ -561,6 +590,7 @@ namespace NodeController {
 
         public void ResetToDefault() {
             NodeType = DefaultNodeType;
+            SharpCorners = DefaultSharpCorners;
             foreach (var segEnd in IterateSegmentEndDatas())
                 segEnd?.ResetToDefault();
             Update();
@@ -632,6 +662,10 @@ namespace NodeController {
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
         public bool CanModifyOffset() => NodeType == NodeTypeT.Bend || NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
+        public bool CanModifySharpCorners() {
+            bool suitable = NodeType == NodeTypeT.Bend || NodeType == NodeTypeT.Custom;
+            return suitable && AllStraight;
+        }
         public bool CanMassEditNodeCorners() => SegmentCount == 2;
         public bool CanModifyFlatJunctions() => !NeedMiddleFlag(); // && !IsNodelessJunction() ?
         public bool IsAsymRevert() => DefaultFlags.IsFlagSet(NetNode.Flags.AsymBackward | NetNode.Flags.AsymForward);
