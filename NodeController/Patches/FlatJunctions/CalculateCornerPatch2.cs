@@ -115,7 +115,7 @@ namespace NodeController.Patches {
 
             bool sharp;
             if (NodeManager.Instance.buffer[nodeID] is NodeData nodeData) {
-                sharp = nodeData.CanModifySharpCorners() && nodeData.SharpCorners;
+                sharp = nodeData.ShouldSharpenCorners();
             } else {
                 sharp = AdaptiveRoadsUtil.GetARSharpCorners(segment1.Info);
             }

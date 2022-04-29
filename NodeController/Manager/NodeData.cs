@@ -661,7 +661,9 @@ namespace NodeController {
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
-        public bool CanModifyOffset() => NodeType == NodeTypeT.Bend || NodeType == NodeTypeT.Stretch || NodeType == NodeTypeT.Custom;
+        public bool CanModifyOffset() =>
+            (NodeType is NodeTypeT.Bend or NodeTypeT.Stretch or NodeTypeT.Custom) &&
+            !ShouldSharpenCorners();
         public bool CanModifySharpCorners() {
             bool suitable = NodeType is NodeTypeT.Bend or NodeTypeT.Custom;
             return suitable && AllStraight;
@@ -685,6 +687,8 @@ namespace NodeController {
             NodeType == NodeTypeT.Crossing &&
             CrossingIsRemoved(segmentID1) &&
             CrossingIsRemoved(segmentID2);
+
+        public bool ShouldSharpenCorners() => SharpCorners && CanModifySharpCorners();
 
         public string ToolTip(NodeTypeT nodeType) {
             switch (nodeType) {

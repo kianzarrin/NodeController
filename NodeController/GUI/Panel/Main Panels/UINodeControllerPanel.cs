@@ -70,6 +70,12 @@ namespace NodeController.GUI {
                 
             }
 
+            {
+                var panel = AddPanel();
+                var checkBox = panel.AddUIComponent<SharpCornersCheckbox>();
+                Controls.Add(checkBox);
+            }
+
             const bool extendedSlider = true;
             { // offset
                 offsetPanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
@@ -87,12 +93,6 @@ namespace NodeController.GUI {
                 corner.SetData = val => NodeData.CornerOffset = val > 0 ? val : 0;
                 corner.IsMixed = () => !NodeData.HasUniformCornerOffset();
                 Controls.Add(corner);
-            }
-
-            {
-                var panel = AddPanel();
-                var checkBox = panel.AddUIComponent<SharpCornersCheckbox>();
-                Controls.Add(checkBox);
             }
 
             { // embankment
