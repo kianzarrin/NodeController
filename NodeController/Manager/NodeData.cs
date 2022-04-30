@@ -489,7 +489,7 @@ namespace NodeController {
             }
 
             AllStraight = Node.IterateSegments().All(_segmentId => IsSegmentStraight(_segmentId, NodeID));
-            if (!DefaultSharpCorners) {
+            if (!AllStraight) {
                 DefaultSharpCorners = false;
             }
 
