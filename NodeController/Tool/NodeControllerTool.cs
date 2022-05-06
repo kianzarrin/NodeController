@@ -604,7 +604,9 @@ namespace NodeController.Tool {
                         if (nodeData != null) {
                             SelectedNodeID = nodeData.NodeID;
                             SelectedSegmentID = 0;
-                            NCPanel.Display(SelectedNodeID);
+                            SimulationManager.instance.m_ThreadingWrapper.QueueMainThread(delegate () {
+                                NCPanel.Display(SelectedNodeID);
+                            });
                         }
                     });
                 }
