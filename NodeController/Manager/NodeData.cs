@@ -75,6 +75,7 @@ namespace NodeController {
         public int SegmentCount;
         public float CurveRaduis0;
         public bool AllStraight; // no segment is curved.
+        public float Gap;
 
         // cache only for segment count == 2
         public float HWDiff;
@@ -528,7 +529,28 @@ namespace NodeController {
             SortedSegmentIDs.Sort(CompareSegments);
             SortedSegmentIDs.Reverse();
 
+            CalculateGap();
+
             Refresh();
+        }
+
+        public void CalculateGap() {
+            var maxGapSqr = 0f;
+            foreach (var firstData in IterateSegmentEndDatas()) {
+                foreach (var secondData in IterateSegmentEndDatas()) {
+                    CalculateGapSqr(ref maxGapSqr, firstData, secondData, true, true);
+                    CalculateGapSqr(ref maxGapSqr, firstData, secondData, true, false);
+                    CalculateGapSqr(ref maxGapSqr, firstData, secondData, false, true);
+                    CalculateGapSqr(ref maxGapSqr, firstData, secondData, false, false);
+                }
+            }
+            Gap = Mathf.Sqrt(maxGapSqr) + 2f;
+        }
+        private void CalculateGapSqr(ref float gap, SegmentEndData segEnd1, SegmentEndData segEnd2, bool left1, bool left2) {
+            var pos1 = segEnd1.Corner(left1).Pos;
+            var pos2 = segEnd2.Corner(left2).Pos;
+            var delta = (pos1 - pos2).sqrMagnitude;
+            gap = Mathf.Max(gap, delta);
         }
 
         /// <summary>
