@@ -658,7 +658,7 @@ namespace NodeController {
                 case NodeTypeT.Stretch:
                     return CanModifyTextures() && !middle && IsStraight;
                 case NodeTypeT.Bend:
-                    return !middle;
+                    return true; // !middle; clus wants to use bend nodes.
                 case NodeTypeT.Nodeless:
                     //return IsStraight || Is180;
                     return true; // all junctions can be node-less
