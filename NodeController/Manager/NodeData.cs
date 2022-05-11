@@ -529,8 +529,6 @@ namespace NodeController {
             SortedSegmentIDs.Sort(CompareSegments);
             SortedSegmentIDs.Reverse();
 
-            CalculateGap();
-
             Refresh();
         }
 
@@ -547,6 +545,8 @@ namespace NodeController {
             Gap = Mathf.Sqrt(maxGapSqr) + 2f;
         }
         private void CalculateGapSqr(ref float gap, SegmentEndData segEnd1, SegmentEndData segEnd2, bool left1, bool left2) {
+            if (segEnd1 == null || segEnd2 == null)
+                return;
             var pos1 = segEnd1.Corner(left1).Pos;
             var pos2 = segEnd2.Corner(left2).Pos;
             var delta = (pos1 - pos2).sqrMagnitude;

@@ -229,6 +229,9 @@ namespace NodeController {
                     }
                 }
             });
+
+            NodeData?.CalculateGap();
+
             insideAfterCalcualte_ = false;
         }
 
