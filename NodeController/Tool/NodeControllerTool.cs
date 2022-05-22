@@ -533,7 +533,7 @@ namespace NodeController.Tool {
         /// it takes into account the segment count, node type, and options state.
         /// </summary>
         bool ShouldDrawSigns() {
-            if (TMPEUtils.TMPEVersion >= TMPEUtils.TMPEThemesVersion) {
+            if (TMPEUtils.TMPEVersion < TMPEUtils.TMPEThemesVersion) {
                 // not supported
                 return false;
             }

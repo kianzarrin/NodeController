@@ -1,3 +1,5 @@
+using System;
+
 namespace NodeController {
     using System;
     using System.Runtime.Serialization;
@@ -185,7 +187,7 @@ namespace NodeController {
             int slope1 = info1.m_flatJunctions ? 0 : 1;
             int slope2 = info2.m_flatJunctions ? 0 : 1;
             int diff = slope1 - slope2;
-            if (diff != 0)return diff;
+            if (diff != 0) return diff;
 
             diff = info1.m_forwardVehicleLaneCount - info2.m_forwardVehicleLaneCount;
             if (diff != 0) return diff;
@@ -203,7 +205,7 @@ namespace NodeController {
 
         public void Flatten() {
             Log.Debug("NodeData.Flatten() called");
-            foreach (ushort segmentID in SortedSegmentIDs) { 
+            foreach (ushort segmentID in SortedSegmentIDs) {
                 var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
                 segEnd.FlatJunctions = true;
                 segEnd.Twist = false;
@@ -441,7 +443,7 @@ namespace NodeController {
                 string.Join("|", IterateSegmentEndDatas()
                 .Where(segEnd => !segEnd.IsDefault())
                 .Select(segEnd => $"{segEnd} is not default")
-                .ToArray()) );
+                .ToArray()));
             Assert(CanChangeTo(NodeType), $"CanChangeTo(NodeType={NodeType})");
             Update();
         }
@@ -602,7 +604,7 @@ namespace NodeController {
             if (!isDefault)
                 return false;
 
-            foreach(var segEnd in IterateSegmentEndDatas()) { 
+            foreach (var segEnd in IterateSegmentEndDatas()) {
                 isDefault = segEnd == null || segEnd.IsDefault();
                 if (!isDefault)
                     return false;
@@ -679,7 +681,7 @@ namespace NodeController {
         public bool IsNodelessJunction() =>
             !NeedMiddleFlag() &&
             (NodeType == NodeTypeT.Nodeless ||
-            IterateSegmentEndDatas().All(item => item != null && item.IsNodeless)) ;
+            IterateSegmentEndDatas().All(item => item != null && item.IsNodeless));
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
@@ -896,7 +898,7 @@ namespace NodeController {
                         return TernaryBool.Undefined;
                     bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
                     if (oneway & !HasPedestrianLanes) {
-                        return TernaryBool.False; // always on.
+                        return TernaryBool.False; // always on. // TODO move to TMPE
                     }
                     return TernaryBool.Undefined; // default on.
                 case NodeTypeT.End:
@@ -933,5 +935,58 @@ namespace NodeController {
             }
         }
         #endregion
+    }
+
+
+
+
+}
+
+namespace NodeController.Overrides {
+    using static Result;
+    internal struct Rule {
+        internal Result Crrossing, UTurn, EnterBLocked;
+    }
+
+    internal struct Result {
+        internal enum ConfigurableType { Allways, Default, NA };
+        internal enum DefaultType { On, Off, NA };
+        internal bool? Configurable, Default;
+        internal Result(ConfigurableType configurable, DefaultType def) {
+            Configurable = configurable switch {
+                ConfigurableType.Allways => false,
+                ConfigurableType.Default => true,
+                ConfigurableType.NA => null,
+            };
+            Default = def switch {
+                DefaultType.On => false,
+                DefaultType.Off => true,
+                DefaultType.NA => null,
+            };
+        }
+
+        internal static Result AllwaysOn = new Result(ConfigurableType.Allways, DefaultType.On);
+        internal static Result AllwaysOff = new Result(ConfigurableType.Allways, DefaultType.Off);
+        internal static Result DefaultOn = new Result(ConfigurableType.Default, DefaultType.On);
+        internal static Result DefaultOff = new Result(ConfigurableType.Default, DefaultType.Off);
+        internal static Result NA = new Result(ConfigurableType.NA, DefaultType.NA);
+    }
+
+    internal static class Overrides {
+        static int NodeTypeTCOUNT => Enum.GetValues(typeof(NodeTypeT)).Length;
+
+        // Rules [Rule][NodeType][RuleType]
+        internal static Rule[] Rules = new Rule[NodeTypeTCOUNT];
+        static Overrides() {
+#pragma warning disable format
+            Rules[(int)NodeTypeT.Crossing] = new Rule { Crrossing = AllwaysOn , UTurn = AllwaysOff, EnterBLocked = DefaultOff};
+            Rules[(int)NodeTypeT.UTurn]    = new Rule { Crrossing = AllwaysOff, UTurn = AllwaysOn , EnterBLocked = NA        };
+            Rules[(int)NodeTypeT.Stretch]  = new Rule { Crrossing = AllwaysOff, UTurn = AllwaysOff, EnterBLocked = AllwaysOn };
+            Rules[(int)NodeTypeT.Nodeless] = new Rule { Crrossing = AllwaysOff, UTurn = AllwaysOff, EnterBLocked = AllwaysOn };
+            Rules[(int)NodeTypeT.Bend]     = new Rule { Crrossing = NA        , UTurn = NA        , EnterBLocked = NA        };
+            Rules[(int)NodeTypeT.Custom]   = new Rule { Crrossing =NA/*moved*/, UTurn = NA        , EnterBLocked = NA/*not moved*/};
+            Rules[(int)NodeTypeT.End]      = new Rule { Crrossing = NA        , UTurn = NA        , EnterBLocked = NA        };
+#pragma warning restore format
+        }
     }
 }

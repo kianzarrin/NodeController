@@ -1,15 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
 using HarmonyLib;
-using System.Reflection;
-using KianCommons.Plugins;
 using KianCommons;
+using System;
+using TrafficManager.API.Manager;
+using TrafficManager.API.Traffic.Enums;
+using UnityEngine;
 
 namespace NodeController.Util {
     public static class TMPEUtils {
+        public static ITrafficLightManager TL =>
+            TrafficManager.API.Implementations.ManagerFactory.TrafficLightManager;
+
+        internal static void TryEnableTL(ushort nodeID) {
+            if (!TL.HasTrafficLight(nodeID) && TL.CanToggleTrafficLight(nodeID)) {
+                TL.ToggleTrafficLight(nodeID);
+            }
+        }
+
         internal static bool WorldToScreenPoint(Vector3 worldPos, out Vector3 screenPos) {
             screenPos = Camera.main.WorldToScreenPoint(worldPos);
             screenPos.y = Screen.height - screenPos.y;
@@ -23,7 +29,7 @@ namespace NodeController.Util {
         delegate float dGetHandleAlphaT_(bool hovered);
         static dGetHandleAlphaT_ dGetHandleAlpha_;
         internal static float GetHandleAlpha(bool hovered) {
-            if(dGetHandleAlpha_ == null) {
+            if (dGetHandleAlpha_ == null) {
                 var mGetHandleAlpha = AccessTools.DeclaredMethod(
                     typeof(TrafficManager.UI.TrafficManagerTool),
                     "GetHandleAlpha");
@@ -38,7 +44,7 @@ namespace NodeController.Util {
         }
 
         internal static Version TMPEVersion =>
-            PluginUtil.GetTrafficManager().userModInstance.VersionOf();
+            TrafficManager.API.Implementations.ManagerFactory.VersionOf();
 
         internal static Version TMPEThemesVersion = new Version(11, 6, 4);
     }

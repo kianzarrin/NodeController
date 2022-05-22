@@ -9,13 +9,12 @@ namespace NodeController.Patches.TMPE {
     using KianCommons.Plugins;
 
     [HarmonyPatch]
-    static class CanToggleTrafficLight {
-        static bool Prepare() => PluginUtil.GetTrafficManager().IsActive();
+    static class CanToggleTrafficLightPatch {
+        public delegate bool CanToggleTrafficLight(ushort nodeId, bool flag, ref NetNode node, out ToggleTrafficLightError reason);
+        public static MethodBase TargetMethod() =>
+            typeof(TrafficLightManager).GetMethod<CanToggleTrafficLight>(throwOnError: true);
 
-        public static MethodBase TargetMethod() {
-            return typeof(TrafficLightManager).
-                GetMethod(nameof(TrafficLightManager.CanToggleTrafficLight));
-        }
+        static bool Prepare() => PluginUtil.GetTrafficManager().IsActive();
 
         public static bool Prefix(ref bool __result, ushort nodeId, ref ToggleTrafficLightError reason) {
             var nodeData = NodeManager.Instance.buffer[nodeId];
