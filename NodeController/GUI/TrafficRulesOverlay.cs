@@ -262,6 +262,7 @@ namespace NodeController.GUI {
                         baseZoom: TMPEUtils.GetBaseZoom());
 
                     JunctionRestrictionsManager jrMan = JunctionRestrictionsManager.Instance;
+                    RoadSignTheme theme = RoadSignThemeManager.ActiveTheme;
 
                     #region UTURN
                     // draw "u-turns allowed" sign at (1; 0)
@@ -278,9 +279,7 @@ namespace NodeController.GUI {
                             handleClick: configurable && handleClick_,
                             camPos: ref camPos,
                             guiColor: guiColor,
-                            signTexture: allowed
-                                             ? JunctionRestrictions.Instance.UturnAllowed
-                                             : JunctionRestrictions.Instance.UturnForbidden);
+                            signTexture: theme.GetOtherRestriction(RoadSignTheme.OtherRestriction.UTurn, allowed));
 
                         if (signHovered && handleClick_ && configurable) {
                             isAnyHovered = true;
@@ -317,9 +316,7 @@ namespace NodeController.GUI {
                             handleClick: configurable && handleClick_,
                             camPos: ref camPos,
                             guiColor: guiColor,
-                            signTexture: allowed
-                                             ? JunctionRestrictions.Instance.EnterBlockedJunctionAllowed
-                                             : JunctionRestrictions.Instance.EnterBlockedJunctionForbidden);
+                            signTexture: theme.GetOtherRestriction(RoadSignTheme.OtherRestriction.EnterBlockedJunction, allowed));
 
                         if (signHovered && this.handleClick_ && configurable) {
                             isAnyHovered = true;
@@ -369,9 +366,7 @@ namespace NodeController.GUI {
                             handleClick: configurable && handleClick_,
                             camPos: ref camPos,
                             guiColor: guiColor,
-                            signTexture: allowed
-                                ? JunctionRestrictions.Instance.PedestrianCrossingAllowed
-                                : JunctionRestrictions.Instance.PedestrianCrossingForbidden);
+                            signTexture: theme.GetOtherRestriction(RoadSignTheme.OtherRestriction.Crossing, allowed));
 
                         if (signHovered && this.handleClick_ && configurable) {
                             isAnyHovered = true;
