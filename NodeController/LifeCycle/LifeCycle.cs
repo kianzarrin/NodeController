@@ -19,6 +19,11 @@ namespace NodeController.LifeCycle {
 
         public static bool Loaded;
 
+        /// <summary>
+        /// A reference to ensure initialization of the hook.
+        /// </summary>
+        private static Patches.TMPE.JunctionRestrictions junctionRestrictionsHook = Patches.TMPE.JunctionRestrictions.Instance;
+
         public static void Enable() {
             Log.Debug("Testing StackTrace:\n" + new StackTrace(true).ToString(), copyToGameLog: false);
             KianCommons.UI.TextureUtil.EmbededResources = false;

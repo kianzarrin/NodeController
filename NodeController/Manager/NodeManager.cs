@@ -85,6 +85,14 @@ namespace NodeController {
             return buffer[nodeID];
         }
 
+        public bool TryGet(ushort segmentId, bool startNode, out NodeData nodeData)
+            => TryGet(segmentId.ToSegment().GetNode(startNode), out nodeData);
+
+        public bool TryGet(ushort nodeId, out NodeData nodeData) {
+            nodeData = Instance.buffer[nodeId];
+            return nodeData != null;
+        }
+
         public ref NodeData GetOrCreate(ushort nodeID) {
             ref NodeData data = ref Instance.buffer[nodeID];
             if (data == null) {

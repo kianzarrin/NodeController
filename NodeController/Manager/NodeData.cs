@@ -764,91 +764,92 @@ namespace NodeController {
         // undefined -> don't touch prev value
         // true -> force true
         // false -> force false.
-        public TernaryBool IsUturnAllowedConfigurable() {
+
+        public bool? IsUturnAllowedConfigurable() {
             switch (NodeType) {
                 case NodeTypeT.Crossing:
-                    return TernaryBool.False; // always off
+                    return false; // always off
                 case NodeTypeT.UTurn:
-                    return TernaryBool.Undefined; // default on
+                    return null; // default on
                 case NodeTypeT.Stretch:
-                    return TernaryBool.False; // always off
+                    return false; // always off
                 case NodeTypeT.Nodeless:
-                    return TernaryBool.False; // always off
+                    return false; // always off
                 case NodeTypeT.Bend:
-                    return TernaryBool.False; // always default
+                    return false; // always default
                 case NodeTypeT.Custom:
-                    return TernaryBool.Undefined; // default
+                    return null; // default
                 case NodeTypeT.End:
-                    return TernaryBool.Undefined;
+                    return null;
                 default:
                     throw new Exception("Unreachable code");
             }
         }
 
-        public TernaryBool GetDefaultUturnAllowed() {
+        public bool? GetDefaultUturnAllowed() {
             switch (NodeType) {
                 case NodeTypeT.Crossing:
-                    return TernaryBool.False; // always off
+                    return false; // always off
                 case NodeTypeT.UTurn:
-                    return TernaryBool.True; // default on
+                    return true; // default on
                 case NodeTypeT.Stretch:
-                    return TernaryBool.False; // always off
+                    return false; // always off
                 case NodeTypeT.Nodeless:
-                    return TernaryBool.False; // always off
+                    return false; // always off
                 case NodeTypeT.Bend:
-                    return TernaryBool.Undefined; // don't care
+                    return null; // don't care
                 case NodeTypeT.Custom:
-                    return TernaryBool.Undefined; // default
+                    return null; // default
                 case NodeTypeT.End:
-                    return TernaryBool.Undefined;
+                    return null;
                 default:
                     throw new Exception("Unreachable code");
             }
         }
 
-        public TernaryBool IsPedestrianCrossingAllowedConfigurable() {
+        public bool? IsPedestrianCrossingAllowedConfigurable() {
             switch (NodeType) {
                 case NodeTypeT.Crossing:
-                    return TernaryBool.False; // always on
+                    return false; // always on
                 case NodeTypeT.UTurn:
-                    return TernaryBool.False; // always off
+                    return false; // always off
                 case NodeTypeT.Stretch:
-                    return TernaryBool.False; // always off
+                    return false; // always off
                 case NodeTypeT.Nodeless:
                 case NodeTypeT.Bend:
-                    return TernaryBool.False; // always off
+                    return false; // always off
                 case NodeTypeT.Custom:
                     if (SegmentCount == 2 && !HasPedestrianLanes) {
-                        return TernaryBool.False; // TODO move to TMPE.
+                        return false; // TODO move to TMPE.
                     }
-                    return TernaryBool.Undefined; // default off
+                    return null; // default off
                 case NodeTypeT.End:
-                    return TernaryBool.Undefined;
+                    return null;
                 default:
                     throw new Exception("Unreachable code");
             }
         }
 
-        public TernaryBool GetDefaultPedestrianCrossingAllowed() {
+        public bool? GetDefaultPedestrianCrossingAllowed() {
             switch (NodeType) {
                 case NodeTypeT.Crossing:
-                    return TernaryBool.True; // always on
+                    return true; // always on
                 case NodeTypeT.UTurn:
-                    return TernaryBool.False; // default off
+                    return false; // default off
                 case NodeTypeT.Stretch:
-                    return TernaryBool.False; // always off
+                    return false; // always off
                 case NodeTypeT.Nodeless:
                 case NodeTypeT.Bend:
-                    return TernaryBool.False; // always off
+                    return false; // always off
                 case NodeTypeT.Custom:
                     var netAI1 = segmentID1.ToSegment().Info.m_netAI;
                     var netAI2 = segmentID2.ToSegment().Info.m_netAI;
-                    bool sameAIType = netAI1.GetType() == netAI2.GetType(); 
+                    bool sameAIType = netAI1.GetType() == netAI2.GetType();
                     if (SegmentCount == 2 && !sameAIType) // eg: at bridge/tunnel entrances.
-                        return TernaryBool.False; // default off
-                    return TernaryBool.Undefined; // don't care
+                        return false; // default off
+                    return null; // don't care
                 case NodeTypeT.End:
-                    return TernaryBool.Undefined;
+                    return null;
                 default:
                     throw new Exception("Unreachable code");
             }
@@ -880,54 +881,54 @@ namespace NodeController {
             }
         }
 
-        public TernaryBool IsEnteringBlockedJunctionAllowedConfigurable() {
+        public bool? IsEnteringBlockedJunctionAllowedConfigurable() {
             switch (NodeType) {
                 case NodeTypeT.Crossing:
-                    return TernaryBool.Undefined; // default off
+                    return null; // default off
                 case NodeTypeT.UTurn:
-                    return TernaryBool.Undefined; // default
+                    return null; // default
                 case NodeTypeT.Stretch:
-                    return TernaryBool.False; // always on
+                    return false; // always on
                 case NodeTypeT.Nodeless:
                 case NodeTypeT.Bend:
-                    return TernaryBool.False; // always default
+                    return false; // always default
                 case NodeTypeT.Custom:
                     if (SegmentCount > 2)
-                        return TernaryBool.Undefined;
+                        return null;
                     bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
                     if (oneway & !HasPedestrianLanes) {
-                        return TernaryBool.False; // always on.
+                        return false; // always on.
                     }
-                    return TernaryBool.Undefined; // default on.
+                    return null; // default on.
                 case NodeTypeT.End:
-                    return TernaryBool.Undefined;
+                    return null;
                 default:
                     throw new Exception("Unreachable code");
             }
         }
 
-        public TernaryBool GetDefaultEnteringBlockedJunctionAllowed() {
+        public bool? GetDefaultEnteringBlockedJunctionAllowed() {
             switch (NodeType) {
                 case NodeTypeT.Crossing:
-                    return TernaryBool.False; // default off
+                    return false; // default off
                 case NodeTypeT.UTurn:
-                    return TernaryBool.Undefined; // default
+                    return null; // default
                 case NodeTypeT.Stretch:
-                    return TernaryBool.True; // always on
+                    return true; // always on
                 case NodeTypeT.Nodeless:
                 case NodeTypeT.Bend:
-                    return TernaryBool.Undefined; // don't care
+                    return null; // don't care
                 case NodeTypeT.Custom:
                     if (SegmentCount > 2)
-                        return TernaryBool.Undefined;
-                    return TernaryBool.True;
+                        return null;
+                    return true;
                 //bool oneway = DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
                 //if (oneway & !HasPedestrianLanes) {
-                //    return TernaryBool.True; // always on.
+                //    return true; // always on.
                 //}
-                //return TernaryBool.Undefined;
+                //return null;
                 case NodeTypeT.End:
-                    return TernaryBool.Undefined;
+                    return null;
                 default:
                     throw new Exception("Unreachable code");
             }
