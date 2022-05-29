@@ -1,3 +1,4 @@
+using ColossalFramework;
 using HarmonyLib;
 using KianCommons;
 using System;
@@ -12,10 +13,6 @@ namespace NodeController.Patches.TMPE {
 
     [HarmonyPatch]
     internal class JunctionRestrictions {
-
-        public const JunctionRestrictionFlags impactedFlags = JunctionRestrictionFlags.AllowPedestrianCrossing
-                                                                | JunctionRestrictionFlags.AllowUTurn
-                                                                | JunctionRestrictionFlags.AllowEnterWhenBlocked;
 
         public static JunctionRestrictions Instance = new JunctionRestrictions();
 
@@ -34,107 +31,26 @@ namespace NodeController.Patches.TMPE {
 
         private void GetDefaultsHook(FlagsHookArgs args) {
             if (NodeManager.Instance.TryGet(args.SegmentId, args.StartNode, out var nodeData)) {
-                GetDefaultsHook(nodeData, args);
+                UpdateFlag(args, JunctionRestrictionsFlags.AllowUTurn, nodeData.GetDefaultUturnAllowed);
+                UpdateFlag(args, JunctionRestrictionsFlags.AllowPedestrianCrossing, nodeData.GetDefaultPedestrianCrossingAllowed);
+                UpdateFlag(args, JunctionRestrictionsFlags.AllowEnterWhenBlocked, nodeData.GetDefaultEnteringBlockedJunctionAllowed);
             }
         }
 
         private void GetConfigurableHook(FlagsHookArgs args) {
             if (NodeManager.Instance.TryGet(args.SegmentId, args.StartNode, out var nodeData)) {
-                GetConfigurableHook(nodeData, args);
+                UpdateFlag(args, JunctionRestrictionsFlags.AllowUTurn, nodeData.IsUturnAllowedConfigurable);
+                UpdateFlag(args, JunctionRestrictionsFlags.AllowPedestrianCrossing, nodeData.IsPedestrianCrossingAllowedConfigurable);
+                UpdateFlag(args, JunctionRestrictionsFlags.AllowEnterWhenBlocked, nodeData.IsEnteringBlockedJunctionAllowedConfigurable);
             }
         }
 
-        private void GetDefaultsHook(NodeData nodeData, FlagsHookArgs args) {
-
-            switch (nodeData.NodeType) {
-                case NodeTypeT.Crossing:
-                    args.Result |= JunctionRestrictionFlags.AllowPedestrianCrossing;
-                    args.Result &= ~(JunctionRestrictionFlags.AllowEnterWhenBlocked | JunctionRestrictionFlags.AllowUTurn);
-                    break;
-
-                case NodeTypeT.UTurn:
-                    args.Result |= JunctionRestrictionFlags.AllowUTurn;
-                    args.Result &= ~JunctionRestrictionFlags.AllowPedestrianCrossing;
-                    break;
-
-                case NodeTypeT.Stretch:
-                    args.Result |= JunctionRestrictionFlags.AllowEnterWhenBlocked;
-                    args.Result &= ~(JunctionRestrictionFlags.AllowPedestrianCrossing | JunctionRestrictionFlags.AllowUTurn);
-                    break;
-
-                case NodeTypeT.Nodeless:
-                    args.Result &= ~(JunctionRestrictionFlags.AllowPedestrianCrossing | JunctionRestrictionFlags.AllowUTurn);
-                    break;
-
-                case NodeTypeT.Bend:
-                    args.Result &= ~JunctionRestrictionFlags.AllowPedestrianCrossing;
-                    break;
-
-                case NodeTypeT.Custom: {
-                        if ((args.Mask & JunctionRestrictionFlags.AllowPedestrianCrossing) != 0 && nodeData.SegmentCount == 2) {
-
-                            var netAI1 = nodeData.SegmentEnd1.SegmentID.ToSegment().Info.m_netAI;
-                            var netAI2 = nodeData.SegmentEnd2.SegmentID.ToSegment().Info.m_netAI;
-                            bool sameAIType = netAI1.GetType() == netAI2.GetType();
-
-                            if (!sameAIType)
-                                args.Result &= ~JunctionRestrictionFlags.AllowPedestrianCrossing;
-                        }
-
-                        if (nodeData.SegmentCount <= 2) {
-                            args.Result |= JunctionRestrictionFlags.AllowEnterWhenBlocked;
-                        }
-                        break;
-                    }
-
-                case NodeTypeT.End:
-                    break;
-
-                default:
-                    throw new Exception("Unreachable code");
+        public static void UpdateFlag(FlagsHookArgs args, JunctionRestrictionsFlags flag, Func<bool?> func) {
+            if (args.Mask.IsFlagSet(flag)) {
+                var value = func();
+                if (value.HasValue)
+                    args.Result = args.Result.SetFlags(flag, value.Value);
             }
         }
-
-        private void GetConfigurableHook(NodeData nodeData, FlagsHookArgs args) {
-
-            switch (nodeData.NodeType) {
-                case NodeTypeT.Crossing:
-                    args.Result &= ~(JunctionRestrictionFlags.AllowPedestrianCrossing | JunctionRestrictionFlags.AllowUTurn);
-                    break;
-
-                case NodeTypeT.UTurn:
-                    args.Result &= ~JunctionRestrictionFlags.AllowPedestrianCrossing;
-                    break;
-
-                case NodeTypeT.Stretch:
-                case NodeTypeT.Nodeless:
-                case NodeTypeT.Bend:
-                    args.Result &= ~(JunctionRestrictionFlags.AllowEnterWhenBlocked
-                                    | JunctionRestrictionFlags.AllowPedestrianCrossing
-                                    | JunctionRestrictionFlags.AllowUTurn);
-                    break;
-
-                case NodeTypeT.Custom: {
-
-                        if (nodeData.SegmentCount == 2 && !nodeData.HasPedestrianLanes)
-                            args.Result &= ~JunctionRestrictionFlags.AllowPedestrianCrossing;
-
-                        if ((args.Mask & JunctionRestrictionFlags.AllowEnterWhenBlocked) != 0) {
-
-                            bool oneway = nodeData.DefaultFlags.IsFlagSet(NetNode.Flags.OneWayIn) & nodeData.DefaultFlags.IsFlagSet(NetNode.Flags.OneWayOut);
-                            if (oneway & !nodeData.HasPedestrianLanes)
-                                args.Result &= ~JunctionRestrictionFlags.AllowEnterWhenBlocked;
-                        }
-                        break;
-                    }
-
-                case NodeTypeT.End:
-                    break;
-
-                default:
-                    throw new Exception("Unreachable code");
-            }
-        }
-
     }
 }
