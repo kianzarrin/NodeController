@@ -871,7 +871,7 @@ namespace NodeController {
                     }
                 case NodeTypeT.Bend:
                     reason = ToggleTrafficLightError.NoJunction;
-                    return TernaryBool.False;
+                    return TernaryBool.Undefined;
                 case NodeTypeT.Custom:
                     return TernaryBool.Undefined; // default off
                 case NodeTypeT.End:
