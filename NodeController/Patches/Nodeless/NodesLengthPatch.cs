@@ -39,10 +39,15 @@ namespace NodeController.Patches.Nodeless {
                     ref var renderData = ref RenderManager.instance.m_instances[instanceIndex];
                     ref var node = ref nodeID.ToNode();
                     ushort segmentID = node.GetSegment(renderData.m_dataInt0 & 7);
-                    ushort segmentID2 = node.GetSegment(renderData.m_dataInt0 >> 4);
                     var segmentData = SegmentEndManager.Instance.GetAt(segmentID: segmentID, nodeID: nodeID);
-                    var segmentData2 = SegmentEndManager.Instance.GetAt(segmentID: segmentID2, nodeID: nodeID);
-                    nodeless = (segmentData?.IsNodeless ?? false) || (segmentData2?.IsNodeless ?? false);
+                    bool dc = (renderData.m_dataInt0 & 8) != 0;
+                    if (dc) {
+                        ushort segmentID2 = node.GetSegment(renderData.m_dataInt0 >> 4);
+                        var segmentData2 = SegmentEndManager.Instance.GetAt(segmentID: segmentID2, nodeID: nodeID);
+                        nodeless = (segmentData?.IsNodeless ?? false) || (segmentData2?.IsNodeless ?? false);
+                    } else {
+                        nodeless = segmentData?.IsNodeless ?? false;
+                    }
                 }
                 if(nodeless)
                     return 0;
