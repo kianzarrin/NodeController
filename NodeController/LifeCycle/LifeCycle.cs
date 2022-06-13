@@ -8,6 +8,7 @@ namespace NodeController.LifeCycle {
     using NodeController.Util;
     using System.Diagnostics;
     using UnityEngine.SceneManagement;
+    using NodeController.Manager;
 
     public static class LifeCycle {
         public static string HARMONY_ID = "CS.Kian.NodeController";
@@ -27,19 +28,27 @@ namespace NodeController.LifeCycle {
 
             HarmonyHelper.EnsureHarmonyInstalled();
             LoadingManager.instance.m_simulationDataReady += SimulationDataReady; // load/update data
+            TrafficManager.API.Implementations.Notifier.EventLevelLoaded += TMPE_Loaded;
             if (HelpersExtensions.InGameOrEditor)
                 HotReload();
 
             if(fastTestHarmony) HarmonyUtil.InstallHarmony(HARMONY_ID);
         }
 
+        private static void TMPE_Loaded() {
+            Log.Called();
+            LaneCache.Ensure();
+            LaneCache.Instance.OnTMPELoaded();
+        }
+
         const bool fastTestHarmony = false;
 
         public static void Disable() {
+            TrafficManager.API.Implementations.Notifier.EventLevelLoaded -= TMPE_Loaded;
             LoadingManager.instance.m_simulationDataReady -= SimulationDataReady;
             Unload(); // in case of hot unload
-
             if (fastTestHarmony) HarmonyUtil.UninstallHarmony(HARMONY_ID);
+            LaneCache.Instance?.Release();
         }
 
         public static void OnLevelUnloading() {
@@ -51,6 +60,7 @@ namespace NodeController.LifeCycle {
             bHotReload = true;
             SimulationDataReady();
             OnLevelLoaded(Mode);
+            TMPE_Loaded();
         }
 
         public static void SimulationDataReady() {
@@ -78,6 +88,7 @@ namespace NodeController.LifeCycle {
 
                 HarmonyUtil.InstallHarmony(HARMONY_ID, null); // game config is checked in patch.
 
+                LaneCache.Create();
                 NodeManager.Instance.OnLoad();
                 SegmentEndManager.Instance.OnLoad();
                 NodeManager.ValidateAndHeal(true);
