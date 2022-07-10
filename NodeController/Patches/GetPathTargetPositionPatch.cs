@@ -8,13 +8,12 @@ namespace NodeController.Patches {
     using NodeController;
     [HarmonyPatch(typeof(CitizenAI), "GetPathTargetPosition")]
     static class GetPathTargetPositionPatch {
-        public static IEnumerable<CodeInstruction> Transpilar(IEnumerable<CodeInstruction> instructions) {
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
             foreach (var instruction in instructions) {
+                yield return instruction;
                 if (instruction.opcode == OpCodes.Ldc_R4 && instruction.operand is float value && value == 64) {
                     yield return new CodeInstruction(OpCodes.Ldloc, 4);
                     yield return new CodeInstruction(OpCodes.Call, mGetGap_);
-                } else {
-                    yield return instruction;
                 }
             }
         }
@@ -22,7 +21,7 @@ namespace NodeController.Patches {
         private static MethodInfo mGetGap_ =>
             AccessTools.Method(typeof(GetPathTargetPositionPatch), nameof(GetPathTargetPositionPatch.GetGap));
 
-        private static float GetGap(PathUnit.Position pathPos) {
+        private static float GetGap(float gap, PathUnit.Position pathPos) {
             ref var segment = ref pathPos.m_segment.ToSegment();
             bool startNode = pathPos.m_offset == 0;
             var nodeId = segment.GetNodeId(startNode);
