@@ -28,7 +28,7 @@
     <PathMap>$(MSBuildProjectDirectory)/=$(ProjectName)/</PathMap>
     <ManagedDLLPath>../dependencies</ManagedDLLPath>
     <SteamPath>~/Library/Application Support/Steam/</SteamPath>
-    <SteamPath Condition="! Exists ('$(SteamPath)')">$(ProgramFiles)/Steam</SteamPath>
+    <SteamPath Condition="! Exists ('$(SteamPath)')">$(MSBuildProgramFiles32)/Steam</SteamPath>
     <SteamPath Condition="! Exists ('$(SteamPath)')">$(Registry:HKEY_CURRENT_USER\Software\Valve\Steam@SteamPath)</SteamPath>
     <CSPath>$(SteamPath)/steamapps/common/Cities_Skylines</CSPath>
     <ContentPath>$(SteamPath)/steamapps/workshop/content/255710/$(ContentID)</ContentPath>
@@ -119,7 +119,10 @@
     <None Include="DecompiledSources\NetSegment2.cs" />
     <None Include="DecompiledSources\VehicleAI.cs" />
     <None Include="DecompiledSources\NetLane2.cs" />
-    <None Update="Resources\cursor_edit.png">
+    <None Update="Resources\*.png" >
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <!--<None Update="Resources\cursor_edit.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\cursor_error.png">
@@ -145,7 +148,7 @@
     </None>
     <None Update="Resources\uui_node_controller.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </None>-->
   </ItemGroup>
   <Target Name="DeployToModDirectory" AfterTargets="Build">
     <Message Importance="high" Text="DeployToModDirectory ..." />
@@ -153,7 +156,7 @@
       <Output TaskParameter="Assemblies" ItemName="Targets" />
     </GetAssemblyIdentity>
     <ItemGroup>
-      <AuxiliaryFiles Include="$(TargetDir)Resources\*.png;$(TargetDir)MoveItIntegration.dll;$(TargetDir)CitiesHarmony.API.dll;../libs/UnifiedUILib.*" />
+      <AuxiliaryFiles Include="$(TargetDir)Resources\*.png;$(TargetDir)MoveItIntegration.dll;$(TargetDir)CitiesHarmony.API.dll;$(TargetDir)libs/UnifiedUILib.*" />
       <VersionNumber Include="@(Targets->'%(Version)')" />
     </ItemGroup>
     <PropertyGroup>
