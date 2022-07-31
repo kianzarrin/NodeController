@@ -13,7 +13,6 @@ namespace NodeController {
     using UnityEngine;
     using CSURUtil = Util.CSURUtil;
     using Log = KianCommons.Log;
-    using static KianCommons.HelpersExtensions;
     using static KianCommons.ReflectionHelpers;
     using static KianCommons.Assertion;
     using System.Linq;
@@ -47,10 +46,12 @@ namespace NodeController {
                 LeftCorner.Left = true;
                 RightCorner.Left = false;
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 LeftCorner.DeltaPos = info.GetValue<Vector3Serializable>("DeltaLeftCornerPos");
                 LeftCorner.DeltaDir = info.GetValue<Vector3Serializable>("DeltaLeftCornerDir");
                 RightCorner.DeltaPos = info.GetValue<Vector3Serializable>("DeltaRightCornerPos");
                 RightCorner.DeltaDir = info.GetValue<Vector3Serializable>("DeltaRightCornerDir");
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             Update();
@@ -120,7 +121,7 @@ namespace NodeController {
             CornerOffset = DefaultCornerOffset;
             FlatJunctions = DefaultFlatJunctions;
             Twist = DefaultTwist;
-            if(VERBOSE)
+            if(Log.VERBOSE)
                 Log.Debug($"SegmentEndData() Direction={Direction} Slope={SlopeAngleDeg}");
             Assert(IsDefault(),
             $"\n{CornerOffset} == {DefaultCornerOffset} error = 0.1\n" +
@@ -155,7 +156,7 @@ namespace NodeController {
         /// this is called to make necessary changes to the node to handle external changes
         /// </summary>
         private void Refresh() {
-            if (HelpersExtensions.VERBOSE)
+            if (Log.VERBOSE)
                 Log.Debug("SegmentEndData.Refresh() for this\n" + Environment.StackTrace);
 
             if (!CanModifyOffset()) {
@@ -179,7 +180,7 @@ namespace NodeController {
         }
 
         public void Update() {
-            if (VERBOSE) {
+            if (Log.VERBOSE) {
                 var st = new StackTrace(fNeedFileInfo: true);
                 Log.Debug(this + "\n" + st.ToStringPretty());
             }
@@ -224,7 +225,7 @@ namespace NodeController {
                 if (activePanel != null) {
                     if (activePanel.NetworkType == NetworkTypeT.Node && NodeID == SelectedNodeID) {
                         activePanel.RefreshValues();
-                    } else if (activePanel.NetworkType == NetworkTypeT.SegmentEnd && this.IsSelected()) {
+                    } else if (activePanel.NetworkType == NetworkTypeT.SegmentEnd && IsSelected()) {
                         activePanel.RefreshValues();
                     }
                 }
@@ -307,8 +308,8 @@ namespace NodeController {
         }
 
         // left and right going away from the junction.
-        public CornerData LeftCorner = new CornerData { Left = true };
-        public CornerData RightCorner = new CornerData { Left = false };
+        public CornerData LeftCorner = new() { Left = true };
+        public CornerData RightCorner = new() { Left = false };
 
         [Serializable]
         public struct CornerData {
@@ -326,10 +327,12 @@ namespace NodeController {
                 LockLength = false;
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             public Vector3Serializable CachedPos, CachedDir;
             public Vector3Serializable Dir00, Pos00; // before sliders
             public Vector3Serializable Dir0, Pos0; // after sliders but before 3x4 table
             public Vector3Serializable DeltaPos, DeltaDir;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             public void ResetDeltaDirI(int index) {
                 Vector3 v = DeltaDir;
@@ -412,11 +415,11 @@ namespace NodeController {
         }
 
         bool CrossingIsRemoved() =>
-            HideCrosswalks.Patches.CalculateMaterialCommons.
-            ShouldHideCrossing(NodeID, SegmentID);
+            HideCrosswalks.Patches.CalculateMaterialCommons.ShouldHideCrossing(NodeID, SegmentID);
 
         #region show/hide in UI
         public bool IsCSUR => NetUtil.IsCSUR(Info);
+        public bool IsRoad => Info.m_netAI is RoadBaseAI;
         public NetInfo Info => Segment.Info;
         public bool CanModifyOffset() => (!IsNodeless) && (NodeData?.CanModifyOffset() ?? false);
         public bool CanModifyCorners() => NodeData != null &&
@@ -464,7 +467,7 @@ namespace NodeController {
         public bool ShowNoMarkingsToggle() {
             if (IsCSUR) return false;
             if (NodeData == null) return true;
-            return NodeData.NodeType == NodeTypeT.Custom;
+            return NodeData.NodeType == NodeTypeT.Custom && IsRoad;
         }
         #endregion
 

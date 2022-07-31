@@ -104,7 +104,7 @@ namespace NodeController.GUI {
             if (root_?.GetData() is NodeData nodeData)
                 RefreshNode(nodeData);
 
-            parent.isVisible = isVisible = this.isEnabled;
+            parent.isVisible = isVisible = isEnabled;
             Invalidate();
             refreshing_ = false;
         }
@@ -124,7 +124,7 @@ namespace NodeController.GUI {
                 isChecked = segmentEndData.NoMarkings;
                 isEnabled = segmentEndData.ShowNoMarkingsToggle();
             } else if (data is NodeData nodeData) {
-                this.isChecked = nodeData.NoMarkings;
+                isChecked = nodeData.NoMarkings;
                 isEnabled = nodeData.ShowNoMarkingsToggle();
             } else Disable();
             refreshing_ = false;

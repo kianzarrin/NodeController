@@ -8,7 +8,7 @@ namespace NodeController.Patches {
     using NodeController;
     [HarmonyPatch(typeof(CitizenAI), "GetPathTargetPosition")]
     static class GetPathTargetPositionPatch {
-        public static IEnumerable<CodeInstruction> Transpilar(IEnumerable<CodeInstruction> instructions) {
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) {
             foreach (var instruction in instructions) {
                 if (instruction.opcode == OpCodes.Ldc_R4 && instruction.operand is float value && value == 64) {
                     yield return new CodeInstruction(OpCodes.Ldloc, 4);

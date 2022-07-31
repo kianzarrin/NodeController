@@ -11,7 +11,6 @@ namespace NodeController {
     using TernaryBool = CSUtil.Commons.TernaryBool;
     using KianCommons;
     using Log = KianCommons.Log;
-    using static KianCommons.HelpersExtensions;
     using static KianCommons.ReflectionHelpers;
     using static KianCommons.Assertion;
     using KianCommons.Serialization;
@@ -21,7 +20,6 @@ namespace NodeController {
     using System.Diagnostics;
     using System.Linq;
     using KianCommons.Plugins;
-    using ColossalFramework.Math;
 
     public enum NodeTypeT {
         Nodeless,
@@ -450,7 +448,7 @@ namespace NodeController {
 
         public NodeData(ushort nodeID, NodeTypeT nodeType) : this(nodeID) {
             NodeType = nodeType;
-            FirstTimeTrafficLight = nodeType == NodeTypeT.Crossing;
+            FirstTimeTrafficLight = nodeType == NodeTypeT.Crossing || IsLevelCrossing;
             // TODO update slope angle.
             Assert(CanChangeTo(NodeType), $"CanChangeTo(NodeType={NodeType})");
         }
@@ -559,7 +557,7 @@ namespace NodeController {
         /// this is called to make necessary changes to the node to handle external changes
         /// </summary>
         private void Refresh() {
-            if (VERBOSE) Log.Debug($"NodeData.Refresh() node:{NodeID}\n" + Environment.StackTrace);
+            if (Log.VERBOSE) Log.Debug($"NodeData.Refresh() node:{NodeID}\n" + Environment.StackTrace);
 
             if (NodeType != NodeTypeT.Custom)
                 NoMarkings = false;
@@ -576,7 +574,7 @@ namespace NodeController {
         }
 
         public void Update() {
-            if (VERBOSE) {
+            if (Log.VERBOSE) {
                 var st = new StackTrace(fNeedFileInfo: true);
                 Log.Debug(this + "\n" + st.ToStringPretty());
             }
@@ -631,7 +629,7 @@ namespace NodeController {
             var flags = nodeID.ToNode().m_flags;
             if (!flags.CheckFlags(
                 required: NetNode.Flags.Created,
-                forbidden: NetNode.Flags.LevelCrossing | NetNode.Flags.Outside | NetNode.Flags.Deleted)) {
+                forbidden: NetNode.Flags.Outside | NetNode.Flags.Deleted)) {
                 return false;
             }
 
@@ -645,10 +643,10 @@ namespace NodeController {
         public bool CanChangeTo(NodeTypeT newNodeType) {
             //Log.Debug($"CanChangeTo({newNodeType}) was called.");
             if (SegmentCount == 1)
-                return newNodeType == NodeTypeT.End;
+                return newNodeType is NodeTypeT.End;
 
-            if (SegmentCount > 2 || IsCSUR)
-                return newNodeType == NodeTypeT.Custom || newNodeType == NodeTypeT.Nodeless;
+            if (SegmentCount > 2 || IsCSUR || IsLevelCrossing)
+                return newNodeType is NodeTypeT.Custom or NodeTypeT.Nodeless;
 
             bool middle = DefaultFlags.IsFlagSet(NetNode.Flags.Middle);
             // segmentCount == 2 at this point.
@@ -662,7 +660,6 @@ namespace NodeController {
                 case NodeTypeT.Bend:
                     return true; // !middle; clus wants to use bend nodes.
                 case NodeTypeT.Nodeless:
-                    //return IsStraight || Is180;
                     return true; // all junctions can be node-less
                 case NodeTypeT.Custom:
                     return true;
@@ -673,8 +670,9 @@ namespace NodeController {
             }
         }
 
+        public bool IsLevelCrossing => Node.m_flags.IsFlagSet(NetNode.Flags.LevelCrossing);
         public bool IsCSUR => NetUtil.IsCSUR(Info);
-        public NetInfo Info => NodeID.ToNode().Info;
+        public NetInfo Info => Node.Info;
         public bool IsRoad => Info.m_netAI is RoadBaseAI;
         public bool EndNode() => NodeType == NodeTypeT.End;
         public bool NeedMiddleFlag() => NodeType == NodeTypeT.Nodeless && (IsStraight || Is180);
@@ -684,7 +682,7 @@ namespace NodeController {
             IterateSegmentEndDatas().All(item => item != null && item.IsNodeless));
         public bool NeedBendFlag() => NodeType == NodeTypeT.Bend;
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
-        public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing;
+        public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing || IsLevelCrossing;
         public bool CanModifyOffset() =>
             (NodeType is NodeTypeT.Bend or NodeTypeT.Stretch or NodeTypeT.Custom) &&
             !ShouldSharpenCorners();
@@ -753,7 +751,7 @@ namespace NodeController {
             info.m_netAI.GetNodeBuilding(NodeID, ref node, out BuildingInfo buildingInfo, out float heightOffset);
             Vector3 center = default;
             int counter = 0;
-            foreach (var segmentEndData in this.IterateSegmentEndDatas()) {
+            foreach (var segmentEndData in IterateSegmentEndDatas()) {
                 center += segmentEndData.LeftCorner.Pos + segmentEndData.RightCorner.Pos;
                 counter += 2;
             }
@@ -783,7 +781,7 @@ namespace NodeController {
                 case NodeTypeT.End:
                     return TernaryBool.Undefined;
                 default:
-                    throw new Exception("Unreachable code");
+                    throw new Exception($"Unreachable code. NodeType={NodeType}");
             }
         }
 
@@ -936,10 +934,6 @@ namespace NodeController {
         }
         #endregion
     }
-
-
-
-
 }
 
 namespace NodeController.Overrides {
@@ -957,11 +951,13 @@ namespace NodeController.Overrides {
                 ConfigurableType.Allways => false,
                 ConfigurableType.Default => true,
                 ConfigurableType.NA => null,
+                _ => throw new Exception($"Unreachable code. configurable={configurable}"),
             };
             Default = def switch {
                 DefaultType.On => false,
                 DefaultType.Off => true,
                 DefaultType.NA => null,
+                _ => throw new Exception($"Unreachable code. def={def}"),
             };
         }
 
