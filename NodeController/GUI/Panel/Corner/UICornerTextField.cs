@@ -5,7 +5,7 @@ namespace NodeController.GUI {
     using KianCommons.UI;
     using System;
     using UnityEngine;
-    using static KianCommons.HelpersExtensions;
+    using static KianCommons.Helpers;
     using NodeController.Tool;
 
     public class UICornerTextField : UITextField, IDataControllerUI, IToolUpdate {
@@ -31,16 +31,16 @@ namespace NodeController.GUI {
             get {
                 if (containsFocus)
                     return null;
-                string ret = "mousewheel => increment/decrement.\n" +
-                    "shift + mousewheel => large increment/decrement.\n" +
+                string ret = "mouse-wheel => increment/decrement.\n" +
+                    "shift + mouse-wheel => large increment/decrement.\n" +
                     "del => reset hovered value to default" +
                     (MixedValues ? "\nyellow color = mixed values" : "");
 
 
                 if (Mirror != null) {
                     ret += "\n";
-                    ret += "control + mousewheel => link corresponding text field\n";
-                    ret += "control + alt + mousewheel => invert link correspinding text field";
+                    ret += "control + mouse-wheel => link corresponding text field\n";
+                    ret += "control + alt + mouse-wheel => invert link corresponding text field";
                 }
                 return ret;
             }
@@ -197,7 +197,7 @@ namespace NodeController.GUI {
         /// <returns>final delta in Value after rounding</returns>
         public float AddDelta(float delta, float step) {
             Log.Debug(Environment.StackTrace);
-            delta = Value - (Value + delta).RoundToNearest(step); // we need final detla for Mirror values.
+            delta = Value - (Value + delta).RoundToNearest(step); // we need final delta for Mirror values.
             Value += delta;
 
             if (Mirror == null) {
@@ -236,7 +236,7 @@ namespace NodeController.GUI {
             if (refreshing_ || !started_) return;
             if (TryGetValue(out float value)) {
                 // fast apply-refresh.
-                // don't update text ... let user type the whole numbrer.
+                // don't update text ... let user type the whole number.
                 // deep refresh is for OnSubmit()
                 SetData(value);
                 root_?.GetData()?.Update();
@@ -272,7 +272,7 @@ namespace NodeController.GUI {
         }
 
         public void Refresh() {
-            if (VERBOSE) Log.Debug($"UICornerTextField.Refresh()called");
+            if (Log.VERBOSE) Log.Debug($"UICornerTextField.Refresh()called");
             try {
                 refreshing_ = true;
 

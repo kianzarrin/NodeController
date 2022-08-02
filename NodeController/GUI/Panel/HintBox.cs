@@ -10,9 +10,9 @@ namespace NodeController.GUI {
 
     public class HintBox : UILabel, IToolUpdate {
         UIPanelBase root_;
-        IEnumerable<IDataControllerUI> controlls_ => root_?.Controls;
+        IEnumerable<IDataControllerUI> controlls_ => root_.Alive()?.Controls;
         NodeControllerTool tool_;
-        NodeControllerTool Tool => tool_ = tool_ ?? NodeControllerTool.Instance;
+        NodeControllerTool Tool => tool_ = tool_.Alive() ?? NodeControllerTool.Instance;
 
         public override void Awake() {
             base.Awake();

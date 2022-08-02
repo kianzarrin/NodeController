@@ -1,4 +1,5 @@
 namespace NodeController.Tool {
+    extern alias UnifedUILib;
     using ColossalFramework;
     using ColossalFramework.UI;
     using KianCommons;
@@ -7,9 +8,9 @@ namespace NodeController.Tool {
     using System;
     using System.Threading;
     using UnityEngine;
-    using static KianCommons.HelpersExtensions;
+    using static KianCommons.Helpers;
     using static KianCommons.UI.RenderUtil;
-    using UnifiedUI.Helpers;
+    using UnifedUILib.UnifiedUI.Helpers;
     using NodeController.LifeCycle;
     using NodeController.Util;
 

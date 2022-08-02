@@ -1,9 +1,6 @@
 namespace NodeController.GUI {
     using ColossalFramework.UI;
     using System;
-    using UnityEngine;
-    using static KianCommons.HelpersExtensions;
-    using static KianCommons.Assertion;
     using KianCommons;
     using KianCommons.UI;
 
@@ -12,7 +9,7 @@ namespace NodeController.GUI {
 
         public abstract string HintDescription { get; }
 
-        public INetworkData Data => root_?.GetData();
+        public INetworkData Data => root_.Alive()?.GetData();
 
         UIPanelBase root_;
         public override void Awake() {
@@ -34,11 +31,11 @@ namespace NodeController.GUI {
         }
 
         public void Apply() {
-            if (VERBOSE) Log.Debug("UIResetButton.Apply called()\n" + Environment.StackTrace);
-            var data = root_?.GetData();
+            if (Log.VERBOSE) Log.Debug("UIResetButton.Apply called()\n" + Environment.StackTrace);
+            var data = root_.Alive()?.GetData();
             Action(data);
             data.RefreshAndUpdate();
-            Assert(!refreshing_, "!refreshing_");
+            Assertion.Assert(!refreshing_, "!refreshing_");
             root_.Refresh();
         }
 
@@ -46,7 +43,7 @@ namespace NodeController.GUI {
         bool refreshing_ = false;
 
         public void Refresh() {
-            if (VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
+            if (Log.VERBOSE) Log.Debug("Refresh called()\n" + Environment.StackTrace);
             RefreshValues();
             refreshing_ = true;
             parent.isVisible = isVisible = isEnabled;
@@ -57,7 +54,7 @@ namespace NodeController.GUI {
 
         public void RefreshValues() {
             refreshing_ = true;
-            INetworkData data = root_.GetData();
+            INetworkData data = root_.Alive().GetData();
             if (data == null) {
                 Disable();
                 return;
