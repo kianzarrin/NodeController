@@ -65,6 +65,7 @@ namespace NodeController.LifeCycle {
 
         public static void SimulationDataReady() {
             try {
+                Log.Called();
                 //Log.Info($"LifeCycle.SimulationDataReady() called. mode={Mode} updateMode={UpdateMode}, scene={Scene}");
                 //System.Threading.Thread.Sleep(1000 * 50); //50 sec
                 //Log.Info($"LifeCycle.SimulationDataReady() after sleep");
@@ -86,16 +87,16 @@ namespace NodeController.LifeCycle {
                     }
                 }
 
+                LaneCache.Create();
+
                 HarmonyUtil.InstallHarmony(HARMONY_ID, null); // game config is checked in patch.
 
-                LaneCache.Create();
                 NodeManager.Instance.OnLoad();
                 SegmentEndManager.Instance.OnLoad();
                 NodeManager.ValidateAndHeal(true);
                 Loaded = true;
-                Log.Info("LifeCycle.SimulationDataReady() sucessful");
-            }
-            catch (Exception e){
+                Log.Succeeded();
+            } catch (Exception e) {
                 Log.Exception(e);
             }
         }

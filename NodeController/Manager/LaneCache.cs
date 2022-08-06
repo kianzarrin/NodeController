@@ -1,17 +1,14 @@
 namespace NodeController.Manager {
     using KianCommons;
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using TrafficManager.API.Notifier;
 
     public class LaneCache {
-        public static LaneCache Instance { get; private set;}
+        public static LaneCache Instance { get; private set; }
         private struct LaneData {
             public bool HideArrows;
         }
-        private LaneData[] buffer = new LaneData[NetManager.MAX_LANE_COUNT];
+        private readonly LaneData[] buffer = new LaneData[NetManager.MAX_LANE_COUNT];
         static INotifier Notifier => TrafficManager.API.Implementations.Notifier;
 
         public static void Create() => Instance = new LaneCache();
@@ -29,8 +26,8 @@ namespace NodeController.Manager {
                     UpdateLanes(obj.InstanceID.NetSegment);
                 } else if (obj.InstanceID.Type == InstanceType.NetLane) {
                     UpdateLanes(obj.InstanceID.NetLane.ToLane().m_segment);
-                } else if(obj.InstanceID.Type == InstanceType.NetNode) {
-                    foreach(ushort segmentId in obj.InstanceID.NetNode.ToNode().IterateSegments()) {
+                } else if (obj.InstanceID.Type == InstanceType.NetNode) {
+                    foreach (ushort segmentId in obj.InstanceID.NetNode.ToNode().IterateSegments()) {
                         UpdateLanes(segmentId);
                     }
                 }
@@ -71,7 +68,7 @@ namespace NodeController.Manager {
             } else {
                 hide = false;
             }
-            foreach(var lane in lanes) {
+            foreach (var lane in lanes) {
                 buffer[lane.LaneID].HideArrows = hide;
             }
         }
