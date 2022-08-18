@@ -279,7 +279,7 @@ namespace NodeController.GUI {
                 var data = root_?.GetData();
                 //data?.Update();
                 if (data is NodeData nodeData) {
-                    if (name == "NoedCornerOffset")
+                    if (name == "NodeCornerOffset")
                         isEnabled = nodeData.CanModifyOffset();
                     else
                         isEnabled = nodeData.CanMassEditNodeCorners();
