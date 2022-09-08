@@ -82,17 +82,15 @@ namespace NodeController.Patches.VehicleSuperElevation {
             bool backward = lane.m_finalDirection == NetInfo.Direction.Backward;
             bool reversed = vehicleData.m_flags.IsFlagSet(Vehicle.Flags.Reversed);
 
+            bool bidirectional = lane.m_finalDirection.CheckFlags(NetInfo.Direction.Both);
             //bool both = lane.m_finalDirection == NetInfo.Direction.Both;
             //bool avoidForward = lane.m_finalDirection == NetInfo.Direction.AvoidForward;
             //bool avoidBackward = lane.m_finalDirection == NetInfo.Direction.AvoidBackward;
             //bool avoidAny = avoidForward | avoidBackward;
-            bool bidirectional = lane.m_finalDirection.IsFlagSet(NetInfo.Direction.Both);
 
             if (invert) se = -se;
             if (backward) se = -se;
             if (reversed & !bidirectional) se = -se;
-
-            //if (bidirectional) se = 0; // is this necessary?
             return se;
         }
 
