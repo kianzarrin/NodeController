@@ -59,7 +59,7 @@ namespace NodeController.Tool {
             if (leftMouseWasDown_ && e.type == EventType.MouseUp && m_mouseRayValid) {
                 if (e.button == 0) OnPrimaryMouseClicked();
             }
-            if(e.type == EventType.MouseDown || e.type == EventType.MouseUp)
+            if (e.type == EventType.MouseDown || e.type == EventType.MouseUp)
                 leftMouseWasDown_ = e.type == EventType.MouseDown && e.button == 0 && m_mouseRayValid;
 
             if (e.type == EventType.MouseDown && m_mouseRayValid && e.button == 1)
@@ -132,7 +132,7 @@ namespace NodeController.Tool {
                             return new RaycastService { m_itemLayers = ItemClass.Layer.MetroTunnels };
                         }
                         // ignore water pipes:
-                        return new RaycastService { m_itemLayers =  ItemClass.Layer.Default };
+                        return new RaycastService { m_itemLayers = ItemClass.Layer.Default };
                     default:
                         if (currentMode != InfoManager.InfoMode.Water) {
                             if (currentMode == InfoManager.InfoMode.Transport) {
@@ -196,7 +196,7 @@ namespace NodeController.Tool {
 
             if (RayCast(nodeInput, out raycastOutput)) {
                 HoveredNodeId = raycastOutput.m_netNode;
-            } 
+            }
 
             HoveredSegmentId = GetSegmentFromNode(raycastOutput.m_hitPos);
 
@@ -276,6 +276,7 @@ namespace NodeController.Tool {
                 raycastOutput.m_hitPos,
                 NetInfo.LaneType.All,
                 VehicleInfo.VehicleType.All,
+                VehicleInfo.VehicleCategory.All,
                 out Vector3 pos,
                 out uint laneId,
                 out int laneIndex,

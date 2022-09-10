@@ -13,13 +13,13 @@ namespace NodeController.Patches {
     [HarmonyPatch]
     static class CalculateCornerPatch {
         /// <param name="leftSide">left side going away from the junction</param>
-        static float GetMinCornerOffset(float cornerOffset0, ushort nodeID, ushort segmentID, bool leftSide) {
+        static float FixMinCornerOffset(float cornerOffset0, ushort nodeID, ushort segmentID, bool leftSide) {
             var nodeData = NodeManager.Instance.buffer[nodeID];
             var segmentData = SegmentEndManager.Instance.
                 GetAt(segmentID: segmentID, nodeID: nodeID);
             if (segmentData == null)
                 return cornerOffset0;
-            if(segmentData.IsNodeless)
+            if (segmentData.IsNodeless)
                 return 0;
             return segmentData.Corner(leftSide).Offset;
         }
@@ -32,30 +32,32 @@ namespace NodeController.Patches {
                     throw new System.Exception("CalculateCornerPatch Could not find target method.");
         }
 
-        static FieldInfo f_minCornerOffset =
-            typeof(NetInfo).GetField(nameof(NetInfo.m_minCornerOffset)) ??
-            throw new Exception("f_minCornerOffset is null");
-
-        static MethodInfo mGetMinCornerOffset = ReflectionHelpers.GetMethod(
-            typeof(CalculateCornerPatch), nameof(GetMinCornerOffset));
-
         [HarmonyBefore(CSURUtil.HARMONY_ID)]
         public static IEnumerable<CodeInstruction> Transpiler(
             IEnumerable<CodeInstruction> instructions, MethodBase original) {
+            FieldInfo f_minCornerOffset =
+                typeof(NetInfo).GetField(nameof(NetInfo.m_minCornerOffset)) ??
+                throw new Exception("f_minCornerOffset is null");
+            MethodInfo m_GetMinCornerOffset =
+                typeof(NetAI).GetMethod(nameof(NetAI.GetMinCornerOffset), throwOnError: true);
+
+            MethodInfo m_FixMinCornerOffset = ReflectionHelpers.GetMethod(
+                typeof(CalculateCornerPatch), nameof(FixMinCornerOffset));
+
             // apply the flat junctions transpiler
             instructions = FlatJunctionsCommons.ModifyFlatJunctionsTranspiler(instructions, original);
 
             CodeInstruction ldarg_startNodeID = GetLDArg(original, "startNodeID"); // push startNodeID into stack,
             CodeInstruction ldarg_segmentID = GetLDArg(original, "ignoreSegmentID");
             CodeInstruction ldarg_leftSide = GetLDArg(original, "leftSide");
-            CodeInstruction call_GetMinCornerOffset = new CodeInstruction(OpCodes.Call, mGetMinCornerOffset);
+            CodeInstruction call_GetMinCornerOffset = new CodeInstruction(OpCodes.Call, m_FixMinCornerOffset);
 
             int n = 0;
             foreach (var instruction in instructions) {
                 yield return instruction;
-                bool is_ldfld_minCornerOffset =
-                    instruction.opcode == OpCodes.Ldfld && instruction.operand == f_minCornerOffset;
-                if (is_ldfld_minCornerOffset) {
+                bool is_ldfld_minCornerOffset = instruction.LoadsField(f_minCornerOffset);
+                bool callsGetMinCornerOffset = instruction.Calls(m_GetMinCornerOffset);
+                if (is_ldfld_minCornerOffset || callsGetMinCornerOffset) {
                     n++;
                     yield return ldarg_startNodeID;
                     yield return ldarg_segmentID;
@@ -65,7 +67,7 @@ namespace NodeController.Patches {
             }
 
             Log.Debug($"TRANSPILER CalculateCornerPatch: Successfully patched NetSegment.CalculateCorner(). " +
-                $"found {n} instances of Ldfld NetInfo.m_minCornerOffset");
+                $"found {n} instances of Ldfld NetInfo.m_minCornerOffset or GetMinCornerOffset()");
             yield break;
         }
     }
