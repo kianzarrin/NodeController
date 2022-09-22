@@ -38,6 +38,7 @@ namespace NodeController.Patches.NetLanePatches {
                 pos.y += deltaY;
             else
                 pos.y -= deltaY;
+            __result = pos;
         }
     }
 }

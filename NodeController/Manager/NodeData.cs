@@ -20,6 +20,7 @@ namespace NodeController {
     using System.Diagnostics;
     using System.Linq;
     using KianCommons.Plugins;
+    using NodeController.Util;
 
     public enum NodeTypeT {
         Nodeless,
@@ -757,6 +758,8 @@ namespace NodeController {
             }
             center /= counter;
             center.y += heightOffset;
+
+            BuildingUtil.RelocatePillar(buildingId, center, building.m_angle);
             building.m_position = center;
         }
 
