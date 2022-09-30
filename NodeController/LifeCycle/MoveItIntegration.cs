@@ -161,7 +161,7 @@ namespace NodeController.LifeCycle {
         }
 
         public static void PasteSegmentEnd(SegmentEndData segmentEndData, ushort targetNodeID, ushort targetSegmentID) {
-            Log.Info($"PasteSegmentEnd({segmentEndData}, targetNodeID:{targetNodeID}, targetSegmentID:{targetNodeID})",true);
+            Log.Info($"PasteSegmentEnd({segmentEndData}, targetNodeID:{targetNodeID}, targetSegmentID:{targetSegmentID})",true);
             if (segmentEndData != null) {
                 segmentEndData = segmentEndData.Clone();
                 segmentEndData.SegmentID = targetSegmentID;
