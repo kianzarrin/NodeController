@@ -238,6 +238,12 @@ namespace NodeController.GUI {
                     return false;
                 }
 
+                bool visible = TMPEUtils.WorldToScreenPoint(
+                    worldPos: node.m_position, screenPos: out Vector3 signScreenPos);
+                if (!visible) {
+                    return false;
+                }
+
                 // NetManager netManager = Singleton<NetManager>.instance;
                 Color guiColor = GUI.color;
                 // Vector3 nodePos = Singleton<NetManager>.instance.m_nodes.m_buffer[nodeId].m_position;
