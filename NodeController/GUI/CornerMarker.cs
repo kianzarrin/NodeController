@@ -14,8 +14,7 @@ namespace NodeController.GUI {
         /// </summary>
         /// <returns><c>true</c>if mouse ray intersects with marker <c>false</c> otherwise</returns>
         internal bool IntersectRay() {
-            Camera currentCamera = TMPEUtils.Camera;
-            Ray mouseRay = currentCamera.ScreenPointToRay(Input.mousePosition);
+            Ray mouseRay = NodeControllerTool.Camera.ScreenPointToRay(Input.mousePosition);
             NodeControllerTool nctool = NodeControllerTool.Instance;
             float hitH = nctool.GetAccurateHitHeight();
 
