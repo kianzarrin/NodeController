@@ -5,7 +5,13 @@ namespace NodeController.Tool {
     using UnityEngine;
 
     public abstract class KianToolBase : ToolBase {
+        public static Camera Camera { get; private set; }
         public bool ToolEnabled => ToolsModifierControl.toolController?.CurrentTool == this;
+
+        protected override void Awake() {
+            base.Awake();
+            Camera = Camera.main; // cache camera
+        }
 
         protected override void OnDestroy() {
             DisableTool();
@@ -107,8 +113,8 @@ namespace NodeController.Tool {
         protected override void OnToolLateUpdate() {
             base.OnToolLateUpdate();
             m_mousePosition = Input.mousePosition;
-            m_mouseRay = Camera.main.ScreenPointToRay(m_mousePosition);
-            m_mouseRayLength = Camera.main.farClipPlane;
+            m_mouseRay = Camera.ScreenPointToRay(m_mousePosition);
+            m_mouseRayLength = Camera.farClipPlane;
             m_mouseRayValid = !UIView.IsInsideUI() && Cursor.visible;
         }
 
@@ -287,7 +293,7 @@ namespace NodeController.Tool {
         }
 
         internal Vector3 RaycastMouseLocation() {
-            RaycastInput input = new RaycastInput(m_mouseRay, Camera.main.farClipPlane) {
+            RaycastInput input = new RaycastInput(m_mouseRay, Camera.farClipPlane) {
                 m_ignoreTerrain = false
             };
             RayCast(input, out RaycastOutput output);
@@ -296,7 +302,7 @@ namespace NodeController.Tool {
         }
 
         internal Vector3 RaycastMouseLocation(float y) {
-            RaycastInput input = new RaycastInput(m_mouseRay, Camera.main.farClipPlane) {
+            RaycastInput input = new RaycastInput(m_mouseRay, Camera.farClipPlane) {
                 m_ignoreTerrain = false
             };
             RayCast(input, out RaycastOutput output);

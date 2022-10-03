@@ -1,6 +1,7 @@
 using NodeController.Tool;
 using UnityEngine;
 using KianCommons;
+using NodeController.Util;
 
 namespace NodeController.GUI {
     class CornerMarker {
@@ -13,7 +14,7 @@ namespace NodeController.GUI {
         /// </summary>
         /// <returns><c>true</c>if mouse ray intersects with marker <c>false</c> otherwise</returns>
         internal bool IntersectRay() {
-            Camera currentCamera = Camera.main;
+            Camera currentCamera = TMPEUtils.Camera;
             Ray mouseRay = currentCamera.ScreenPointToRay(Input.mousePosition);
             NodeControllerTool nctool = NodeControllerTool.Instance;
             float hitH = nctool.GetAccurateHitHeight();
