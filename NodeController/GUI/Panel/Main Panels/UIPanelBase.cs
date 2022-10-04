@@ -205,18 +205,24 @@ namespace NodeController.GUI {
         }
 
         public void OnToolUpdate() {
-            foreach (IDataControllerUI c in this.Controls) {
-                if (c is IToolUpdate c2)
-                    c2.OnToolUpdate();
-            }
-            Hintbox.OnToolUpdate();
+            try {
+                foreach (IDataControllerUI c in this.Controls) {
+                    if (c is IToolUpdate c2)
+                        c2.OnToolUpdate();
+                }
+                Hintbox?.OnToolUpdate();
 
-            var del = Input.GetKeyDown(KeyCode.Delete);
-            if (del) {
-                IDataControllerUI control = GethoveredController();
-                //Log.Debug("calling reset for " + control.GetType());
-                control.Reset();
-                GetData()?.Update();
+                var del = Input.GetKeyDown(KeyCode.Delete);
+                if (del) {
+                    IDataControllerUI control = GethoveredController();
+                    if (control != null) {
+                        //Log.Debug("calling reset for " + control.GetType());
+                        control.Reset();
+                        GetData()?.Update();
+                    }
+                }
+            } catch(Exception ex) {
+                ex.Log();
             }
         }
 
