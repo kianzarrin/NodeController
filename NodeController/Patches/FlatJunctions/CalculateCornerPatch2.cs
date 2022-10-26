@@ -41,7 +41,6 @@ namespace NodeController.Patches {
 
         /// <summary>
         /// embank segment end to match slope of the junction.
-        /// TODO: also give slope if segment comes at an angle.
         /// </summary>
         public static void FixCornerPosMinor(Vector3 nodePos, Vector3 neighbourEndDir, ref Vector3 cornerDir, ref Vector3 cornerPos) {
             float d = DotXZ(cornerPos - nodePos, neighbourEndDir);

@@ -74,7 +74,7 @@ namespace NodeController.Patches.VehicleSuperElevation {
             SegmentEndData segEnd = SegmentEndManager.Instance.GetAt(pathPos.m_segment, false);
             float startSE = segStart == null ? 0f : segStart.CachedSuperElevationDeg;
             float endSE = segEnd == null ? 0f : -segEnd.CachedSuperElevationDeg;
-            float se = startSE * (1 - offset) + endSE * offset;
+            float se = Mathf.Lerp(startSE , endSE ,offset);
 
             var lane = pathPos.GetLaneInfo();
             if (lane is null) return 0;
