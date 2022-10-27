@@ -83,16 +83,16 @@ namespace NodeController.LifeCycle {
                 if (Scene == "ThemeEditor")
                     return;
                 CSURUtil.Init();
-                if (Settings.GameConfig == null) {
+                if (NCSettings.GameConfig == null) {
                     switch (Mode) {
                         case LoadMode.NewGameFromScenario:
                         case LoadMode.LoadScenario:
                         case LoadMode.LoadMap:
                             // no NC or old NC
-                            Settings.GameConfig = GameConfigT.LoadGameDefault;
+                            NCSettings.GameConfig = GameConfigT.LoadGameDefault;
                             break;
                         default:
-                            Settings.GameConfig = GameConfigT.NewGameDefault;
+                            NCSettings.GameConfig = GameConfigT.NewGameDefault;
                             break;
                     }
                 }
@@ -122,7 +122,7 @@ namespace NodeController.LifeCycle {
             if (!Loaded) return; //protect against disabling from main menu.
             Log.Info("LifeCycle.Unload() called");
             HarmonyUtil.UninstallHarmony(HARMONY_ID);
-            Settings.GameConfig = null;
+            NCSettings.GameConfig = null;
             NodeControllerTool.Remove();
             Loaded = false;
         }

@@ -6,7 +6,7 @@ namespace NodeController.GUI {
     using UnityEngine;
 
     public class CollapsorButton : UIButton {
-        private static SavedBool showAdvanced_ = new SavedBool("ShowAdvanced", Settings.FileName, false, true);
+        private static SavedBool showAdvanced_ = new SavedBool("ShowAdvanced", NCSettings.FileName, false, true);
         private UIPanel targetPanel_;
                 
         public override void Awake() {

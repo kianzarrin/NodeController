@@ -5,6 +5,7 @@ namespace NodeController.GUI {
     using KianCommons;
     using static KianCommons.Assertion;
     using KianCommons.UI;
+    using System.Linq;
 
     public class SharpCornersCheckbox : UICheckBox, IDataControllerUI {
         public string HintHotkeys => "del => reset hovered value to default";
@@ -103,9 +104,9 @@ namespace NodeController.GUI {
 
         public void Reset() {
             if (root_?.GetData() is NodeData nodeData) {
-                isChecked = nodeData.DefaultSharpCorners;
+                isChecked = nodeData.IterateSegmentEndDatas().FirstOrDefault()?.DefaultSharpCorners ?? false;
             } else if (root_?.GetData() is SegmentEndData segEnd) {
-                isChecked = segEnd.NodeData.DefaultSharpCorners;
+                isChecked = segEnd.DefaultSharpCorners;
             }
         }
     }

@@ -3,20 +3,20 @@ namespace NodeController {
     using ColossalFramework.Math;
     using ColossalFramework.UI;
     using CSUtil.Commons;
+    using Epic.OnlineServices.Presence;
     using KianCommons;
     using KianCommons.Math;
+    using KianCommons.Plugins;
+    using KianCommons.Serialization;
     using NodeController.GUI;
     using NodeController.Tool;
     using System;
-    using System.Diagnostics;
     using System.Runtime.Serialization;
     using UnityEngine;
+    using static KianCommons.Assertion;
+    using static KianCommons.ReflectionHelpers;
     using CSURUtil = Util.CSURUtil;
     using Log = KianCommons.Log;
-    using static KianCommons.ReflectionHelpers;
-    using static KianCommons.Assertion;
-    using System.Linq;
-    using KianCommons.Serialization;
     using Vector3Serializable = KianCommons.Math.Vector3Serializable;
 
     [Serializable]
@@ -77,7 +77,19 @@ namespace NodeController {
 
         public NetSegment.Flags DefaultFlags;
 
-        public bool DefaultSharpCorners => NodeData?.DefaultSharpCorners ?? false;
+        public bool DefaultSharpCorners {
+            get {
+                NetNode.Flags flags = NodeData?.DefaultFlags ?? default;
+                if (flags == default) {
+                    flags = NodeID.ToNode().m_flags;
+                }
+                if(flags.IsFlagSet(NetNode.Flags.Middle | NetNode.Flags.End)) {
+                    return false;
+                } else {
+                    return AdaptiveRoadsUtil.GetARSharpCorners(Info);
+                }
+            }
+        }
 
         // cache
         public bool HasPedestrianLanes;
@@ -111,7 +123,7 @@ namespace NodeController {
         public SegmentEndData OtherEnd => SegmentEndManager.Instance.GetAt(SegmentID, !IsStartNode);
         public SegmentEndData OppositeMiddleEnd {
             get {
-                if (NodeType == NodeTypeT.Nodeless) {
+                if (NodeData != null && NodeType == NodeTypeT.Nodeless) {
                     ushort segmentId2 = Node.GetAnotherSegment(SegmentID);
                     if (segmentId2 != 0) {
                         return SegmentEndManager.Instance.GetAt(segmentId2, NodeID);
@@ -120,7 +132,7 @@ namespace NodeController {
                 return null;
             }
         }
-        
+
 
         /// <summary>segment end direction</summary>
         public ref Vector3 Direction {
@@ -139,15 +151,20 @@ namespace NodeController {
             Calculate();
             CornerOffset = DefaultCornerOffset;
             FlatJunctions = DefaultFlatJunctions;
+            SharpCorners = DefaultSharpCorners;
             Twist = DefaultTwist;
-            if(Log.VERBOSE)
+            if (Log.VERBOSE)
                 Log.Debug($"SegmentEndData() Direction={Direction} Slope={SlopeAngleDeg}");
-            Assert(IsDefault(),
-            $"\n{CornerOffset} == {DefaultCornerOffset} error = 0.1\n" +
+            Assert(IsDefault(), "\n" + DefaultMessage());
+
+            Update();
+        }
+
+        public string DefaultMessage() => $"{CornerOffset} == {DefaultCornerOffset} error = 0.1\n" +
             $"DeltaSlopeAngleDeg:{DeltaSlopeAngleDeg} == 0;" +
             $"Stretch:{Stretch} == 0; " +
             $"Shift:{Shift} == 0; " +
-            $"SharpCorners={DefaultSharpCorners} " +
+            $"SharpCorners:{SharpCorners} == {DefaultSharpCorners} " +
             $"EmbankmentAngleDeg:{EmbankmentAngleDeg} == 0; \n" +
             $"LeftCorner.IsDefault():{LeftCorner.IsDefault()} " +
             $"RightCorner.IsDefault():{RightCorner.IsDefault()} \n" +
@@ -156,13 +173,9 @@ namespace NodeController {
             $"NoCrossings:{NoCrossings} == false; " +
             $"NoMarkings:{NoMarkings} == false; " +
             $"NoJunctionTexture:{NoJunctionTexture} == false; " +
-            $"NoJunctionProps:{NoJunctionProps} == false; "+
-            $"NoTLProps:{NoTLProps} == false; "+
-            $"NoTLProps:{Nodeless} == false "
-            );
-
-            Update();
-        }
+            $"NoJunctionProps:{NoJunctionProps} == false; " +
+            $"NoTLProps:{NoTLProps} == false; " +
+            $"NoTLProps:{Nodeless} == false ";
 
         public void Calculate() {
             //Capture the default values.
@@ -193,7 +206,7 @@ namespace NodeController {
                 DeltaSlopeAngleDeg = 0;
                 Shift = Stretch = EmbankmentAngleDeg = 0;
             }
-            if (NodeData!= null &&  !NodeData.CanModifySharpCorners()) {
+            if (NodeData != null && !NodeData.CanModifySharpCorners()) {
                 SharpCorners = false;
             }
             if (!FlatJunctions)
@@ -373,7 +386,7 @@ namespace NodeController {
                 }
                 set {
                     if (LockLength)
-                        value *= DirLength/value.magnitude;
+                        value *= DirLength / value.magnitude;
                     CalculateTransformVectors(Dir0, Left, out var outward, out var forward);
                     DeltaDir = value - ReverseTransformCoordinats(Dir0, outward, Vector3.up, forward);
                     CachedDir = Dir0 + TransformCoordinates(DeltaDir, outward, Vector3.up, forward);
@@ -391,7 +404,7 @@ namespace NodeController {
                 set {
                     bool prevLockLength = LockLength;
                     LockLength = false;
-                    Dir *= Mathf.Clamp(value,0.001f,1000) / DirLength;
+                    Dir *= Mathf.Clamp(value, 0.001f, 1000) / DirLength;
                     LockLength = prevLockLength;
                     //Update();
                 }
@@ -469,7 +482,7 @@ namespace NodeController {
 
             bool flat1 = segEnd1?.FlatJunctions ?? segmentID1.ToSegment().Info.m_flatJunctions;
             bool flat2 = segEnd2?.FlatJunctions ?? segmentID2.ToSegment().Info.m_flatJunctions;
-            bool slope1 = !flat1 ;
+            bool slope1 = !flat1;
             bool slope2 = !flat2;
             bool slope = slope1 || slope2;
             if (!slope) return false;
@@ -508,7 +521,7 @@ namespace NodeController {
 
         public float GetStretchVelocity() {
             if (OppositeMiddleEnd is SegmentEndData end2) {
-                return MinByAbs(this.StretchDifference, -end2.StretchDifference).LogRet();
+                return MinByAbs(this.StretchDifference, -end2.StretchDifference);
             } else {
                 return 0;
             }
@@ -579,7 +592,7 @@ namespace NodeController {
                 cornerPos += CornerData.TransformCoordinates(deltaPos, outwardDir, Vector3.up, forwardDir);
             }
 
-            
+
             {
                 //slope:
                 float slopeAngleDeg = DeltaSlopeAngleDeg + AngleDeg(corner.Dir00.y);
@@ -603,7 +616,7 @@ namespace NodeController {
                     cornerPos.y += d * (cornerDir.y - corner.Dir00.y);
                 }
 
-                if (Settings.GameConfig.UnviversalSlopeFixes) {
+                if (NCSettings.GameConfig.UnviversalSlopeFixes) {
                     // this must be done after readjusting cornerPos.y
                     // make sure direction vector is not too big.
                     float absY = Mathf.Abs(cornerDir.y);

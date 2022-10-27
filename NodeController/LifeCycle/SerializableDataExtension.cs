@@ -21,7 +21,7 @@ namespace NodeController.LifeCycle
             Instance = new NCState {
                 NodeManagerData = NodeManager.Serialize(),
                 SegmentEndManagerData = SegmentEndManager.Serialize(),
-                GameConfig = Settings.GameConfig,
+                GameConfig = NCSettings.GameConfig,
             };
 
             Log.Debug("NCState.Serialize(): saving UnviversalSlopeFixes as " +
@@ -49,8 +49,8 @@ namespace NodeController.LifeCycle
                 }
             }
             Log.Debug($"setting UnviversalSlopeFixes to {Instance.GameConfig.UnviversalSlopeFixes}");
-            Settings.GameConfig = Instance.GameConfig;
-            Settings.UpdateGameSettings();
+            NCSettings.GameConfig = Instance.GameConfig;
+            NCSettings.UpdateGameSettings();
             var version = new Version(Instance.Version);
             SegmentEndManager.Deserialize(Instance.SegmentEndManagerData, version);
             NodeManager.Deserialize(Instance.NodeManagerData, version);

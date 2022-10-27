@@ -28,7 +28,7 @@ namespace NodeController.LifeCycle
 
         [UsedImplicitly]
         public void OnSettingsUI(UIHelperBase helper) {
-            GUI.Settings.OnSettingsUI(helper);
+            GUI.NCSettings.OnSettingsUI(helper);
         }
 
     }

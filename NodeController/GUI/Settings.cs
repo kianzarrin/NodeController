@@ -20,12 +20,12 @@ namespace NodeController.GUI {
         };
     }
 
-    public static class Settings {
+    public static class NCSettings {
         public const string FileName = nameof(NodeController);
 
         public static GameConfigT GameConfig;
 
-        static Settings() {
+        static NCSettings() {
             // Creating setting file - from SamsamTS
             if (GameSettings.FindSettingsFileByName(FileName) == null) {
                 GameSettings.AddSettingsFile(new SettingsFile[] { new SettingsFile() { fileName = FileName } });

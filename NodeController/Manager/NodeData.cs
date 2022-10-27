@@ -21,7 +21,7 @@ namespace NodeController {
     using System.Linq;
     using KianCommons.Plugins;
     using NodeController.Util;
-
+        
     public enum NodeTypeT {
         Nodeless,
         Bend,
@@ -69,7 +69,6 @@ namespace NodeController {
         // defaults
         public NetNode.Flags DefaultFlags;
         public NodeTypeT DefaultNodeType;
-        public bool DefaultSharpCorners;
 
         // cache
         public bool HasPedestrianLanes;
@@ -472,13 +471,17 @@ namespace NodeController {
             NodeID = nodeID;
             Calculate();
             NodeType = DefaultNodeType;
-            SharpCorners = DefaultSharpCorners;
+            if (CanModifySharpCorners()) {
+                SharpCorners = Info.GetARSharpCorners();
+            } else {
+                SharpCorners = false;
+            }
+
             FirstTimeTrafficLight = false;
-            Assert(IsDefault(), $"{this}.IsDefault(): NodeType:{NodeType} == {DefaultNodeType} and " +
-                $"SharpCorners:{SharpCorners} == {DefaultSharpCorners}\n" +
-                string.Join("|", IterateSegmentEndDatas()
+            Assert(IsDefault(), $"{this}.IsDefault(): NodeType:{NodeType} == {DefaultNodeType}\n" +
+                string.Join("\n\n", IterateSegmentEndDatas()
                 .Where(segEnd => !segEnd.IsDefault())
-                .Select(segEnd => $"{segEnd} is not default")
+                .Select(segEnd => $"{segEnd} is not default : " + segEnd.DefaultMessage())
                 .ToArray()));
             Assert(CanChangeTo(NodeType), $"CanChangeTo(NodeType={NodeType})");
             Update();
@@ -505,16 +508,12 @@ namespace NodeController {
 
             if (DefaultFlags.IsFlagSet(NetNode.Flags.Middle)) {
                 DefaultNodeType = NodeTypeT.Nodeless;
-                DefaultSharpCorners = false;
             } else if (DefaultFlags.IsFlagSet(NetNode.Flags.Bend)) {
                 DefaultNodeType = NodeTypeT.Bend;
-                DefaultSharpCorners = AdaptiveRoadsUtil.GetARSharpCorners(Info);
             } else if (DefaultFlags.IsFlagSet(NetNode.Flags.Junction)) {
                 DefaultNodeType = NodeTypeT.Custom;
-                DefaultSharpCorners = AdaptiveRoadsUtil.GetARSharpCorners(Info);
             } else if (DefaultFlags.IsFlagSet(NetNode.Flags.End)) {
                 NodeType = DefaultNodeType = NodeTypeT.End;
-                DefaultSharpCorners = false;
             } else {
                 throw new NotImplementedException("unsupported node flags: " + DefaultFlags);
             }
@@ -525,11 +524,6 @@ namespace NodeController {
                 Vector3 dir = NormalizeXZ(pos2 - pos1);
                 Vector3 endDir = NormalizeXZ(segmentId.ToSegment().GetDirection(nodeId));
                 return DotXZ(dir, endDir) > 0.95f;
-            }
-
-            AllStraight = Node.IterateSegments().All(_segmentId => IsSegmentStraight(_segmentId, NodeID));
-            if (!AllStraight) {
-                DefaultSharpCorners = false;
             }
 
             if (SegmentCount == 2) {
@@ -633,7 +627,7 @@ namespace NodeController {
         public bool IsSelected() => NodeID == SelectedNodeID;
 
         public bool IsDefault() {
-            bool isDefault = NodeType == DefaultNodeType && SharpCorners == DefaultSharpCorners;
+            bool isDefault = NodeType == DefaultNodeType;
             if (!isDefault)
                 return false;
 
@@ -647,7 +641,6 @@ namespace NodeController {
 
         public void ResetToDefault() {
             NodeType = DefaultNodeType;
-            SharpCorners = DefaultSharpCorners;
             foreach (var segEnd in IterateSegmentEndDatas())
                 segEnd?.ResetToDefault();
             Update();

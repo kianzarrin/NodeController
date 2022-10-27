@@ -17,15 +17,15 @@ namespace NodeController.Tool {
     public sealed class NodeControllerTool : KianToolBase {
         public static readonly SavedInputKey ActivationShortcut = new SavedInputKey(
             "ActivationShortcut",
-            Settings.FileName,
+            NCSettings.FileName,
             SavedInputKey.Encode(KeyCode.N, true, false, false),
             true);
 
         public static readonly SavedBool SnapToMiddleNode = new SavedBool(
-            "SnapToMiddleNode", Settings.FileName, def: false, true);
+            "SnapToMiddleNode", NCSettings.FileName, def: false, true);
 
         public static readonly SavedBool Hide_TMPE_Overlay = new SavedBool(
-            "Hide_TMPE_Overlay", Settings.FileName, def: false, true);
+            "Hide_TMPE_Overlay", NCSettings.FileName, def: false, true);
 
         public static bool LockMode => ControlIsPressed && !AltIsPressed;
         public static bool InvertLockMode => ControlIsPressed && AltIsPressed;

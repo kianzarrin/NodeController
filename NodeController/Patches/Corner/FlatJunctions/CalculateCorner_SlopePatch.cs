@@ -3,12 +3,10 @@ namespace NodeController.Patches.Corner {
     using HarmonyLib;
     using JetBrains.Annotations;
     using KianCommons;
+    using NodeController.GUI;
     using System.Reflection;
     using UnityEngine;
     using static ColossalFramework.Math.VectorUtils;
-    using NodeController.GUI;
-    using KianCommons.Plugins;
-    using ColossalFramework.Math;
 
     [UsedImplicitly]
     [HarmonyPatch]
@@ -108,12 +106,12 @@ namespace NodeController.Patches.Corner {
             ref Vector3 cornerPos, ref Vector3 cornerDirection) {
 
             SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
-            Assertion.AssertNotNull(Settings.GameConfig, "Settings.GameConfig");
-            if (data == null && !Settings.GameConfig.UnviversalSlopeFixes)
+            Assertion.AssertNotNull(NCSettings.GameConfig, "Settings.GameConfig");
+            if (data == null && !NCSettings.GameConfig.UnviversalSlopeFixes)
                 return;
 
             //Log.Debug($"CalculateCorner2.PostFix(segmentID={segmentID} start={start} leftSide={leftSide}): cornerDir={cornerDirection}");
-            ApplySlope( segmentID, start, leftSide, ref cornerPos, ref cornerDirection);
+            ApplySlope(segmentID, start, leftSide, ref cornerPos, ref cornerDirection);
 
             if (data != null) {
                 // manual adjustments:

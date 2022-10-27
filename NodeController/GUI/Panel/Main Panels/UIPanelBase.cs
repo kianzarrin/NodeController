@@ -13,9 +13,9 @@ namespace NodeController.GUI {
         public static UIPanelBase ActivePanel;
 
         public static readonly SavedFloat SavedX = new SavedFloat(
-            "PanelX", Settings.FileName, 87, true);
+            "PanelX", NCSettings.FileName, 87, true);
         public static readonly SavedFloat SavedY = new SavedFloat(
-            "PanelY", Settings.FileName, 58, true);
+            "PanelY", NCSettings.FileName, 58, true);
 
         public static Vector2 CELL_SIZE = new Vector2(100, 20);
         public static Vector2 CELL_SIZE2 = new Vector2(70, 20); // corner table
