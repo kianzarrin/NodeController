@@ -57,14 +57,16 @@ namespace NodeController.GUI {
 
 
         public void Apply() {
-            Log.Debug("SharpCornersCheckbox.Apply called()\n"/* + Environment.StackTrace*/);
-            NodeData data = root_?.GetData() as NodeData;
-            if (data == null)
-                return;
- 
-            data.SharpCorners = this.isChecked;
+            Log.Called();
             Assert(!refreshing_, "!refreshing_");
-            data.RefreshAndUpdate();
+            if (root_?.GetData() is NodeData nodeData) {
+                nodeData.SharpCorners = this.isChecked;
+                nodeData.RefreshAndUpdate();
+                root_.Refresh();
+            } else if(root_?.GetData() is SegmentEndData segEnd){
+                segEnd.SharpCorners = this.isChecked;
+                segEnd.RefreshAndUpdate();
+            }
             root_.Refresh();
         }
 
@@ -72,13 +74,8 @@ namespace NodeController.GUI {
         bool refreshing_ = false;
 
         public void Refresh() {
-            //Log.Debug("Refresh called()\n"/* + Environment.StackTrace*/);
             RefreshValues();
             refreshing_ = true;
-
-            //if (root_?.GetData() is NodeData nodeData)
-            //    RefreshNode(nodeData);
-
             parent.isVisible = isVisible = this.isEnabled;
             parent.Invalidate();
             Invalidate();
@@ -93,13 +90,22 @@ namespace NodeController.GUI {
                 if (isEnabled) {
                     this.isChecked = nodeData.SharpCorners;
                 }
-            } else Disable();
+                checkedBoxObject.color = nodeData.HasUnifromSharp() ? Color.white : Color.grey;
+                Log.Debug("checkedBoxObject.color ="+ checkedBoxObject.color);
+            } else if (data is SegmentEndData segEnd) {
+                isEnabled = segEnd.NodeData.CanModifySharpCorners();
+                if (isEnabled) {
+                    this.isChecked = segEnd.SharpCorners;
+                }
+            }
             refreshing_ = false;
         }
 
         public void Reset() {
             if (root_?.GetData() is NodeData nodeData) {
                 isChecked = nodeData.DefaultSharpCorners;
+            } else if (root_?.GetData() is SegmentEndData segEnd) {
+                isChecked = segEnd.NodeData.DefaultSharpCorners;
             }
         }
     }

@@ -1,7 +1,9 @@
-namespace NodeController.Patches {
+namespace NodeController.Patches.Corner {
     using HarmonyLib;
     using JetBrains.Annotations;
     using KianCommons;
+    using NodeController;
+    using NodeController.Patches;
     using NodeController.Util;
     using System;
     using System.Collections.Generic;
@@ -11,7 +13,7 @@ namespace NodeController.Patches {
 
     [UsedImplicitly]
     [HarmonyPatch]
-    static class CalculateCornerPatch {
+    static class CalculateCorner_MinCornerOffsetPatch {
         /// <param name="leftSide">left side going away from the junction</param>
         static float FixMinCornerOffset(float cornerOffset0, ushort nodeID, ushort segmentID, bool leftSide) {
             var nodeData = NodeManager.Instance.buffer[nodeID];
@@ -29,7 +31,7 @@ namespace NodeController.Patches {
             return typeof(NetSegment).GetMethod(
                     nameof(NetSegment.CalculateCorner),
                     BindingFlags.Public | BindingFlags.Static) ??
-                    throw new System.Exception("CalculateCornerPatch Could not find target method.");
+                    throw new Exception("CalculateCornerPatch Could not find target method.");
         }
 
         [HarmonyBefore(CSURUtil.HARMONY_ID)]
@@ -42,7 +44,7 @@ namespace NodeController.Patches {
                 typeof(NetAI).GetMethod(nameof(NetAI.GetMinCornerOffset), throwOnError: true);
 
             MethodInfo m_FixMinCornerOffset = ReflectionHelpers.GetMethod(
-                typeof(CalculateCornerPatch), nameof(FixMinCornerOffset));
+                typeof(CalculateCorner_MinCornerOffsetPatch), nameof(FixMinCornerOffset));
 
             // apply the flat junctions transpiler
             instructions = FlatJunctionsCommons.ModifyFlatJunctionsTranspiler(instructions, original);

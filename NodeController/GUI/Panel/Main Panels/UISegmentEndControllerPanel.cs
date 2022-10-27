@@ -68,6 +68,12 @@ namespace NodeController.GUI {
                 Controls.Add(panel2.AddUIComponent<TwistCheckbox>());
             }
 
+            {
+                var panel = AddPanel();
+                var checkBox = panel.AddUIComponent<SharpCornersCheckbox>();
+                Controls.Add(checkBox);
+            }
+
             { // offset
                 offsetPanel_ = MakeSliderSection(this,out var label,out var panel0, out var row1, out var row2);
                 label.text = "Corner offset";

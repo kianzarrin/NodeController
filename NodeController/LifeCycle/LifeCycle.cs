@@ -39,7 +39,11 @@ namespace NodeController.LifeCycle {
             if (!Helpers.InStartupMenu)
                 HotReload();
 
-            if(fastTestHarmony) HarmonyUtil.InstallHarmony(HARMONY_ID);
+            const bool fastTestHarmony = false;
+            if (fastTestHarmony) {
+                HarmonyUtil.InstallHarmony(HARMONY_ID);
+                Process.GetCurrentProcess().Kill();
+            }
         }
 
         private static void TMPE_Loaded() {
@@ -48,13 +52,11 @@ namespace NodeController.LifeCycle {
             LaneCache.Instance.OnTMPELoaded();
         }
 
-        const bool fastTestHarmony = false;
 
         public static void Disable() {
             TrafficManager.API.Implementations.Notifier.EventLevelLoaded -= TMPE_Loaded;
             LoadingManager.instance.m_simulationDataReady -= SimulationDataReady;
             Unload(); // in case of hot unload
-            if (fastTestHarmony) HarmonyUtil.UninstallHarmony(HARMONY_ID);
             LaneCache.Instance?.Release();
         }
 

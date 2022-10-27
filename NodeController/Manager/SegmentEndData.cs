@@ -18,7 +18,6 @@ namespace NodeController {
     using System.Linq;
     using KianCommons.Serialization;
     using Vector3Serializable = KianCommons.Math.Vector3Serializable;
-    using UnityEngine.Networking.Types;
 
     [Serializable]
     public class SegmentEndData : INetworkData, INetworkData<SegmentEndData>, ISerializable {
@@ -78,6 +77,8 @@ namespace NodeController {
 
         public NetSegment.Flags DefaultFlags;
 
+        public bool DefaultSharpCorners => NodeData?.DefaultSharpCorners ?? false;
+
         // cache
         public bool HasPedestrianLanes;
         public float CurveRaduis0;
@@ -98,6 +99,7 @@ namespace NodeController {
         public float Shift;
         public float DeltaSlopeAngleDeg;
         public bool Nodeless;
+        public bool SharpCorners;
 
         // shortcuts
         public ref NetSegment Segment => ref SegmentID.ToSegment();
@@ -145,6 +147,7 @@ namespace NodeController {
             $"DeltaSlopeAngleDeg:{DeltaSlopeAngleDeg} == 0;" +
             $"Stretch:{Stretch} == 0; " +
             $"Shift:{Shift} == 0; " +
+            $"SharpCorners={DefaultSharpCorners} " +
             $"EmbankmentAngleDeg:{EmbankmentAngleDeg} == 0; \n" +
             $"LeftCorner.IsDefault():{LeftCorner.IsDefault()} " +
             $"RightCorner.IsDefault():{RightCorner.IsDefault()} \n" +
@@ -190,10 +193,11 @@ namespace NodeController {
                 DeltaSlopeAngleDeg = 0;
                 Shift = Stretch = EmbankmentAngleDeg = 0;
             }
+            if (NodeData!= null &&  !NodeData.CanModifySharpCorners()) {
+                SharpCorners = false;
+            }
             if (!FlatJunctions)
                 Twist = false;
-
-
         }
 
         public void Update() {
@@ -259,6 +263,8 @@ namespace NodeController {
             ret &= DeltaSlopeAngleDeg == 0;
             ret &= Stretch == 0;
             ret &= Shift == 0;
+            ret &= SharpCorners == DefaultSharpCorners;
+
             ret &= EmbankmentAngleDeg == 0;
             ret &= FlatJunctions == DefaultFlatJunctions;
             ret &= Twist == DefaultTwist;
@@ -285,6 +291,7 @@ namespace NodeController {
             NoJunctionTexture = false;
             NoJunctionProps = false;
             NoTLProps = false;
+            SharpCorners = DefaultSharpCorners;
             Shift = Stretch = EmbankmentAngleDeg = 0;
             LeftCorner.ResetToDefault();
             RightCorner.ResetToDefault();
@@ -500,11 +507,7 @@ namespace NodeController {
         }
 
         public float GetStretchVelocity() {
-            Log.Called(this);
-            Log.Debug("OppositeMiddleEnd=" + OppositeMiddleEnd.ToSTR());
-
             if (OppositeMiddleEnd is SegmentEndData end2) {
-                Log.Debug($"StretchDifference={StretchDifference} StretchDifference2={-end2.StretchDifference}");
                 return MinByAbs(this.StretchDifference, -end2.StretchDifference).LogRet();
             } else {
                 return 0;
@@ -522,7 +525,6 @@ namespace NodeController {
                 return b;
             }
         }
-
 
         /// Precondition: cornerDir.LenXZ = 1
         /// <param name="leftSide">left side going away from the junction</param>

@@ -90,7 +90,6 @@ namespace NodeController {
 
         // Configurable
         public NodeTypeT NodeType;
-        public bool SharpCorners;
 
         #region bulk edit
         #region corner offset
@@ -425,6 +424,43 @@ namespace NodeController {
             return Shift1 == Shift2;
         }
         #endregion Shift
+        #region sharp
+        public bool SharpCorners {
+            get {
+                bool ret = false;
+                for (int i = 0; i < 8; ++i) {
+                    ushort segmentID = Node.GetSegment(i);
+                    if (segmentID == 0) continue;
+                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                    ret |= segEnd.SharpCorners;
+                }
+                return ret;
+            }
+            set {
+                for (int i = 0; i < 8; ++i) {
+                    ushort segmentID = Node.GetSegment(i);
+                    if (segmentID == 0) continue;
+                    var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                    segEnd.SharpCorners = value;
+                }
+            }
+        }
+        public bool HasUnifromSharp() {
+            bool ?val = null;
+            for (int i = 0; i < 8; ++i) {
+                ushort segmentID = Node.GetSegment(i);
+                if (segmentID == 0) continue;
+                var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
+                if (val == null) {
+                    val = segEnd.SharpCorners;
+                } else if(val != segEnd.SharpCorners) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        #endregion
         #endregion bulk edit
 
         public bool FirstTimeTrafficLight; // turn on traffic light when inserting pedestrian node for the first time.
@@ -683,11 +719,9 @@ namespace NodeController {
         public bool NeedJunctionFlag() => !NeedMiddleFlag() && !NeedBendFlag() && !EndNode();
         public bool WantsTrafficLight() => NodeType == NodeTypeT.Crossing || IsLevelCrossing;
         public bool CanModifyOffset() =>
-            (NodeType is NodeTypeT.Bend or NodeTypeT.Stretch or NodeTypeT.Custom) &&
-            !ShouldSharpenCorners();
+            (NodeType is NodeTypeT.Bend or NodeTypeT.Stretch or NodeTypeT.Custom);
         public bool CanModifySharpCorners() {
-            bool suitable = NodeType is NodeTypeT.Bend or NodeTypeT.Custom;
-            return suitable && AllStraight;
+            return NodeType is NodeTypeT.Bend or NodeTypeT.Custom;
         }
         public bool CanMassEditNodeCorners() => SegmentCount == 2;
         public bool CanModifyFlatJunctions() => !NeedMiddleFlag(); // && !IsNodelessJunction() ?
@@ -708,8 +742,6 @@ namespace NodeController {
             NodeType == NodeTypeT.Crossing &&
             CrossingIsRemoved(segmentID1) &&
             CrossingIsRemoved(segmentID2);
-
-        public bool ShouldSharpenCorners() => SharpCorners && CanModifySharpCorners();
 
         public string ToolTip(NodeTypeT nodeType) {
             switch (nodeType) {
