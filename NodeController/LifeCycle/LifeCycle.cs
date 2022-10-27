@@ -9,6 +9,7 @@ namespace NodeController.LifeCycle {
     using System.Diagnostics;
     using UnityEngine.SceneManagement;
     using NodeController.Manager;
+    using NodeController.Patches;
 
     public static class LifeCycle {
         public static string HARMONY_ID = "CS.Kian.NodeController";
@@ -23,13 +24,19 @@ namespace NodeController.LifeCycle {
         public static void Enable() {
             Log.Debug("Testing StackTrace:\n" + new StackTrace(true).ToString(), copyToGameLog: false);
             KianCommons.UI.TextureUtil.EmbededResources = false;
-            HelpersExtensions.VERBOSE = false;
+            Log.VERBOSE = false;
             Loaded = false;
 
             HarmonyHelper.EnsureHarmonyInstalled();
             LoadingManager.instance.m_simulationDataReady += SimulationDataReady; // load/update data
             TrafficManager.API.Implementations.Notifier.EventLevelLoaded += TMPE_Loaded;
-            if (HelpersExtensions.InGameOrEditor)
+
+            if (LoadingManager.instance.m_loadingComplete) {
+                // even if hotreload takes place in main menu we need to do this:
+                HarmonyUtil.InstallHarmony<HotReloadPatchAttribute>(HARMONY_ID);
+            }
+
+            if (Helpers.InStartupMenu)
                 HotReload();
 
             if(fastTestHarmony) HarmonyUtil.InstallHarmony(HARMONY_ID);
@@ -58,6 +65,7 @@ namespace NodeController.LifeCycle {
 
         public static void HotReload() {
             bHotReload = true;
+            SerializableDataExtension.Load();
             SimulationDataReady();
             OnLevelLoaded(Mode);
             TMPE_Loaded();
@@ -89,7 +97,7 @@ namespace NodeController.LifeCycle {
 
                 LaneCache.Create();
 
-                HarmonyUtil.InstallHarmony(HARMONY_ID, null); // game config is checked in patch.
+                HarmonyUtil.InstallHarmony(HARMONY_ID, forbidden:typeof(HotReloadPatchAttribute)); // game config is checked in patch.
 
                 NodeManager.Instance.OnLoad();
                 SegmentEndManager.Instance.OnLoad();

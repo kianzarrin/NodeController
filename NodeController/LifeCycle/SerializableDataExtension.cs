@@ -65,27 +65,30 @@ namespace NodeController.LifeCycle
         private const string DATA_ID0 = "RoadTransitionManager_V1.0";
         private const string DATA_ID1 = "NodeController_V1.0";
         private const string DATA_ID = "NodeController_V2.0";
+        private static ISerializableData SerializableData => SimulationManager.instance.m_SerializableDataWrapper;
 
         public static int LoadingVersion;
-        public override void OnLoadData()
-        {
-            byte[] data = serializableDataManager.LoadData(DATA_ID);
+
+
+        public override void OnLoadData() => Load();
+        public static void Load() { 
+            byte[] data = SerializableData.LoadData(DATA_ID);
             if (data != null) {
                 LoadingVersion = 2;
                 NCState.Deserialize(data);
             } else {
                 // convert to new version
                 LoadingVersion = 1;
-                data = serializableDataManager.LoadData(DATA_ID1)
-                    ?? serializableDataManager.LoadData(DATA_ID0);
+                data = SerializableData.LoadData(DATA_ID1)
+                    ?? SerializableData.LoadData(DATA_ID0);
                 NodeManager.Deserialize(data, new Version(1, 0));
             }
         }
 
-        public override void OnSaveData()
-        {
+        public override void OnSaveData() => Save();
+        public static void Save() {
             byte[] data = NCState.Serialize();
-            serializableDataManager.SaveData(DATA_ID, data);
+            SerializableData.SaveData(DATA_ID, data);
         }
     }
 }
