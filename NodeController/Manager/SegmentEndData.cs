@@ -18,6 +18,7 @@ namespace NodeController {
     using System.Linq;
     using KianCommons.Serialization;
     using Vector3Serializable = KianCommons.Math.Vector3Serializable;
+    using UnityEngine.Networking.Types;
 
     [Serializable]
     public class SegmentEndData : INetworkData, INetworkData<SegmentEndData>, ISerializable {
@@ -103,6 +104,22 @@ namespace NodeController {
         public ref NetNode Node => ref NodeID.ToNode();
         public NodeData NodeData => NodeManager.Instance.buffer[NodeID];
         public ref NodeTypeT NodeType => ref NodeData.NodeType;
+
+        /// <summary>other segment end of the same segment.</summary>
+        public SegmentEndData OtherEnd => SegmentEndManager.Instance.GetAt(SegmentID, !IsStartNode);
+        public SegmentEndData OppositeMiddleEnd {
+            get {
+                if (NodeType == NodeTypeT.Nodeless) {
+                    ushort segmentId2 = Node.GetAnotherSegment(SegmentID);
+                    if (segmentId2 != 0) {
+                        return SegmentEndManager.Instance.GetAt(segmentId2, NodeID);
+                    }
+                }
+                return null;
+            }
+        }
+        
+
         /// <summary>segment end direction</summary>
         public ref Vector3 Direction {
             get {
@@ -180,11 +197,8 @@ namespace NodeController {
         }
 
         public void Update() {
-            if (Log.VERBOSE) {
-                var st = new StackTrace(fNeedFileInfo: true);
-                Log.Debug(this + "\n" + st.ToStringPretty());
-            }
-            NetManager.instance.UpdateNode(NodeID);
+            // update nearby nodes too to calculate velocity
+            NetManager.instance.UpdateNode(NodeID, 0, -1);
         }
 
         public void RefreshAndUpdate() {
@@ -473,6 +487,43 @@ namespace NodeController {
 
         public static float AngleDeg(float y) => Mathf.Atan(y) * Mathf.Rad2Deg;
 
+        public float EmbankmentDifferenceDeg => EmbankmentAngleDeg + (OtherEnd?.EmbankmentAngleDeg ?? 0); // + because other segment end is facing opposite direction.
+        public float StretchDifference => Stretch - (OtherEnd?.Stretch ?? 0);
+
+
+        public float GetEmbankmentVelocityDeg() {
+            if (OppositeMiddleEnd is SegmentEndData end2) {
+                return MinByAbs(this.EmbankmentDifferenceDeg, -end2.EmbankmentDifferenceDeg);
+            } else {
+                return 0;
+            }
+        }
+
+        public float GetStretchVelocity() {
+            Log.Called(this);
+            Log.Debug("OppositeMiddleEnd=" + OppositeMiddleEnd.ToSTR());
+
+            if (OppositeMiddleEnd is SegmentEndData end2) {
+                Log.Debug($"StretchDifference={StretchDifference} StretchDifference2={-end2.StretchDifference}");
+                return MinByAbs(this.StretchDifference, -end2.StretchDifference).LogRet();
+            } else {
+                return 0;
+            }
+        }
+
+        static float MinByAbs(float a, float b) {
+            if (a == 0 || b == 0) return 0; // optimisation.
+            int comp = Math.Abs(a).CompareTo(Math.Abs(b));
+            if (comp == 0) {
+                return Math.Max(a, b); //return the positive one.
+            } else if (comp < 0) {
+                return a;
+            } else {
+                return b;
+            }
+        }
+
+
         /// Precondition: cornerDir.LenXZ = 1
         /// <param name="leftSide">left side going away from the junction</param>
         public void ApplyCornerAdjustments(ref Vector3 cornerPos, ref Vector3 cornerDir, bool leftSide) {
@@ -529,21 +580,44 @@ namespace NodeController {
             }
 
             Vector3 deltaPos = Vector3.zero;
+            {
+                // embankment:
+                float embankmentAngleRad = EmbankmentAngleDeg * Mathf.Deg2Rad;
+                if (leftSide) embankmentAngleRad = -embankmentAngleRad;
+                float sinEmbankmentAngle = Mathf.Sin(embankmentAngleRad);
+                float cosEmbankmentAngle = Mathf.Cos(embankmentAngleRad);
+                float hw0 = Info.m_halfWidth;
+                float hw_total = hw0;  // stretch will be taken care of.
+                deltaPos.x += -hw_total * (1 - cosEmbankmentAngle); // outward
+                deltaPos.y = hw_total * sinEmbankmentAngle; // vertical
 
-            // embankment:
-            float embankmentAngleRad = EmbankmentAngleDeg * Mathf.Deg2Rad;
-            if (leftSide) embankmentAngleRad = -embankmentAngleRad;
-            float sinEmbankmentAngle = Mathf.Sin(embankmentAngleRad);
-            float cosEmbankmentAngle = Mathf.Cos(embankmentAngleRad);
-            float hw0 = Info.m_halfWidth;
-            float stretch = Stretch * 0.01f;
-            float hw_total = hw0 /** (1 + stretch) // stretch will be taken care of. */;
-            deltaPos.x += -hw_total * (1 - cosEmbankmentAngle); // outward
-            deltaPos.y = hw_total * sinEmbankmentAngle; // vertical
+                // Stretch:
+                float stretch = Stretch * 0.01f;
+                deltaPos.x += hw0 * stretch * cosEmbankmentAngle; // outward
+                deltaPos.y += hw0 * stretch * sinEmbankmentAngle; // vertical
+            }
 
-            // Stretch:
-            deltaPos.x += hw0 * stretch * cosEmbankmentAngle; // outward
-            deltaPos.y += hw0 * stretch * sinEmbankmentAngle; // vertical
+            // velocity
+            Vector3 deltaDir = default;
+            {
+                // embankment:
+                float embankmentVelocityRad = GetEmbankmentVelocityDeg() * Mathf.Deg2Rad;
+                if (leftSide) embankmentVelocityRad = -embankmentVelocityRad;
+                float sin = Mathf.Sin(embankmentVelocityRad);
+                float cos = Mathf.Cos(embankmentVelocityRad);
+                float hw0 = Info.m_halfWidth;
+                float l = Segment.m_averageLength;
+                float r = hw0 / l;
+
+                deltaDir.x = -(1 - cos) * r; // outward
+                deltaDir.y = -sin * r; // vertical
+
+                // Stretch:
+                float stretchVelocity = GetStretchVelocity() * 0.01f;
+                deltaDir.x += -stretchVelocity * cos * r; // outward
+                deltaDir.y += -stretchVelocity * sin * r; // vertical
+            }
+
 
             // Shift:
             if(leftSide) {
@@ -553,6 +627,7 @@ namespace NodeController {
             }
             
             cornerPos += CornerData.TransformCoordinates(deltaPos, outwardDir, Vector3.up, forwardDir);
+            cornerDir += CornerData.TransformCoordinates(deltaDir, outwardDir, Vector3.up, forwardDir);
 
             if (insideAfterCalcualte_) {
                 // take a snapshot of pos0/dir0 then apply delta pos/dir

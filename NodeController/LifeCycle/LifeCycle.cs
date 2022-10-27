@@ -36,7 +36,7 @@ namespace NodeController.LifeCycle {
                 HarmonyUtil.InstallHarmony<HotReloadPatchAttribute>(HARMONY_ID);
             }
 
-            if (Helpers.InStartupMenu)
+            if (!Helpers.InStartupMenu)
                 HotReload();
 
             if(fastTestHarmony) HarmonyUtil.InstallHarmony(HARMONY_ID);

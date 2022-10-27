@@ -209,7 +209,8 @@ namespace NodeController {
                 segEnd.FlatJunctions = true;
                 segEnd.Twist = false;
             }
-            NetManager.instance.UpdateNode(NodeID);
+
+            Update();
         }
 
         public void UnFlatten() {
@@ -221,7 +222,7 @@ namespace NodeController {
                 segEnd.FlatJunctions = sideSegment;
                 segEnd.Twist = sideSegment;
             }
-            NetManager.instance.UpdateNode(NodeID);
+            Update();
         }
 
         //public bool IsFlattened {
@@ -575,11 +576,8 @@ namespace NodeController {
         }
 
         public void Update() {
-            if (Log.VERBOSE) {
-                var st = new StackTrace(fNeedFileInfo: true);
-                Log.Debug(this + "\n" + st.ToStringPretty());
-            }
-            NetManager.instance.UpdateNode(NodeID);
+            // update nearby nodes too to calculate velocity
+            NetManager.instance.UpdateNode(NodeID, 0, -1); 
         }
 
         public void RefreshAndUpdate() {
