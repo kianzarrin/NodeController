@@ -13,12 +13,6 @@ namespace NodeController.Patches.Corner {
     [UsedImplicitly]
     [HarmonyPatch]
     static class CalculateCorner_SlopePatch {
-        static void Prepare(MethodBase method) {
-            if (method == null) {
-                AdaptiveRoadsUtil.OverrideARSharpner();
-            }
-        }
-
         [UsedImplicitly]
         static MethodBase TargetMethod() {
             // public void CalculateCorner(ushort segmentID, bool heightOffset, bool start, bool leftSide,

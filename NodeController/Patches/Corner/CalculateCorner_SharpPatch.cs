@@ -60,7 +60,8 @@ static class CalculateCorner_SharpPatch {
         //var data = SegmentEndManager.Instance.GetAt(segmentId, nodeId);
         var data = SegmentEndManager.Instance.GetAt(segmentID: segmentId, nodeID: nodeId);
         if (data != null && data.SharpCorners) {
-            sharpness = 0.1f;
+            const float OFFSET_SAFETYNET = 0.02f;
+            sharpness = OFFSET_SAFETYNET;
         }
         return sharpness;
     }
