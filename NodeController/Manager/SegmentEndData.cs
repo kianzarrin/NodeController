@@ -548,86 +548,97 @@ namespace NodeController {
                 outward: out var outwardDir,
                 forward: out var forwardDir);
 
-            float slopeAngleDeg = DeltaSlopeAngleDeg + AngleDeg(corner.Dir00.y); 
-            float slopeAngleRad = slopeAngleDeg * Mathf.Deg2Rad;
 
-            if (89 <= slopeAngleDeg && slopeAngleDeg <= 91) {
-                cornerDir.x = cornerDir.z = 0;
-                cornerDir.y = 1;
-            } else if (-89 >= slopeAngleDeg && slopeAngleDeg >= -91) {
-                cornerDir.x = cornerDir.z = 0;
-                cornerDir.y = -1;
-            } else if (slopeAngleDeg > 90 || slopeAngleDeg < -90) {
-                cornerDir.y = -Mathf.Tan(slopeAngleRad);
-                cornerDir.x = -cornerDir.x;
-                cornerDir.z = -cornerDir.z;
-            } else {
-                cornerDir.y = Mathf.Tan(slopeAngleRad);
-            }
-            if (!Node.m_flags.IsFlagSet(NetNode.Flags.Middle)) {
-                float d = VectorUtils.DotXZ(cornerPos - Node.m_position, cornerDir);
-                cornerPos.y += d * (cornerDir.y - corner.Dir00.y);
+            {
+                Vector3 deltaPos = Vector3.zero;
+                {
+                    // embankment:
+                    float embankmentAngleRad = EmbankmentAngleDeg * Mathf.Deg2Rad;
+                    if (leftSide) embankmentAngleRad = -embankmentAngleRad;
+                    float sinEmbankmentAngle = Mathf.Sin(embankmentAngleRad);
+                    float cosEmbankmentAngle = Mathf.Cos(embankmentAngleRad);
+                    float hw = Info.m_halfWidth;
+                    deltaPos.x += -hw * (1 - cosEmbankmentAngle); // outward
+                    deltaPos.y = hw * sinEmbankmentAngle; // vertical
+
+                    // Stretch:
+                    float stretch = Stretch * 0.01f;
+                    deltaPos.x += hw * stretch * cosEmbankmentAngle; // outward
+                    deltaPos.y += hw * stretch * sinEmbankmentAngle; // vertical
+                }
+
+                // Shift:
+                if (leftSide) {
+                    deltaPos.x -= Shift; // outward
+                } else {
+                    deltaPos.x += Shift; // outward
+                }
+
+                cornerPos += CornerData.TransformCoordinates(deltaPos, outwardDir, Vector3.up, forwardDir);
             }
 
-            if (Settings.GameConfig.UnviversalSlopeFixes) {
-                // this must be done after readjusting cornerPos.y
-                // make sure direction vector is not too big.
-                float absY = Mathf.Abs(cornerDir.y);
-                if (absY > 2) {
-                    // fix dir length so that y is 2:
-                    cornerDir *= 2 / absY;
+            
+            {
+                //slope:
+                float slopeAngleDeg = DeltaSlopeAngleDeg + AngleDeg(corner.Dir00.y);
+                float slopeAngleRad = slopeAngleDeg * Mathf.Deg2Rad;
+
+                if (89 <= slopeAngleDeg && slopeAngleDeg <= 91) {
+                    cornerDir.x = cornerDir.z = 0;
+                    cornerDir.y = 1;
+                } else if (-89 >= slopeAngleDeg && slopeAngleDeg >= -91) {
+                    cornerDir.x = cornerDir.z = 0;
+                    cornerDir.y = -1;
+                } else if (slopeAngleDeg > 90 || slopeAngleDeg < -90) {
+                    cornerDir.y = -Mathf.Tan(slopeAngleRad);
+                    cornerDir.x = -cornerDir.x;
+                    cornerDir.z = -cornerDir.z;
+                } else {
+                    cornerDir.y = Mathf.Tan(slopeAngleRad);
+                }
+                if (!Node.m_flags.IsFlagSet(NetNode.Flags.Middle)) {
+                    float d = VectorUtils.DotXZ(cornerPos - Node.m_position, cornerDir);
+                    cornerPos.y += d * (cornerDir.y - corner.Dir00.y);
+                }
+
+                if (Settings.GameConfig.UnviversalSlopeFixes) {
+                    // this must be done after readjusting cornerPos.y
+                    // make sure direction vector is not too big.
+                    float absY = Mathf.Abs(cornerDir.y);
+                    if (absY > 2) {
+                        // fix dir length so that y is 2:
+                        cornerDir *= 2 / absY;
+                    }
                 }
             }
 
-            Vector3 deltaPos = Vector3.zero;
             {
-                // embankment:
-                float embankmentAngleRad = EmbankmentAngleDeg * Mathf.Deg2Rad;
-                if (leftSide) embankmentAngleRad = -embankmentAngleRad;
-                float sinEmbankmentAngle = Mathf.Sin(embankmentAngleRad);
-                float cosEmbankmentAngle = Mathf.Cos(embankmentAngleRad);
-                float hw0 = Info.m_halfWidth;
-                float hw_total = hw0;  // stretch will be taken care of.
-                deltaPos.x += -hw_total * (1 - cosEmbankmentAngle); // outward
-                deltaPos.y = hw_total * sinEmbankmentAngle; // vertical
+                // velocity
+                Vector3 deltaDir = default;
+                {
+                    // embankment:
+                    float embankmentVelocityRad = GetEmbankmentVelocityDeg() * Mathf.Deg2Rad;
+                    if (leftSide) embankmentVelocityRad = -embankmentVelocityRad;
+                    float sin = Mathf.Sin(embankmentVelocityRad);
+                    float cos = Mathf.Cos(embankmentVelocityRad);
+                    float r = Info.m_halfWidth / Segment.m_averageLength; // ratio
+                    deltaDir.x = -(1 - cos) * r; // outward
+                    deltaDir.y = -sin * r; // vertical
 
-                // Stretch:
-                float stretch = Stretch * 0.01f;
-                deltaPos.x += hw0 * stretch * cosEmbankmentAngle; // outward
-                deltaPos.y += hw0 * stretch * sinEmbankmentAngle; // vertical
+                    // Stretch:
+                    float stretchVelocity = GetStretchVelocity() * 0.01f;
+                    deltaDir.x += -stretchVelocity * cos * r; // outward
+                    deltaDir.y += -stretchVelocity * sin * r; // vertical
+                }
+
+                float lenxz0 = VectorUtils.LengthSqrXZ(cornerDir);
+                cornerDir += CornerData.TransformCoordinates(deltaDir, outwardDir, Vector3.up, forwardDir);
+                if (MathUtil.EqualAprox(lenxz0, 0, error: 0.001f)) {
+                    // if we damaged normalization then fix it.
+                    cornerDir = VectorUtils.NormalizeXZ(cornerDir);
+                }
             }
 
-            // velocity
-            Vector3 deltaDir = default;
-            {
-                // embankment:
-                float embankmentVelocityRad = GetEmbankmentVelocityDeg() * Mathf.Deg2Rad;
-                if (leftSide) embankmentVelocityRad = -embankmentVelocityRad;
-                float sin = Mathf.Sin(embankmentVelocityRad);
-                float cos = Mathf.Cos(embankmentVelocityRad);
-                float hw0 = Info.m_halfWidth;
-                float l = Segment.m_averageLength;
-                float r = hw0 / l;
-
-                deltaDir.x = -(1 - cos) * r; // outward
-                deltaDir.y = -sin * r; // vertical
-
-                // Stretch:
-                float stretchVelocity = GetStretchVelocity() * 0.01f;
-                deltaDir.x += -stretchVelocity * cos * r; // outward
-                deltaDir.y += -stretchVelocity * sin * r; // vertical
-            }
-
-
-            // Shift:
-            if(leftSide) {
-                deltaPos.x -= Shift; // outward
-            } else {
-                deltaPos.x += Shift; // outward
-            }
-            
-            cornerPos += CornerData.TransformCoordinates(deltaPos, outwardDir, Vector3.up, forwardDir);
-            cornerDir += CornerData.TransformCoordinates(deltaDir, outwardDir, Vector3.up, forwardDir);
 
             if (insideAfterCalcualte_) {
                 // take a snapshot of pos0/dir0 then apply delta pos/dir
