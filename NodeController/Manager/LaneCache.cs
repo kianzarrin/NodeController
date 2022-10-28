@@ -21,9 +21,7 @@ namespace NodeController.Manager {
 
         private void Notifier_EventModified(OnModifiedEventArgs obj) {
             SimulationManager.instance.m_ThreadingWrapper.QueueSimulationThread(delegate () {
-#if DEBUG
-                Log.Called(obj.InstanceID);
-#endif
+                Log.DebugCalled(obj.InstanceID);
                 if (obj.InstanceID.Type == InstanceType.NetSegment) {
                     UpdateLanes(obj.InstanceID.NetSegment);
                 } else if (obj.InstanceID.Type == InstanceType.NetLane) {
