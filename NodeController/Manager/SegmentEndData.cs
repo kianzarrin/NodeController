@@ -627,12 +627,12 @@ namespace NodeController {
                 }
             }
 
-            {
+            if(Segment.m_averageLength > 0.1f) { // avoid divide by zero.
                 // velocity
                 Vector3 deltaDir = default;
                 {
                     // embankment:
-                    float embankmentVelocityRad = GetEmbankmentVelocityDeg() * Mathf.Deg2Rad;
+                    float embankmentVelocityRad = GetEmbankmentVelocityDeg().LogRet($"GetEmbankmentVelocityDeg({SegmentID}, {IsStartNode})") * Mathf.Deg2Rad;
                     if (leftSide) embankmentVelocityRad = -embankmentVelocityRad;
                     float sin = Mathf.Sin(embankmentVelocityRad);
                     float cos = Mathf.Cos(embankmentVelocityRad);
@@ -641,14 +641,15 @@ namespace NodeController {
                     deltaDir.y = -sin * r; // vertical
 
                     // Stretch:
-                    float stretchVelocity = GetStretchVelocity() * 0.01f;
+                    float stretchVelocity = GetStretchVelocity().LogRet($"GetStretchVelocity({SegmentID}, {IsStartNode})%") * 0.01f;
                     deltaDir.x += -stretchVelocity * cos * r; // outward
                     deltaDir.y += -stretchVelocity * sin * r; // vertical
                 }
 
+                Assertion.NotNaNOrInf(deltaDir, "deltaDir");
                 float lenxz0 = VectorUtils.LengthSqrXZ(cornerDir);
                 cornerDir += CornerData.TransformCoordinates(deltaDir, outwardDir, Vector3.up, forwardDir);
-                if (MathUtil.EqualAprox(lenxz0, 0, error: 0.001f)) {
+                if (MathUtil.EqualAprox(lenxz0, 1, error: 0.001f)) {
                     // if we damaged normalization then fix it.
                     cornerDir = VectorUtils.NormalizeXZ(cornerDir);
                 }
