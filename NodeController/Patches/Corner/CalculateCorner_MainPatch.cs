@@ -127,7 +127,9 @@ namespace NodeController.Patches.Corner {
                         cornerDirection *= 2 / absY;
                     }
                 }
-            } catch(Exception ex) { ex.Log(); }
+                Assertion.NotNaNOrInf(cornerPos);
+                Assertion.NotNaNOrInf(cornerDirection);
+            } catch (Exception ex) { ex.Log(); }
         }
 
         public static void Finalizer(Exception __exception) => __exception?.Log();
