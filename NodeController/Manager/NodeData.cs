@@ -1,27 +1,23 @@
 using System;
-
 namespace NodeController {
-    using System;
-    using System.Runtime.Serialization;
-    using System.Collections.Generic;
-    using UnityEngine;
     using ColossalFramework;
-    using static ColossalFramework.Math.VectorUtils;
-    using TrafficManager.API.Traffic.Enums;
-    using TernaryBool = CSUtil.Commons.TernaryBool;
     using KianCommons;
-    using Log = KianCommons.Log;
-    using static KianCommons.ReflectionHelpers;
-    using static KianCommons.Assertion;
-    using KianCommons.Serialization;
-
     using KianCommons.Math;
-    using NodeController.Tool;
-    using System.Diagnostics;
-    using System.Linq;
     using KianCommons.Plugins;
+    using KianCommons.Serialization;
+    using NodeController.Tool;
     using NodeController.Util;
-        
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.Serialization;
+    using TrafficManager.API.Traffic.Enums;
+    using UnityEngine;
+    using static ColossalFramework.Math.VectorUtils;
+    using static KianCommons.Assertion;
+    using static KianCommons.ReflectionHelpers;
+    using Log = KianCommons.Log;
+    using TernaryBool = CSUtil.Commons.TernaryBool;
+
     public enum NodeTypeT {
         Nodeless,
         Bend,
@@ -445,14 +441,14 @@ namespace NodeController {
             }
         }
         public bool HasUnifromSharp() {
-            bool ?val = null;
+            bool? val = null;
             for (int i = 0; i < 8; ++i) {
                 ushort segmentID = Node.GetSegment(i);
                 if (segmentID == 0) continue;
                 var segEnd = SegmentEndManager.Instance.GetOrCreate(segmentID: segmentID, nodeID: NodeID);
                 if (val == null) {
                     val = segEnd.SharpCorners;
-                } else if(val != segEnd.SharpCorners) {
+                } else if (val != segEnd.SharpCorners) {
                     return false;
                 }
             }
@@ -467,114 +463,139 @@ namespace NodeController {
         public ref NetNode Node => ref NodeID.ToNode();
 
         public NodeData(ushort nodeID) {
-            Assert(IsSupported(nodeID));
-            NodeID = nodeID;
-            Calculate();
-            NodeType = DefaultNodeType;
-            if (CanModifySharpCorners()) {
-                SharpCorners = Info.GetARSharpCorners();
-            } else {
-                SharpCorners = false;
-            }
+            try {
+                Assert(IsSupported(nodeID));
+                NodeID = nodeID;
+                Calculate();
+                NodeType = DefaultNodeType;
+                if (CanModifySharpCorners()) {
+                    SharpCorners = Info.GetARSharpCorners();
+                } else {
+                    SharpCorners = false;
+                }
 
-            FirstTimeTrafficLight = false;
-            Assert(IsDefault(), $"{this}.IsDefault(): NodeType:{NodeType} == {DefaultNodeType}\n" +
-                string.Join("\n\n", IterateSegmentEndDatas()
-                .Where(segEnd => !segEnd.IsDefault())
-                .Select(segEnd => $"{segEnd} is not default : " + segEnd.DefaultMessage())
-                .ToArray()));
-            Assert(CanChangeTo(NodeType), $"CanChangeTo(NodeType={NodeType})");
-            Update();
+                FirstTimeTrafficLight = false;
+                Assert(IsDefault(), $"{this}.IsDefault(): NodeType:{NodeType} == {DefaultNodeType}\n" +
+                    string.Join("\n\n", IterateSegmentEndDatas()
+                    .Where(segEnd => !segEnd.IsDefault())
+                    .Select(segEnd => $"{segEnd} is not default : " + segEnd.DefaultMessage())
+                    .ToArray()));
+                Assert(CanChangeTo(NodeType), $"CanChangeTo(NodeType={NodeType})");
+                Update();
+            } catch (Exception ex) {
+                ex.Log();
+                throw;
+            }
         }
 
         public NodeData(ushort nodeID, NodeTypeT nodeType) : this(nodeID) {
-            NodeType = nodeType;
-            FirstTimeTrafficLight = nodeType == NodeTypeT.Crossing || IsLevelCrossing;
-            // TODO update slope angle.
-            Assert(CanChangeTo(NodeType), $"CanChangeTo(NodeType={NodeType})");
+            try {
+                NodeType = nodeType;
+                FirstTimeTrafficLight = nodeType == NodeTypeT.Crossing || IsLevelCrossing;
+                // TODO update slope angle.
+                Assert(CanChangeTo(NodeType), $"CanChangeTo(NodeType={NodeType})");
+            } catch (Exception ex) {
+                ex.Log();
+                throw;
+            }
         }
 
         public void Calculate() {
-            CalculateDefaults();
-            Refresh();
+            try {
+                CalculateDefaults();
+                Refresh();
+            } catch (Exception ex) {
+                ex.Log();
+                throw;
+            }
         }
 
         /// <summary>
         /// Capture the default values.
         /// </summary>
         private void CalculateDefaults() {
-            SegmentCount = NodeID.ToNode().CountSegments();
-            DefaultFlags = NodeID.ToNode().m_flags;
+            try {
+                SegmentCount = NodeID.ToNode().CountSegments();
+                DefaultFlags = NodeID.ToNode().m_flags;
 
-            if (DefaultFlags.IsFlagSet(NetNode.Flags.Middle)) {
-                DefaultNodeType = NodeTypeT.Nodeless;
-            } else if (DefaultFlags.IsFlagSet(NetNode.Flags.Bend)) {
-                DefaultNodeType = NodeTypeT.Bend;
-            } else if (DefaultFlags.IsFlagSet(NetNode.Flags.Junction)) {
-                DefaultNodeType = NodeTypeT.Custom;
-            } else if (DefaultFlags.IsFlagSet(NetNode.Flags.End)) {
-                NodeType = DefaultNodeType = NodeTypeT.End;
-            } else {
-                throw new NotImplementedException("unsupported node flags: " + DefaultFlags);
-            }
+                if (DefaultFlags.IsFlagSet(NetNode.Flags.Middle)) {
+                    DefaultNodeType = NodeTypeT.Nodeless;
+                } else if (DefaultFlags.IsFlagSet(NetNode.Flags.Bend)) {
+                    DefaultNodeType = NodeTypeT.Bend;
+                } else if (DefaultFlags.IsFlagSet(NetNode.Flags.Junction)) {
+                    DefaultNodeType = NodeTypeT.Custom;
+                } else if (DefaultFlags.IsFlagSet(NetNode.Flags.End)) {
+                    NodeType = DefaultNodeType = NodeTypeT.End;
+                } else {
+                    throw new NotImplementedException("unsupported node flags: " + DefaultFlags);
+                }
 
-            static bool IsSegmentStraight(ushort segmentId, ushort nodeId) {
-                Vector3 pos1 = nodeId.ToNode().m_position;
-                Vector3 pos2 = segmentId.ToSegment().GetOtherNode(nodeId).ToNode().m_position;
-                Vector3 dir = NormalizeXZ(pos2 - pos1);
-                Vector3 endDir = NormalizeXZ(segmentId.ToSegment().GetDirection(nodeId));
-                return DotXZ(dir, endDir) > 0.95f;
-            }
+                static bool IsSegmentStraight(ushort segmentId, ushort nodeId) {
+                    Vector3 pos1 = nodeId.ToNode().m_position;
+                    Vector3 pos2 = segmentId.ToSegment().GetOtherNode(nodeId).ToNode().m_position;
+                    Vector3 dir = NormalizeXZ(pos2 - pos1);
+                    Vector3 endDir = NormalizeXZ(segmentId.ToSegment().GetDirection(nodeId));
+                    return DotXZ(dir, endDir) > 0.95f;
+                }
 
-            if (SegmentCount == 2) {
-                float hw0 = 0;
-                Vector3 dir0 = default;
-                foreach (ushort segmentID in NetUtil.IterateNodeSegments(NodeID)) {
-                    int nPedLanes = segmentID.ToSegment().Info.CountPedestrianLanes();
-                    if (hw0 == 0) {
-                        segmentID1 = segmentID;
-                        hw0 = segmentID.ToSegment().Info.m_halfWidth;
-                        dir0 = NormalizeXZ(segmentID.ToSegment().GetDirection(NodeID));
-                        PedestrianLaneCount = nPedLanes;
-                    } else {
-                        segmentID2 = segmentID;
-                        HWDiff = Mathf.Abs(segmentID.ToSegment().Info.m_halfWidth - hw0);
-                        var dir1 = NormalizeXZ(segmentID.ToSegment().GetDirection(NodeID));
-                        float dot = DotXZ(dir0, dir1);
-                        IsStraight = dot < -0.999f; // 180 degrees
-                        Is180 = dot > 0.999f; // 0 degrees
-                        PedestrianLaneCount = Math.Max(PedestrianLaneCount, nPedLanes);
+                if (SegmentCount == 2) {
+                    float hw0 = 0;
+                    Vector3 dir0 = default;
+                    foreach (ushort segmentID in NetUtil.IterateNodeSegments(NodeID)) {
+                        int nPedLanes = segmentID.ToSegment().Info.CountPedestrianLanes();
+                        if (hw0 == 0) {
+                            segmentID1 = segmentID;
+                            hw0 = segmentID.ToSegment().Info.m_halfWidth;
+                            dir0 = NormalizeXZ(segmentID.ToSegment().GetDirection(NodeID));
+                            PedestrianLaneCount = nPedLanes;
+                        } else {
+                            segmentID2 = segmentID;
+                            HWDiff = Mathf.Abs(segmentID.ToSegment().Info.m_halfWidth - hw0);
+                            var dir1 = NormalizeXZ(segmentID.ToSegment().GetDirection(NodeID));
+                            float dot = DotXZ(dir0, dir1);
+                            IsStraight = dot < -0.999f; // 180 degrees
+                            Is180 = dot > 0.999f; // 0 degrees
+                            PedestrianLaneCount = Math.Max(PedestrianLaneCount, nPedLanes);
+                        }
                     }
                 }
+
+                foreach (ushort segmetnID in NetUtil.IterateNodeSegments(NodeID))
+                    HasPedestrianLanes |= segmetnID.ToSegment().Info.m_hasPedestrianLanes;
+
+                SortedSegmentIDs = new List<ushort>(Node.CountSegments());
+                for (int i = 0; i < 8; ++i) {
+                    ushort segmentID = Node.GetSegment(i);
+                    if (segmentID == 0) continue;
+                    SortedSegmentIDs.Add(segmentID);
+                }
+
+                SortedSegmentIDs.Sort(CompareSegments);
+                SortedSegmentIDs.Reverse();
+
+                Refresh();
+            } catch (Exception ex) {
+                ex.Log();
+                throw;
             }
-
-            foreach (ushort segmetnID in NetUtil.IterateNodeSegments(NodeID))
-                HasPedestrianLanes |= segmetnID.ToSegment().Info.m_hasPedestrianLanes;
-
-            SortedSegmentIDs = new List<ushort>(Node.CountSegments());
-            for (int i = 0; i < 8; ++i) {
-                ushort segmentID = Node.GetSegment(i);
-                if (segmentID == 0) continue;
-                SortedSegmentIDs.Add(segmentID);
-            }
-
-            SortedSegmentIDs.Sort(CompareSegments);
-            SortedSegmentIDs.Reverse();
-
-            Refresh();
         }
 
         public void CalculateGap() {
-            var maxGapSqr = 0f;
-            foreach (var firstData in IterateSegmentEndDatas()) {
-                foreach (var secondData in IterateSegmentEndDatas()) {
-                    CalculateGapSqr(ref maxGapSqr, firstData, secondData, true, true);
-                    CalculateGapSqr(ref maxGapSqr, firstData, secondData, true, false);
-                    CalculateGapSqr(ref maxGapSqr, firstData, secondData, false, true);
-                    CalculateGapSqr(ref maxGapSqr, firstData, secondData, false, false);
+            try {
+                var maxGapSqr = 0f;
+                foreach (var firstData in IterateSegmentEndDatas()) {
+                    foreach (var secondData in IterateSegmentEndDatas()) {
+                        CalculateGapSqr(ref maxGapSqr, firstData, secondData, true, true);
+                        CalculateGapSqr(ref maxGapSqr, firstData, secondData, true, false);
+                        CalculateGapSqr(ref maxGapSqr, firstData, secondData, false, true);
+                        CalculateGapSqr(ref maxGapSqr, firstData, secondData, false, false);
+                    }
                 }
+                Gap = Mathf.Sqrt(maxGapSqr) + 2f;
+            } catch (Exception ex) {
+                ex.Log();
+                throw;
             }
-            Gap = Mathf.Sqrt(maxGapSqr) + 2f;
         }
         private void CalculateGapSqr(ref float gap, SegmentEndData segEnd1, SegmentEndData segEnd2, bool left1, bool left2) {
             if (segEnd1 == null || segEnd2 == null)
@@ -607,7 +628,7 @@ namespace NodeController {
 
         public void Update() {
             // update nearby nodes too to calculate velocity
-            NetManager.instance.UpdateNode(NodeID, 0, -1); 
+            NetManager.instance.UpdateNode(NodeID, 0, -1);
         }
 
         public void RefreshAndUpdate() {
@@ -627,74 +648,93 @@ namespace NodeController {
         public bool IsSelected() => NodeID == SelectedNodeID;
 
         public bool IsDefault() {
-            bool isDefault = NodeType == DefaultNodeType;
-            if (!isDefault)
-                return false;
-
-            foreach (var segEnd in IterateSegmentEndDatas()) {
-                isDefault = segEnd == null || segEnd.IsDefault();
+            try {
+                bool isDefault = NodeType == DefaultNodeType;
                 if (!isDefault)
                     return false;
+
+                foreach (var segEnd in IterateSegmentEndDatas()) {
+                    isDefault = segEnd == null || segEnd.IsDefault();
+                    if (!isDefault)
+                        return false;
+                }
+                return true;
+            } catch (Exception ex) {
+                ex.Log();
+                throw;
             }
-            return true;
         }
 
         public void ResetToDefault() {
-            NodeType = DefaultNodeType;
-            foreach (var segEnd in IterateSegmentEndDatas())
-                segEnd?.ResetToDefault();
-            Update();
+            try {
+                NodeType = DefaultNodeType;
+                foreach (var segEnd in IterateSegmentEndDatas())
+                    segEnd?.ResetToDefault();
+                Update();
+            } catch (Exception ex) {
+                ex.Log();
+                throw;
+            }
         }
-
         public static bool IsSupported(ushort nodeID) {
-            if (!NetUtil.IsNodeValid(nodeID)) // check info !=null (and maybe more checks in future)
-                return false;
-            foreach (ushort segmentID in NetUtil.IterateNodeSegments(nodeID)) {
-                if (!NetUtil.IsSegmentValid(segmentID))
+            try {
+                if (!NetUtil.IsNodeValid(nodeID)) // check info !=null (and maybe more checks in future)
                     return false;
-            }
+                foreach (ushort segmentID in NetUtil.IterateNodeSegments(nodeID)) {
+                    if (!NetUtil.IsSegmentValid(segmentID))
+                        return false;
+                }
 
-            var flags = nodeID.ToNode().m_flags;
-            if (!flags.CheckFlags(
-                required: NetNode.Flags.Created,
-                forbidden: NetNode.Flags.Outside | NetNode.Flags.Deleted)) {
-                return false;
-            }
+                var flags = nodeID.ToNode().m_flags;
+                if (!flags.CheckFlags(
+                    required: NetNode.Flags.Created,
+                    forbidden: NetNode.Flags.Outside | NetNode.Flags.Deleted)) {
+                    return false;
+                }
 
-            int n = nodeID.ToNode().CountSegments();
-            if (n != 2) return true;
-            var info = nodeID.ToNode().Info;
-            //return info.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(info); // TODO support paths/tracks.
-            return !NetUtil.IsCSUR(info);
+                int n = nodeID.ToNode().CountSegments();
+                if (n != 2) return true;
+                var info = nodeID.ToNode().Info;
+                //return info.m_netAI is RoadBaseAI && !NetUtil.IsCSUR(info); // TODO support paths/tracks.
+                return !NetUtil.IsCSUR(info);
+            } catch (Exception ex) {
+                ex.Log();
+                throw;
+            }
         }
 
         public bool CanChangeTo(NodeTypeT newNodeType) {
-            //Log.Debug($"CanChangeTo({newNodeType}) was called.");
-            if (SegmentCount == 1)
-                return newNodeType is NodeTypeT.End;
+            try {
+                //Log.Debug($"CanChangeTo({newNodeType}) was called.");
+                if (SegmentCount == 1)
+                    return newNodeType is NodeTypeT.End;
 
-            if (SegmentCount > 2 || IsCSUR || IsLevelCrossing)
-                return newNodeType is NodeTypeT.Custom or NodeTypeT.Nodeless;
+                if (SegmentCount > 2 || IsCSUR || IsLevelCrossing)
+                    return newNodeType is NodeTypeT.Custom or NodeTypeT.Nodeless;
 
-            bool middle = DefaultFlags.IsFlagSet(NetNode.Flags.Middle);
-            // segmentCount == 2 at this point.
-            switch (newNodeType) {
-                case NodeTypeT.Crossing:
-                    return PedestrianLaneCount >= 2 && HWDiff < 0.001f && IsStraight;
-                case NodeTypeT.UTurn:
-                    return IsRoad && Info.m_forwardVehicleLaneCount > 0 && Info.m_backwardVehicleLaneCount > 0;
-                case NodeTypeT.Stretch:
-                    return CanModifyTextures() && !middle && IsStraight;
-                case NodeTypeT.Bend:
-                    return true; // !middle; clus wants to use bend nodes.
-                case NodeTypeT.Nodeless:
-                    return true; // all junctions can be node-less
-                case NodeTypeT.Custom:
-                    return true;
-                case NodeTypeT.End:
-                    return false;
-                default:
-                    throw new Exception("Unreachable code");
+                bool middle = DefaultFlags.IsFlagSet(NetNode.Flags.Middle);
+                // segmentCount == 2 at this point.
+                switch (newNodeType) {
+                    case NodeTypeT.Crossing:
+                        return PedestrianLaneCount >= 2 && HWDiff < 0.001f && IsStraight;
+                    case NodeTypeT.UTurn:
+                        return IsRoad && Info.m_forwardVehicleLaneCount > 0 && Info.m_backwardVehicleLaneCount > 0;
+                    case NodeTypeT.Stretch:
+                        return CanModifyTextures() && !middle && IsStraight;
+                    case NodeTypeT.Bend:
+                        return true; // !middle; clus wants to use bend nodes.
+                    case NodeTypeT.Nodeless:
+                        return true; // all junctions can be node-less
+                    case NodeTypeT.Custom:
+                        return true;
+                    case NodeTypeT.End:
+                        return false;
+                    default:
+                        throw new Exception("Unreachable code");
+                }
+            } catch (Exception ex) {
+                ex.Log();
+                throw;
             }
         }
 
@@ -869,7 +909,7 @@ namespace NodeController {
                 case NodeTypeT.Custom:
                     var netAI1 = segmentID1.ToSegment().Info.m_netAI;
                     var netAI2 = segmentID2.ToSegment().Info.m_netAI;
-                    bool sameAIType = netAI1.GetType() == netAI2.GetType(); 
+                    bool sameAIType = netAI1.GetType() == netAI2.GetType();
                     if (SegmentCount == 2 && !sameAIType) // eg: at bridge/tunnel entrances.
                         return TernaryBool.False; // default off
                     return TernaryBool.Undefined; // don't care

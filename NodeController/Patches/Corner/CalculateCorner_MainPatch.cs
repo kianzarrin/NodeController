@@ -4,13 +4,14 @@ namespace NodeController.Patches.Corner {
     using JetBrains.Annotations;
     using KianCommons;
     using NodeController.GUI;
+    using System;
     using System.Reflection;
     using UnityEngine;
     using static ColossalFramework.Math.VectorUtils;
 
     [UsedImplicitly]
     [HarmonyPatch]
-    static class CalculateCorner_SlopePatch {
+    static class CalculateCorner_MainPatch {
         [UsedImplicitly]
         static MethodBase TargetMethod() {
             // public void CalculateCorner(ushort segmentID, bool heightOffset, bool start, bool leftSide,
@@ -104,27 +105,31 @@ namespace NodeController.Patches.Corner {
         public static void Postfix(
             ushort segmentID, bool start, bool leftSide,
             ref Vector3 cornerPos, ref Vector3 cornerDirection) {
+            try {
 
-            SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
-            Assertion.AssertNotNull(NCSettings.GameConfig, "Settings.GameConfig");
-            if (data == null && !NCSettings.GameConfig.UnviversalSlopeFixes)
-                return;
+                SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
+                Assertion.AssertNotNull(NCSettings.GameConfig, "Settings.GameConfig");
+                if (data == null && !NCSettings.GameConfig.UnviversalSlopeFixes)
+                    return;
 
-            //Log.Debug($"CalculateCorner2.PostFix(segmentID={segmentID} start={start} leftSide={leftSide}): cornerDir={cornerDirection}");
-            ApplySlope(segmentID, start, leftSide, ref cornerPos, ref cornerDirection);
+                //Log.Debug($"CalculateCorner2.PostFix(segmentID={segmentID} start={start} leftSide={leftSide}): cornerDir={cornerDirection}");
+                ApplySlope(segmentID, start, leftSide, ref cornerPos, ref cornerDirection);
 
-            if (data != null) {
-                // manual adjustments:
-                data.ApplyCornerAdjustments(ref cornerPos, ref cornerDirection, leftSide);
-            } else {
-                // if vector dir is not limited inside ApplyCornerAdjustments then do it here.
-                // this must NOT be done before ApplyCornerAdjustments().
-                float absY = Mathf.Abs(cornerDirection.y);
-                if (absY > 2) {
-                    // fix dir length so that y is 2:
-                    cornerDirection *= 2 / absY;
+                if (data != null) {
+                    // manual adjustments:
+                    data.ApplyCornerAdjustments(ref cornerPos, ref cornerDirection, leftSide);
+                } else {
+                    // if vector dir is not limited inside ApplyCornerAdjustments then do it here.
+                    // this must NOT be done before ApplyCornerAdjustments().
+                    float absY = Mathf.Abs(cornerDirection.y);
+                    if (absY > 2) {
+                        // fix dir length so that y is 2:
+                        cornerDirection *= 2 / absY;
+                    }
                 }
-            }
+            } catch(Exception ex) { ex.Log(); }
         }
+
+        public static void Finalizer(Exception __exception) => __exception?.Log();
     }
 }
