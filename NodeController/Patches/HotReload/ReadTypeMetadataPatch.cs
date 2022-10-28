@@ -19,6 +19,7 @@ namespace NodeController.Patches.HotReload {
         private delegate Type GetType(string typeName, bool throwOnError);
         private static string assemblyName_ = typeof(ReadTypeMetadataPatch).Assembly.GetName().Name;
 
+        private static bool Prepare() => LoadingManager.instance.m_loadingComplete = true; // hot-reload
         private static MethodBase TargetMethod() {
             var t = Type.GetType("System.Runtime.Serialization.Formatters.Binary.ObjectReader");
             return AccessTools.DeclaredMethod(t, "ReadTypeMetadata");
