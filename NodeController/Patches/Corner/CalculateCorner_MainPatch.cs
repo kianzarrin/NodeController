@@ -106,6 +106,9 @@ namespace NodeController.Patches.Corner {
             ushort segmentID, bool start, bool leftSide,
             ref Vector3 cornerPos, ref Vector3 cornerDirection) {
             try {
+                CalculateCorner_SharpPatch.Sharpen2(
+                    segmentId1: segmentID, startNode: start, leftSide: leftSide,
+                    cornerPos: ref cornerPos, cornerDirection: ref cornerDirection);
 
                 SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
                 Assertion.AssertNotNull(NCSettings.GameConfig, "Settings.GameConfig");
