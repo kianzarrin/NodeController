@@ -8,6 +8,10 @@ using System.Linq;
 using System.Reflection.Emit;
 using UnityEngine;
 using System;
+using KianCommons.Plugins;
+
+using TrafficManager.Patch._CitizenAI._HumanAI.Connection;
+
 // TODO should end rad influence mesh?
 
 #if DEBUG
@@ -36,8 +40,19 @@ static class GetEndRadiusPatch1 {
     static MethodInfo mGetEndRadius = typeof(NetAI).GetMethod("GetEndRadius", throwOnError: true);
     static MethodInfo mModifyEndRadius = typeof(GetEndRadiusPatch1).GetMethod(nameof(ModifyEndRadius), throwOnError: true);
 
+    static IEnumerable<MethodBase> TargetMethods() {
+        yield return typeof(VehicleAI).GetMethod("UpdatePathTargetPositions", throwOnError: true);
+
+        string typeName = "TrafficManager.Patch._VehicleAI.UpdatePathTargetPositionsPatch";
+        Type patchType =PluginUtil.GetTrafficManager().GetMainAssembly().GetType(typeName, throwOnError: false);
+        if (patchType != null) {
+            string name = nameof(TrafficManager.Patch._VehicleAI.UpdatePathTargetPositionsPatch.Prefix);
+            yield return patchType.GetMethod(name, throwOnError: true);
+        }
+    }
+
+
     // protected void VehicleAI.UpdatePathTargetPositions(ushort vehicleID, ref Vehicle vehicleData, Vector3 refPos, ref int index, int max, float minSqrDistanceA, float minSqrDistanceB)
-    [HarmonyPatch(typeof(VehicleAI), "UpdatePathTargetPositions")]
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase original) {
         var codes = instructions.ToList();
 
