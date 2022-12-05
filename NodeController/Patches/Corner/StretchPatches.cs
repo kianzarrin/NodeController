@@ -10,7 +10,7 @@ using UnityEngine;
 
 // vehicle/pedestrian paths take into consideration the stretched lane/segment.
 [HarmonyPatch]
-internal static class WidthPatch1 {
+static class WidthPatch1 {
     static IEnumerable<MethodBase> TargetMethods() {
         // stretch the area ppl wait at bus stop:
         // private Vector4 HumanAI.GetTransportWaitPosition(ushort instanceID, ref CitizenInstance citizenData, ref CitizenInstance.Frame frameData, float minSqrDistance)
@@ -25,7 +25,7 @@ internal static class WidthPatch1 {
         yield return typeof(PassengerCarAI).GetMethod("FindParkingSpaceRoadSide", throwOnError: true);
     }
 
-    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase original) {
+    static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase original) {
         FieldInfo fLaneWidth = ReflectionHelpers.GetField<NetInfo.Lane>(nameof(NetInfo.Lane.m_width));
         FieldInfo fNetHW = ReflectionHelpers.GetField<NetInfo>(nameof(NetInfo.m_halfWidth));
         FieldInfo fNetPW = ReflectionHelpers.GetField<NetInfo>(nameof(NetInfo.m_pavementWidth));
@@ -41,9 +41,9 @@ internal static class WidthPatch1 {
                 i += codes.InsertInstructions(
                     i + 1, // insert after
                     new[] {
-                    // m_width or m_halfWidth or m_pavementWidth already on stack
-                    codes[iLoadPathPos].Clone(),
-                    new CodeInstruction(OpCodes.Call, mStretch),
+                        // m_width or m_halfWidth or m_pavementWidth already on stack
+                        codes[iLoadPathPos].Clone(),
+                        new CodeInstruction(OpCodes.Call, mStretch),
                 });
             }
         }
@@ -67,8 +67,8 @@ internal static class WidthPatch1 {
 [HarmonyPatch(typeof(NetLane), nameof(NetLane.CalculateStopPositionAndDirection))]
 [HarmonyPriority(Priority.High)]
 [HarmonyBefore("me.tmpe")]
-internal static class CalculateStopPositionAndDirectionPatch {
-    internal static void Prefix(ref NetLane __instance, float laneOffset, ref float stopOffset) {
+static class CalculateStopPositionAndDirectionPatch {
+    static void Prefix(ref NetLane __instance, float laneOffset, ref float stopOffset) {
         float sign = Mathf.Sign(stopOffset);
         if (sign != 0) {
             ushort segmentId = __instance.m_segment;
