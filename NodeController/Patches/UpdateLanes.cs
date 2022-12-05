@@ -5,7 +5,7 @@ namespace NodeController {
 
     [HarmonyPatch(typeof(RoadBaseAI))]
     [HarmonyPatch(nameof(RoadBaseAI.UpdateLanes))]
-    [HarmonyAfter("de.viathinksoft.tmpe", "me.tmpe")]
+    [HarmonyAfter("me.tmpe")]
     [HarmonyPriority(Priority.Low)]
     class UpdateLanes {
         static void Postfix(ushort segmentID) {
