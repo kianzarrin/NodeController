@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 
+// vehicle/pedestrian paths take into consideration the stretched lane/segment.
 [HarmonyPatch]
 internal static class WidthPatch1 {
     static IEnumerable<MethodBase> TargetMethods() {
@@ -68,14 +69,21 @@ internal static class WidthPatch1 {
 [HarmonyBefore("me.tmpe")]
 internal static class CalculateStopPositionAndDirectionPatch {
     internal static void Prefix(ref NetLane __instance, float laneOffset, ref float stopOffset) {
-        ushort segmentId = __instance.m_segment;
-        ref SegmentEndData segStart = ref SegmentEndManager.Instance.GetAt(segmentId, true);
-        ref SegmentEndData segEnd = ref SegmentEndManager.Instance.GetAt(segmentId, false);
+        float sign = Mathf.Sign(stopOffset);
+        if (sign != 0) {
+            ushort segmentId = __instance.m_segment;
+            ref SegmentEndData segStart = ref SegmentEndManager.Instance.GetAt(segmentId, true);
+            ref SegmentEndData segEnd = ref SegmentEndManager.Instance.GetAt(segmentId, false);
 
-        float stretchStart = segStart?.Stretch ?? 0;
-        float stretchEnd = segEnd?.Stretch ?? 0;
-        float stretch = Mathf.Lerp(stretchStart, stretchEnd, laneOffset);
-        float ratio = stretch * 0.01f + 1;
-        stopOffset *= ratio;
+            float stretchStart = segStart?.Stretch ?? 0;
+            float stretchEnd = segEnd?.Stretch ?? 0;
+            float stretch = Mathf.Lerp(stretchStart, stretchEnd, laneOffset);
+            float ratio = stretch * 0.01f + 1;
+            stopOffset *= ratio;
+
+            // take into account that the space also stretches.
+            const float BUS_WIDTH = 3f;
+            stopOffset += sign * BUS_WIDTH * 0.5f * stretch * 0.01f;
+        }
     }
 }
