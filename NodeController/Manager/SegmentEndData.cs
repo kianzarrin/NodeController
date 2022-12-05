@@ -112,6 +112,7 @@ namespace NodeController {
         public float DeltaSlopeAngleDeg;
         public bool Nodeless;
         public bool SharpCorners;
+        public float DeltaEndRadius; // in percent
 
         // shortcuts
         public ref NetSegment Segment => ref SegmentID.ToSegment();
@@ -175,7 +176,9 @@ namespace NodeController {
             $"NoJunctionTexture:{NoJunctionTexture} == false; " +
             $"NoJunctionProps:{NoJunctionProps} == false; " +
             $"NoTLProps:{NoTLProps} == false; " +
-            $"NoTLProps:{Nodeless} == false ";
+            $"NoTLProps:{Nodeless} == false " +
+            $"DeltaEndRadius:{DeltaEndRadius} == 0";
+
 
         public void Calculate() {
             //Capture the default values.
@@ -204,7 +207,7 @@ namespace NodeController {
             }
             if (!CanModifyCorners()) {
                 DeltaSlopeAngleDeg = 0;
-                Shift = Stretch = EmbankmentAngleDeg = 0;
+                DeltaEndRadius = Shift = Stretch = EmbankmentAngleDeg = 0;
             }
             if (NodeData != null && !NodeData.CanModifySharpCorners()) {
                 SharpCorners = false;
@@ -276,6 +279,7 @@ namespace NodeController {
             ret &= DeltaSlopeAngleDeg == 0;
             ret &= Stretch == 0;
             ret &= Shift == 0;
+            ret &= DeltaEndRadius == 0;
             ret &= SharpCorners == DefaultSharpCorners;
 
             ret &= EmbankmentAngleDeg == 0;
@@ -305,7 +309,7 @@ namespace NodeController {
             NoJunctionProps = false;
             NoTLProps = false;
             SharpCorners = DefaultSharpCorners;
-            Shift = Stretch = EmbankmentAngleDeg = 0;
+            DeltaEndRadius = Shift = Stretch = EmbankmentAngleDeg = 0;
             LeftCorner.ResetToDefault();
             RightCorner.ResetToDefault();
             RefreshAndUpdate();
@@ -632,7 +636,7 @@ namespace NodeController {
                 Vector3 deltaDir = default;
                 {
                     // embankment:
-                    float embankmentVelocityRad = GetEmbankmentVelocityDeg().LogRet($"GetEmbankmentVelocityDeg({SegmentID}, {IsStartNode})") * Mathf.Deg2Rad;
+                    float embankmentVelocityRad = GetEmbankmentVelocityDeg() * Mathf.Deg2Rad;
                     if (leftSide) embankmentVelocityRad = -embankmentVelocityRad;
                     float sin = Mathf.Sin(embankmentVelocityRad);
                     float cos = Mathf.Cos(embankmentVelocityRad);
@@ -641,7 +645,7 @@ namespace NodeController {
                     deltaDir.y = -sin * r; // vertical
 
                     // Stretch:
-                    float stretchVelocity = GetStretchVelocity().LogRet($"GetStretchVelocity({SegmentID}, {IsStartNode})%") * 0.01f;
+                    float stretchVelocity = GetStretchVelocity() * 0.01f;
                     deltaDir.x += -stretchVelocity * cos * r; // outward
                     deltaDir.y += -stretchVelocity * sin * r; // vertical
                 }

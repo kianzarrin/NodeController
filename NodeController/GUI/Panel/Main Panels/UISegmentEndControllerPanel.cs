@@ -179,6 +179,21 @@ namespace NodeController.GUI {
                 Controls.Add(fieldm);
             }
 
+            { // uturn
+                endRadius_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
+                label.text = "Delta U-Turn Radius";
+                if (extendedSlider) panel0.width += CELL_SIZE2.x;
+                var slider_ = panel0.AddUIComponent<EndRadiusSlider>();
+                Controls.Add(slider_);
+
+                var fieldm = row2.AddUIComponent<UICornerTextField>();
+                if (extendedSlider) fieldm.size = CELL_SIZE2;
+                fieldm.GetData = () => SegmentEndData.DeltaEndRadius;
+                fieldm.SetData = val => SegmentEndData.DeltaEndRadius = val;
+                fieldm.PostFix = "%";
+                Controls.Add(fieldm);
+            }
+
             {
                 var b = AddUIComponent<CollapsorButton>();
                 var cornerTable = AddPanel();
@@ -211,7 +226,7 @@ namespace NodeController.GUI {
             Close();
         }
 
-        UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_, shiftPanel_;
+        UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_, shiftPanel_, endRadius_;
         UIAutoSizePanel tableLeft_, tableRight_;
         UICornerTextField leftCornerOffset_, rightCornerOffset_;
 
@@ -432,7 +447,7 @@ namespace NodeController.GUI {
             Log.Debug("SegmentEndController.Refresh() called\n"/* + Environment.StackTrace*/);
             tableLeft_.isVisible = tableRight_.isVisible =
                 SegmentEndData?.CanModifyCorners() ?? false;
-            offsetPanel_.isVisible = SegmentEndData?.CanModifyOffset() ?? false;
+            endRadius_.isVisible = offsetPanel_.isVisible = SegmentEndData?.CanModifyOffset() ?? false;
             slopePanel_.isVisible = stretchPanel_.isVisible = embankmentPanel_.isVisible = shiftPanel_.isVisible =
                  SegmentEndData?.CanModifyCorners() ?? false;
 

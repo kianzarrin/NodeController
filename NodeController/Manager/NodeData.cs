@@ -15,6 +15,7 @@ namespace NodeController {
     using static ColossalFramework.Math.VectorUtils;
     using static KianCommons.Assertion;
     using static KianCommons.ReflectionHelpers;
+    using static NetInfo;
     using Log = KianCommons.Log;
     using TernaryBool = CSUtil.Commons.TernaryBool;
 
@@ -419,6 +420,19 @@ namespace NodeController {
             return Shift1 == Shift2;
         }
         #endregion Shift
+        #region
+        public float DeltaEndRadius {
+            get => IterateSegmentEndDatas().Average(segEnd => segEnd.DeltaEndRadius);
+            set {
+                foreach(var segEnd in IterateSegmentEndDatas()) {
+                    segEnd.DeltaEndRadius = value;
+                }
+            }
+        }
+
+        public bool HasUniformDeltaEndRadius() =>
+            IterateSegmentEndDatas().AllEqual(segEnd => segEnd.DeltaEndRadius);
+        #endregion
         #region sharp
         public bool SharpCorners {
             get {

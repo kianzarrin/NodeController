@@ -33,7 +33,7 @@ namespace NodeController.GUI {
             }
         }
 
-        UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_, shiftPanel_;
+        UIAutoSizePanel offsetPanel_, embankmentPanel_, stretchPanel_, slopePanel_, shiftPanel_, endRadiusPanel_;
 
         public override void Awake() {
             base.Awake();
@@ -175,6 +175,22 @@ namespace NodeController.GUI {
                 Controls.Add(fieldm);
             }
 
+            { // End radius
+                endRadiusPanel_ = MakeSliderSection(this, out var label, out var panel0, out var row1, out var row2);
+                label.text = "Delta U-Turn Radius";
+                label.tooltip = "Delta U-Turn Radius";
+                if (extendedSlider) panel0.width += CELL_SIZE2.x;
+                var slider_ = panel0.AddUIComponent<EndRadiusSlider>();
+                Controls.Add(slider_);
+
+                var fieldm = row2.AddUIComponent<UICornerTextField>();
+                if (extendedSlider) fieldm.size = CELL_SIZE2;
+                fieldm.GetData = () => NodeData.DeltaEndRadius;
+                fieldm.SetData = val => NodeData.DeltaEndRadius = val;
+                fieldm.PostFix = "%";
+                Controls.Add(fieldm);
+            }
+
             AddPanel().name = "Space";
 
             {
@@ -209,7 +225,7 @@ namespace NodeController.GUI {
 
         public override void Refresh() {
             Log.Debug("UINodeControllerPanel.Refresh() called");
-            offsetPanel_.isVisible = NodeData?.CanModifyOffset() ?? false;
+            endRadiusPanel_.isVisible = offsetPanel_.isVisible = NodeData?.CanModifyOffset() ?? false;
             slopePanel_.isVisible = stretchPanel_.isVisible = embankmentPanel_.isVisible = shiftPanel_.isVisible =
                  NodeData?.CanMassEditNodeCorners() ?? false;
 
