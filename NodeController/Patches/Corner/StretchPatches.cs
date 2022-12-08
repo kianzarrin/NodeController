@@ -69,21 +69,16 @@ static class WidthPatch1 {
 [HarmonyBefore("me.tmpe")]
 static class CalculateStopPositionAndDirectionPatch {
     static void Prefix(ref NetLane __instance, float laneOffset, ref float stopOffset) {
-        float sign = Mathf.Sign(stopOffset);
-        if (sign != 0) {
+        if (stopOffset != 0) {
             ushort segmentId = __instance.m_segment;
             ref SegmentEndData segStart = ref SegmentEndManager.Instance.GetAt(segmentId, true);
             ref SegmentEndData segEnd = ref SegmentEndManager.Instance.GetAt(segmentId, false);
 
             float stretchStart = segStart?.Stretch ?? 0;
             float stretchEnd = segEnd?.Stretch ?? 0;
-            float stretch = Mathf.Lerp(stretchStart, stretchEnd, laneOffset);
-            float ratio = stretch * 0.01f + 1;
-            stopOffset *= ratio;
-
-            // take into account that the space also stretches.
-            const float BUS_WIDTH = 3f;
-            stopOffset += sign * BUS_WIDTH * 0.5f * stretch * 0.01f;
+            float stretch = Mathf.Lerp(stretchStart, stretchEnd, laneOffset) * 0.01f;
+            float ratio = stretch + 1;
+            stopOffset *= (ratio + 0.5f * stretch); //0.5f * stretch because bus stop space also stretches
         }
     }
 }
