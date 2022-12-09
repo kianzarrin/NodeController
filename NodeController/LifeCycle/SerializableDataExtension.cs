@@ -71,7 +71,10 @@ namespace NodeController.LifeCycle
 
 
         public override void OnLoadData() => Load();
-        public static void Load() { 
+        public static void Load() {
+            Log.Called();
+            Log.Info(Helpers.WhatIsCurrentThread());
+            Log.Debug("SimulationPaused=" + SimulationManager.instance.SimulationPaused);
             byte[] data = SerializableData.LoadData(DATA_ID);
             if (data != null) {
                 LoadingVersion = 2;
@@ -87,6 +90,8 @@ namespace NodeController.LifeCycle
 
         public override void OnSaveData() => Save();
         public static void Save() {
+            Log.Called();
+            Log.Info(Helpers.WhatIsCurrentThread());
             byte[] data = NCState.Serialize();
             SerializableData.SaveData(DATA_ID, data);
         }

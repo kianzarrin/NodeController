@@ -76,12 +76,17 @@ namespace NodeController.LifeCycle {
         public static void SimulationDataReady() {
             try {
                 Log.Called();
-                //Log.Info($"LifeCycle.SimulationDataReady() called. mode={Mode} updateMode={UpdateMode}, scene={Scene}");
-                //System.Threading.Thread.Sleep(1000 * 50); //50 sec
-                //Log.Info($"LifeCycle.SimulationDataReady() after sleep");
+                Log.Info(Helpers.WhatIsCurrentThread());
+                Log.Debug("SimulationPaused=" + SimulationManager.instance.SimulationPaused);
+                if (!SimulationManager.instance.SimulationPaused) {
+                    Log.Warning("Simulation thread is not paused. potential race condition");
+                }
 
-                if (Scene == "ThemeEditor")
+
+                if (Scene == "ThemeEditor") {
+                    Log.Info("Skip SimulationDataReady theme editor", true);
                     return;
+                }
                 CSURUtil.Init();
                 if (NCSettings.GameConfig == null) {
                     switch (Mode) {
