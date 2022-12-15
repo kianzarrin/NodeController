@@ -45,7 +45,5 @@ namespace NodeController.Util {
 
         internal static Version TMPEVersion =>
             TrafficManager.API.Implementations.ManagerFactory.VersionOf();
-
-        internal static Version TMPEThemesVersion = new Version(11, 6, 4);
     }
 }

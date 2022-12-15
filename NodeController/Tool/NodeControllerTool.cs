@@ -534,10 +534,6 @@ namespace NodeController.Tool {
         /// it takes into account the segment count, node type, and options state.
         /// </summary>
         bool ShouldDrawSigns() {
-            if (TMPEUtils.TMPEVersion < TMPEUtils.TMPEThemesVersion) {
-                // not supported
-                return false;
-            }
             NodeData nodeData = NodeManager.Instance.buffer[SelectedNodeID];
             return !Hide_TMPE_Overlay || (nodeData != null && nodeData.SegmentCount == 2);
         }
