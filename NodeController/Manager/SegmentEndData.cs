@@ -675,10 +675,11 @@ namespace NodeController {
         #region External Mods
         public TernaryBool ShouldHideCrossingTexture() {
             if (NodeData != null && NodeData.NodeType == NodeTypeT.Stretch)
-                return TernaryBool.False; // always ignore.
-            if (NoMarkings)
+                return TernaryBool.False; // always show.
+            else if (NoMarkings)
                 return TernaryBool.True; // always hide
-            return TernaryBool.Undefined; // default.
+            else
+                return TernaryBool.Undefined; // default.
         }
 
         #endregion
