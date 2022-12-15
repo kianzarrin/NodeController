@@ -9,7 +9,7 @@ using UnityEngine.Networking.Types;
 class UpdateBuilding {
     /// <summary>in case another mod updated node building without performing a full update</summary>
     static void Postfix(ushort nodeID) {
-        SimulationManager.instance.AddAction(() => NodeData.FixPillar(nodeID));
+        BuilidingManger_SimulationStep_Patch.FixPillarNodeIDs.Add(nodeID);
     }
 }
 #endif

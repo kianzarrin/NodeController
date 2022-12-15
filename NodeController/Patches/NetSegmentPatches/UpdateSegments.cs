@@ -13,7 +13,7 @@ internal static class UpdateSegmentsCommons {
 
             ref NetSegment segment = ref segmentID.ToSegment();
             ushort nodeID = segment.GetNode(startNode);
-            SimulationManager.instance.AddAction(() => NodeData.FixPillar(nodeID));
+            BuilidingManger_SimulationStep_Patch.FixPillarNodeIDs.Add(nodeID);
         } catch (Exception ex) { ex.Log($"segment:{segmentID}"); }
     }
 }
