@@ -57,7 +57,7 @@ namespace NodeController.LifeCycle
 
         public void DeserilizeConfig() {
             if (GameConfig == null) {
-                NCSettings.LoadDefaltConfig(LifeCycle.Mode);
+                NCSettings.LoadDefaltConfig(NCLifeCycle.Mode);
             } else {
                 NCSettings.GameConfig = GameConfig;
             }
@@ -115,7 +115,7 @@ namespace NodeController.LifeCycle
                 NodeManager.Instance.OnLoad();
                 SegmentEndManager.Instance.OnLoad();
 
-                LifeCycle.LoadingStage = LifeCycle.Stage.DataLoaded;
+                NCLifeCycle.LoadingStage = NCLifeCycle.Stage.DataLoaded;
                 Log.Succeeded();
             } catch(Exception ex) { ex.Log(); }
         }

@@ -803,33 +803,35 @@ namespace NodeController {
         public Vector3 GetPosition() => Node.m_position + Vector3.up * (Node.m_heightOffset / 64f);
 
         // same code as AN
-        private void ShiftPilarImpl() {
-            ref NetNode node = ref Node;
-            NetInfo info = node.Info;
-            ushort buildingId = node.m_building;
-            ref var building = ref buildingId.ToBuilding();
-            bool isValid = node.IsValid() && building.IsValid(buildingId);
-            if (!isValid)
-                return;
+        private void ShiftPillar() {
+            try {
+                ref NetNode node = ref Node;
+                NetInfo info = node.Info;
+                ushort buildingId = node.m_building;
+                ref var building = ref buildingId.ToBuilding();
+                bool isValid = node.IsValid() && building.IsValid(buildingId);
+                if (!isValid)
+                    return;
 
-            info.m_netAI.GetNodeBuilding(NodeID, ref node, out BuildingInfo buildingInfo, out float heightOffset);
-            Vector3 center = default;
-            int counter = 0;
-            foreach (var segmentEndData in IterateSegmentEndDatas()) {
-                center += segmentEndData.LeftCorner.Pos + segmentEndData.RightCorner.Pos;
-                counter += 2;
-            }
-            center /= counter;
-            center.y += heightOffset;
+                info.m_netAI.GetNodeBuilding(NodeID, ref node, out BuildingInfo buildingInfo, out float heightOffset);
+                Vector3 center = default;
+                int counter = 0;
+                foreach (var segmentEndData in IterateSegmentEndDatas()) {
+                    center += segmentEndData.LeftCorner.Pos + segmentEndData.RightCorner.Pos;
+                    counter += 2;
+                }
+                center /= counter;
+                center.y += heightOffset;
 
-            BuildingUtil.RelocatePillar(buildingId, center, building.m_angle);
-            building.m_position = center;
+                BuildingUtil.RelocatePillar(buildingId, center, building.m_angle);
+                building.m_position = center;
+            } catch (Exception ex) { ex.Log(); }
         }
 
-        public static void ShiftPillar(ushort nodeID) {
+        public static void FixPillar(ushort nodeID) {
             ref NetNode node = ref nodeID.ToNode();
             if (NodeManager.Instance.buffer[nodeID] is NodeData nodeData) {
-                nodeData.ShiftPilarImpl();
+                nodeData.ShiftPillar();
                 return;
             }
 
@@ -843,13 +845,15 @@ namespace NodeController {
                 node.Info.m_netAI.GetNodeBuilding(nodeID, ref node, out BuildingInfo buildingInfo, out float heightOffset);
                 center.y += heightOffset;
                 BuildingUtil.RelocatePillar(buildingId, center, building.m_angle);
-
             }
 
             static Vector3 GetCenter(ushort nodeID) {
                 Vector3 center = default;
                 int count = 0;
-                foreach (ushort segmentID in nodeID.ToNode().IterateSegments()) {
+                ref NetNode node = ref nodeID.ToNode();
+                for(ushort segmentIndex = 0; segmentIndex < 8; ++segmentIndex) {
+                    ushort segmentID = node.GetSegment(segmentIndex);
+                    if (segmentID == 0) continue;
                     ref NetSegment segment = ref segmentID.ToSegment();
                     bool startNode = segment.IsStartNode(nodeID);
                     foreach (bool left in HelpersExtensions.ALL_BOOL) {
@@ -864,8 +868,13 @@ namespace NodeController {
             }
 
             static bool HasSlope(ushort nodeID) {
-                foreach (ushort segmentID in nodeID.ToNode().IterateSegments()) {
-                    if (!segmentID.ToSegment().Info.m_flatJunctions)
+                ref NetNode node = ref nodeID.ToNode();
+                for (ushort segmentIndex = 0; segmentIndex < 8; ++segmentIndex) {
+                    ushort segmentID = node.GetSegment(segmentIndex);
+                    if (segmentID == 0) continue;
+                    ref NetSegment segment = ref segmentID.ToSegment();
+                    if (segment.Info == null) return false;
+                    if (!segment.Info.m_flatJunctions)
                         return true;
                 }
                 return false;

@@ -6,7 +6,6 @@ namespace NodeController.Patches {
     [HarmonyPatch(typeof(NetNode), nameof(NetNode.CalculateNode))]
     class CalculateNode {
         static void Postfix(ushort nodeID) {
-            //Log.Debug("CalculateNode.PostFix() was called");
             NodeManager.Instance.OnBeforeCalculateNodePatch(nodeID); // invalid/unsupported nodes are set to null.
             NodeData nodeData = NodeManager.Instance.buffer[nodeID];
             if (nodeData == null)

@@ -187,7 +187,7 @@ namespace NodeController.LifeCycle {
     }
 
 
-    public class LifeCycle : AdvancedLifeCycleBase {
+    public class NCLifeCycle : AdvancedLifeCycleBase {
         public static string HARMONY_ID = "CS.Kian.NodeController";
         public override string Name => "Node controller " + VersionString;
         public override string Description => "control Nodes/Corners";
