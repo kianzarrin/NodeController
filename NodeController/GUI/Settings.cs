@@ -1,11 +1,9 @@
 namespace NodeController.GUI {
     using ColossalFramework;
     using ColossalFramework.UI;
-    using ICities;
     using KianCommons;
     using NodeController.Tool;
     using System;
-    using static KianCommons.HelpersExtensions;
 
     [Serializable]
     public class GameConfigT {
@@ -32,10 +30,10 @@ namespace NodeController.GUI {
             }
         }
 
-        public static void OnSettingsUI(UIHelperBase helper) {
+        public static void OnSettingsUI(UIHelper helper) {
             Log.Debug("Make settings was called");
             MakeGlobalSettings(helper);
-            if (!InStartup) {
+            if (!Helpers.InStartupMenu) {
                 MakeGameSettings(helper);
             }
         }
@@ -47,7 +45,7 @@ namespace NodeController.GUI {
             };
         }
 
-        public static void MakeGlobalSettings(UIHelperBase helper) {
+        public static void MakeGlobalSettings(UIHelper helper) {
             UIHelper group = helper.AddGroup("Global settings") as UIHelper;
             UIPanel panel = group.self as UIPanel;
 
@@ -74,7 +72,7 @@ namespace NodeController.GUI {
         }
 
         static UICheckBox universalFixes_;
-        public static void MakeGameSettings(UIHelperBase helper) {
+        public static void MakeGameSettings(UIHelper helper) {
             UIHelper group = helper.AddGroup("Game settings") as UIHelper;
 
             UIPanel panel = group.self as UIPanel;
@@ -93,6 +91,8 @@ namespace NodeController.GUI {
                 Log.Error("GameConfig==null");
                 return;
             }
+            if(!Helpers.InMainThread())
+                Log.Warning("UpdateGameSettings should be called from main thread");
             Log.Debug($"UpdateGameSettings: UnviversalSlopeFixes =" + GameConfig.UnviversalSlopeFixes);
             if(universalFixes_)
                 universalFixes_.isChecked = GameConfig.UnviversalSlopeFixes;

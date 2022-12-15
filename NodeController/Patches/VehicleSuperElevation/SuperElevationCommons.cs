@@ -72,8 +72,8 @@ namespace NodeController.Patches.VehicleSuperElevation {
             // bezier is always from start to end node regardless of direction.
             SegmentEndData segStart = SegmentEndManager.Instance.GetAt(pathPos.m_segment, true);
             SegmentEndData segEnd = SegmentEndManager.Instance.GetAt(pathPos.m_segment, false);
-            float startSE = segStart == null ? 0f : segStart.CachedSuperElevationDeg;
-            float endSE = segEnd == null ? 0f : -segEnd.CachedSuperElevationDeg;
+            float startSE = segStart?.CachedSuperElevationDeg ?? 0;
+            float endSE = -segEnd?.CachedSuperElevationDeg ?? 0;
             float se = Mathf.Lerp(startSE , endSE ,offset);
 
             var lane = pathPos.GetLaneInfo();
@@ -83,11 +83,6 @@ namespace NodeController.Patches.VehicleSuperElevation {
             bool reversed = vehicleData.m_flags.IsFlagSet(Vehicle.Flags.Reversed);
 
             bool bidirectional = lane.m_finalDirection.CheckFlags(NetInfo.Direction.Both);
-            //bool both = lane.m_finalDirection == NetInfo.Direction.Both;
-            //bool avoidForward = lane.m_finalDirection == NetInfo.Direction.AvoidForward;
-            //bool avoidBackward = lane.m_finalDirection == NetInfo.Direction.AvoidBackward;
-            //bool avoidAny = avoidForward | avoidBackward;
-
             if (invert) se = -se;
             if (backward) se = -se;
             if (reversed & !bidirectional) se = -se;
