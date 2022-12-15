@@ -50,13 +50,13 @@ namespace NodeController.LifeCycle {
 
         public virtual void OnEnabled() {
             try {
-                //UI.TextureUtil.EmbededResources = false;
                 LoadingManager.instance.m_introLoaded += OnIntroLoaded;
                 LoadingManager.instance.m_levelPreLoaded += OnLevelPreLoaded;
                 LoadingManager.instance.m_levelPreUnloaded += OnLevelPreUnloaded;
                 LoadingManager.instance.m_metaDataReady += OnMetaDataReady;
                 LoadingManager.instance.m_simulationDataReady += OnSimulationDataReady;
                 LoadingManager.instance.m_levelUnloaded += OnLevelUnloaded;
+                KianCommons.UI.TextureUtil.EmbededResources = false;
                 Start();
                 LoadingStage = Stage.Enabled;
                 if (LoadingManager.instance.m_loadingComplete)
@@ -205,7 +205,6 @@ namespace NodeController.LifeCycle {
         }
 
         public override void End() {
-            TrafficManager.API.Implementations.Notifier.EventLevelLoaded -= TMPE_Loaded;
             LaneCache.Instance?.Release();
         }
 
@@ -219,15 +218,21 @@ namespace NodeController.LifeCycle {
             TMPE_Loaded();
         }
 
+        private static bool harmonyInstalled_ = false;
         public override void Preload() {
             if (Scene == "ThemeEditor") return;
             TrafficManager.API.Implementations.Notifier.EventLevelLoaded += TMPE_Loaded;
             CSURUtil.Init();
-
             NCSettings.GameConfig = GameConfigT.NewGameDefault;
+            LaneCache.Instance?.Release();
+            LaneCache.Create();
             SegmentEndManager.Deserialize(null, default);
             NodeManager.Deserialize(null, default);
-            HarmonyUtil.InstallHarmony(HARMONY_ID, forbidden: typeof(HotReloadPatchAttribute));
+            if (!harmonyInstalled_) {
+                // skip when loading another game
+                HarmonyUtil.InstallHarmony(HARMONY_ID, forbidden: typeof(HotReloadPatchAttribute));
+                harmonyInstalled_ = true;
+            }
         }
 
 
@@ -254,9 +259,11 @@ namespace NodeController.LifeCycle {
             NodeControllerTool.Remove();
         }
         public override void PreExit() {
+            harmonyInstalled_ = false;
             HarmonyUtil.UninstallHarmony(HARMONY_ID);
             NCSettings.GameConfig = null;
-            base.PreExit();
+            LaneCache.Instance?.Release();
+            TrafficManager.API.Implementations.Notifier.EventLevelLoaded -= TMPE_Loaded;
         }
     }
 }

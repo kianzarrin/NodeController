@@ -1,6 +1,7 @@
 namespace NodeController.GUI {
     using ColossalFramework;
     using ColossalFramework.UI;
+    using ICities;
     using KianCommons;
     using NodeController.Tool;
     using System;
@@ -27,6 +28,20 @@ namespace NodeController.GUI {
             // Creating setting file - from SamsamTS
             if (GameSettings.FindSettingsFileByName(FileName) == null) {
                 GameSettings.AddSettingsFile(new SettingsFile[] { new SettingsFile() { fileName = FileName } });
+            }
+        }
+
+        public static void LoadDefaltConfig(LoadMode mode) {
+            switch (mode) {
+                case LoadMode.NewGameFromScenario:
+                case LoadMode.LoadScenario:
+                case LoadMode.LoadMap:
+                    // no NC or old NC
+                    NCSettings.GameConfig = GameConfigT.LoadGameDefault;
+                    break;
+                default:
+                    NCSettings.GameConfig = GameConfigT.NewGameDefault;
+                    break;
             }
         }
 

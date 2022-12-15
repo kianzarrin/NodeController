@@ -8,6 +8,8 @@ namespace NodeController.LifeCycle
     using KianCommons.Serialization;
     using NodeController.Manager;
     using UnityEngine.SceneManagement;
+    using System.Runtime.InteropServices.ComTypes;
+    using static RenderManager;
 
     [Serializable]
     public class NCState {
@@ -32,44 +34,41 @@ namespace NodeController.LifeCycle
             return SerializationUtil.Serialize(Instance);
         }
 
-        public static void Deserialize(byte[] data) {
-            try {
-                if (data == null) {
-                    Log.Debug($"NCState.Deserialize(data=null)");
-                    Instance = new NCState();
+        public static NCState DeserializeState(byte[] data) {
+            if (data == null) {
+                Log.Debug($"NCState.Deserialize(data=null)");
+                return new NCState();
+            } else {
+                Log.Debug($"NCState.Deserialize(data): data.Length={data?.Length}");
+                var ret = SerializationUtil.Deserialize(data, default) as NCState;
+                if (ret?.Version != null) { //2.1.1 or above
+                    Log.Debug("Deserializing V" + ret.Version);
+                    SerializationUtil.DeserializationVersion = new Version(ret.Version);
                 } else {
-                    Log.Debug($"NCState.Deserialize(data): data.Length={data?.Length}");
-                    Instance = SerializationUtil.Deserialize(data, default) as NCState;
-                    if (Instance?.Version != null) { //2.1.1 or above
-                        Log.Debug("Deserializing V" + Instance.Version);
-                        SerializationUtil.DeserializationVersion = new Version(Instance.Version);
-                    } else {
-                        // 2.0
-                        Log.Debug("Deserializing version 2.0");
-                        Instance.Version = "2.0";
-                        Instance.GameConfig = GameConfigT.LoadGameDefault; // for the sake of feature proofing.
-                        Instance.GameConfig.UnviversalSlopeFixes = true; // in this version I do apply slope fixes.
-                    }
+                    // 2.0
+                    Log.Debug("Deserializing version 2.0");
+                    ret.Version = "2.0";
+                    ret.GameConfig = GameConfigT.LoadGameDefault; // for the sake of future proofing.
+                    ret.GameConfig.UnviversalSlopeFixes = true; // in this version I do apply slope fixes.
                 }
-                NCSettings.GameConfig = Instance.GameConfig;
-                if (NCSettings.GameConfig == null) {
-                    switch (LifeCycle.Mode) {
-                        case LoadMode.NewGameFromScenario:
-                        case LoadMode.LoadScenario:
-                        case LoadMode.LoadMap:
-                            // no NC or old NC
-                            NCSettings.GameConfig = GameConfigT.LoadGameDefault;
-                            break;
-                        default:
-                            NCSettings.GameConfig = GameConfigT.NewGameDefault;
-                            break;
-                    }
-                }
-                Log.Debug($"UnviversalSlopeFixes = {Instance.GameConfig.UnviversalSlopeFixes}");
+                return ret;
+            }
+        }
 
-                var version = new Version(Instance.Version);
-                SegmentEndManager.Deserialize(Instance.SegmentEndManagerData, version);
-                NodeManager.Deserialize(Instance.NodeManagerData, version);
+        public void DeserilizeConfig() {
+            if (GameConfig == null) {
+                NCSettings.LoadDefaltConfig(LifeCycle.Mode);
+            } else {
+                NCSettings.GameConfig = GameConfig;
+            }
+            Log.Info($"UnviversalSlopeFixes={NCSettings.GameConfig.UnviversalSlopeFixes}");
+        }
+
+        public void DeserializeManagers() {
+            try {
+                var version = new Version(Version);
+                SegmentEndManager.Deserialize(SegmentEndManagerData, version);
+                NodeManager.Deserialize(NodeManagerData, version);
             } catch (Exception ex) { ex.Log(); }
         }
     }
@@ -79,12 +78,20 @@ namespace NodeController.LifeCycle
         : SerializableDataExtensionBase
     {
         private const string DATA_ID0 = "RoadTransitionManager_V1.0";
-        private const string DATA_ID1 = "NodeController_V1.0";
+        private const string DATA_ID1 = "NodeC+ontroller_V1.0";
         private const string DATA_ID = "NodeController_V2.0";
         private static ISerializableData SerializableData => SimulationManager.instance.m_SerializableDataWrapper;
 
         public static int LoadingVersion;
 
+        public static void BeforeNetMangerAfterDeserialize() {
+            try {
+                Log.Called();
+                byte[] data = SerializableData.LoadData(DATA_ID);
+                NCState.Instance = NCState.DeserializeState(data);
+                NCState.Instance.DeserilizeConfig();
+            } catch (Exception ex) { ex.Log(); }
+        }
 
         public override void OnLoadData() => Load();
         public static void Load() {
@@ -95,7 +102,7 @@ namespace NodeController.LifeCycle
                 byte[] data = SerializableData.LoadData(DATA_ID);
                 if (data != null) {
                     LoadingVersion = 2;
-                    NCState.Deserialize(data);
+                    NCState.Instance?.DeserializeManagers();
                 } else {
                     // convert to new version
                     LoadingVersion = 1;
@@ -104,7 +111,6 @@ namespace NodeController.LifeCycle
                     NodeManager.Deserialize(data, new Version(1, 0));
                 }
 
-                LaneCache.Create();
                 NodeManager.ValidateAndHeal(true);
                 NodeManager.Instance.OnLoad();
                 SegmentEndManager.Instance.OnLoad();
