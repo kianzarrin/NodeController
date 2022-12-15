@@ -1,5 +1,6 @@
 namespace NodeController.Util {
     using ColossalFramework;
+    using KianCommons;
     using System;
     using System.Threading;
     using UnityEngine;
@@ -12,26 +13,21 @@ namespace NodeController.Util {
             buildingId != 0 && (building.m_flags & (Building.Flags.Created | Building.Flags.Deleted)) == Building.Flags.Created;
 
         public static void RelocatePillar(ushort buildingId, Vector3 position, float angle) {
-            if (!KianCommons.Helpers.InSimulationThread()) {
+            if (buildingId == 0) return;
+            if (!Helpers.InSimulationThread()) {
                 SimulationManager.instance.AddAction(() => RelocatePillar(buildingId, position, angle));
                 return;
             }
 
             ref Building building = ref buildingId.ToBuilding();
-            if (buildingId != 0) {
-                RemoveFromGrid(buildingId, ref building);
-            }
+            var delta = building.m_position - position;
+            if (delta.sqrMagnitude < (0.001 * 0.001f)) return; // same place.
 
-            //BuildingInfo info = data.Info;
-            //if (info.m_hasParkingSpaces != VehicleInfo.VehicleType.None)
-            //{
-            //    Log.Debug($"PARKING (RB)\n#{building}:{info.name}");
-            //    BuildingManager.instance.UpdateParkingSpaces(building, ref data);
-            //}
-
+            RemoveFromGrid(buildingId, ref building);
             building.m_position = position;
             building.m_angle = (angle + Mathf.PI * 2) % (Mathf.PI * 2);
             AddToGrid(buildingId, ref building);
+
             if (building.Info != null) {
                 building.CalculateBuilding(buildingId);
                 BuildingManager.instance.UpdateBuildingRenderer(buildingId, false);
