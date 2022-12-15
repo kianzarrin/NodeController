@@ -10,41 +10,226 @@ namespace NodeController.LifeCycle {
     using UnityEngine.SceneManagement;
     using NodeController.Manager;
     using NodeController.Patches;
+    using KianCommons.IImplict;
+    using System.Threading;
 
-    public static class LifeCycle {
-        public static string HARMONY_ID = "CS.Kian.NodeController";
-        public static bool bHotReload = false;
+    public abstract class AdvancedLifeCycleBase : ILoadingExtension, IMod, IUserMod, IModWithSettings {
+        public enum Stage {
+            Enabled,
+            MainMenu,
+            Preloaded,
+            DataLoaded,
+            MetaDataReady,
+            SimulationDataReady,
+            Loaded,
+            Unloading,
+            PreExit,
+        }
+
+        public static Stage LoadingStage = Stage.MainMenu;
+
 
         public static SimulationManager.UpdateMode UpdateMode => SimulationManager.instance.m_metaData.m_updateMode;
         public static LoadMode Mode => (LoadMode)UpdateMode;
         public static string Scene => SceneManager.GetActiveScene().name;
 
-        public static bool Loaded;
+        public static AdvancedLifeCycleBase Instance { get; private set; }
 
-        public static void Enable() {
-            Log.Debug("Testing StackTrace:\n" + new StackTrace(true).ToString(), copyToGameLog: false);
-            KianCommons.UI.TextureUtil.EmbededResources = false;
-            Log.VERBOSE = false;
-            Loaded = false;
+        public static Version ModVersion => typeof(AdvancedLifeCycleBase).Assembly.GetName().Version;
+        public static string VersionString => ModVersion.ToString(2);
 
+        internal AdvancedLifeCycleBase() => Instance = this;
+
+        #region MOD
+        public abstract string Name { get; }
+        public abstract string Description { get; }
+        public abstract void OnSettingsUI(UIHelper helper);
+        public abstract void Start();
+        public virtual void IntroLoaded() { }
+        public abstract void End();
+
+        public virtual void OnEnabled() {
+            try {
+                //UI.TextureUtil.EmbededResources = false;
+                LoadingManager.instance.m_introLoaded += OnIntroLoaded;
+                LoadingManager.instance.m_levelPreLoaded += OnLevelPreLoaded;
+                LoadingManager.instance.m_levelPreUnloaded += OnLevelPreUnloaded;
+                LoadingManager.instance.m_metaDataReady += OnMetaDataReady;
+                LoadingManager.instance.m_simulationDataReady += OnSimulationDataReady;
+                LoadingManager.instance.m_levelUnloaded += OnLevelUnloaded;
+                Start();
+                LoadingStage = Stage.Enabled;
+                if (LoadingManager.instance.m_loadingComplete)
+                    HotReload();
+            } catch (Exception ex) { Log.Exception(ex); }
+        }
+        public virtual void OnDisabled() {
+            try {
+                Log.Called();
+                LoadingManager.instance.m_introLoaded -= OnIntroLoaded;
+                LoadingManager.instance.m_levelPreLoaded -= OnLevelPreLoaded;
+                LoadingManager.instance.m_levelPreUnloaded -= OnLevelPreUnloaded;
+                LoadingManager.instance.m_metaDataReady -= OnMetaDataReady;
+                LoadingManager.instance.m_simulationDataReady -= OnSimulationDataReady;
+                LoadingManager.instance.m_levelUnloaded -= OnLevelUnloaded;
+                if (LoadingManager.instance.m_loadingComplete) {
+                    LoadingStage = Stage.Unloading;
+                    OnLevelUnloading();
+                    OnLevelPreUnloaded();
+                    OnLevelUnloaded();
+                    LoadingStage = Stage.MainMenu;
+                }
+                Log.Succeeded();
+                Log.Flush();
+            } catch (Exception ex) { Log.Exception(ex); }
+        }
+        #endregion
+
+        #region events
+        private void OnIntroLoaded() {
+            try {
+                Log.Called();
+                IntroLoaded();
+                LoadingStage = Stage.MainMenu;
+                Log.Succeeded();
+            } catch(Exception ex) { ex.Log(); }
+        }
+
+        private void OnLevelPreLoaded() {
+            try {
+                Log.Called();
+                Preload();
+                LoadingStage = Stage.Preloaded;
+                Log.Succeeded();
+            } catch (Exception ex) { ex.Log(); }
+        }
+        private void OnMetaDataReady() {
+            try {
+                Log.Called();
+                MetaDataReady();
+                LoadingStage = Stage.MetaDataReady;
+                Log.Succeeded();
+            } catch (Exception ex) { ex.Log(); }
+        }
+
+        private void OnSimulationDataReady() {
+            try {
+                Log.Called();
+                SimulationDataReady();
+                LoadingStage = Stage.SimulationDataReady;
+                Log.Succeeded();
+            } catch (Exception ex) { ex.Log(); }
+        }
+
+
+        private void OnLevelPreUnloaded() {
+            try {
+                Log.Called();
+                PreExit();
+                LoadingStage = Stage.PreExit;
+                Log.Succeeded();
+            } catch (Exception ex) { ex.Log(); }
+        }
+
+
+        private void OnLevelUnloaded() {
+            try {
+                Log.Called();
+                Exit();
+                LoadingStage = Stage.MainMenu;
+                Log.Succeeded();
+            } catch (Exception ex) { ex.Log(); }
+        }
+
+        public void OnCreated(ILoading loading) { }
+
+        public void OnReleased() { }
+
+        public void OnLevelLoaded(LoadMode mode) {
+            try {
+                Log.Called();
+                Load();
+                LoadingStage = Stage.Loaded;
+                Log.Succeeded();
+            } catch (Exception ex) { ex.Log(); }
+        }
+
+        public void OnLevelUnloading() {
+            try {
+                Log.Called();
+                LoadingStage = Stage.Unloading;
+                UnLoading();
+                Log.Succeeded();
+            } catch (Exception ex) { ex.Log(); }
+        }
+
+        #endregion
+        public virtual void HotReload() {
+            Log.Called();
+            try {
+                OnLevelPreLoaded();
+                OnMetaDataReady();
+                OnSimulationDataReady();
+                OnLevelLoaded(0);
+                Log.Succeeded();
+            } catch(Exception ex) { ex.Log(); }
+        }
+
+        public virtual void Preload() { }
+        public virtual void MetaDataReady() { }
+        public virtual void SimulationDataReady() { }
+        public virtual void Load() { }
+
+        public virtual void UnLoading() { }
+        public virtual void PreExit() { }
+
+        public virtual void Exit() { } // exit to main menu
+    }
+
+
+    public class LifeCycle : AdvancedLifeCycleBase {
+        public static string HARMONY_ID = "CS.Kian.NodeController";
+        public override string Name => "Node controller " + VersionString;
+        public override string Description => "control Nodes/Corners";
+        public override void Start() {
             HarmonyHelper.EnsureHarmonyInstalled();
-            LoadingManager.instance.m_simulationDataReady += SimulationDataReady; // load/update data
-            TrafficManager.API.Implementations.Notifier.EventLevelLoaded += TMPE_Loaded;
-
-            if (LoadingManager.instance.m_loadingComplete) {
-                // even if hotreload takes place in main menu we need to do this:
-                HarmonyUtil.InstallHarmony<HotReloadPatchAttribute>(HARMONY_ID);
-            }
-
-            if (!Helpers.InStartupMenu)
-                HotReload();
-
             const bool fastTestHarmony = false;
             if (fastTestHarmony) {
                 HarmonyUtil.InstallHarmony(HARMONY_ID);
                 Process.GetCurrentProcess().Kill();
             }
+
         }
+        public override void OnSettingsUI(UIHelper helper) {
+            NCSettings.OnSettingsUI(helper);
+        }
+
+        public override void End() {
+            TrafficManager.API.Implementations.Notifier.EventLevelLoaded -= TMPE_Loaded;
+            LaneCache.Instance?.Release();
+        }
+
+        public override void HotReload() {
+            HarmonyUtil.InstallHarmony<HotReloadPatchAttribute>(HARMONY_ID);
+            var task = SimulationManager.instance.AddAction(SerializableDataExtension.Load);
+            while (task.completedOrFailed) {
+                Thread.Sleep(1);
+            }
+            base.HotReload();
+            TMPE_Loaded();
+        }
+
+        public override void Preload() {
+            if (Scene == "ThemeEditor") return;
+            TrafficManager.API.Implementations.Notifier.EventLevelLoaded += TMPE_Loaded;
+            CSURUtil.Init();
+
+            NCSettings.GameConfig = GameConfigT.NewGameDefault;
+            SegmentEndManager.Deserialize(null, default);
+            NodeManager.Deserialize(null, default);
+            HarmonyUtil.InstallHarmony(HARMONY_ID, forbidden: typeof(HotReloadPatchAttribute));
+        }
+
 
         private static void TMPE_Loaded() {
             Log.Called();
@@ -52,84 +237,26 @@ namespace NodeController.LifeCycle {
             LaneCache.Instance.OnTMPELoaded();
         }
 
-
-        public static void Disable() {
-            TrafficManager.API.Implementations.Notifier.EventLevelLoaded -= TMPE_Loaded;
-            LoadingManager.instance.m_simulationDataReady -= SimulationDataReady;
-            Unload(); // in case of hot unload
-            LaneCache.Instance?.Release();
-        }
-
-        public static void OnLevelUnloading() {
-            bHotReload = false;
-            Unload(); // called when loading new game or exiting to main menu.
-        }
-
-        public static void HotReload() {
-            bHotReload = true;
-            SerializableDataExtension.Load();
-            SimulationDataReady();
-            OnLevelLoaded(Mode);
-            TMPE_Loaded();
-        }
-
-        public static void SimulationDataReady() {
-            try {
-                Log.Called();
-                Log.Info(Helpers.WhatIsCurrentThread());
-                Log.Debug("SimulationPaused=" + SimulationManager.instance.SimulationPaused);
-                if (!SimulationManager.instance.SimulationPaused) {
-                    Log.Warning("Simulation thread is not paused. potential race condition");
-                }
-
-
-                if (Scene == "ThemeEditor") {
-                    Log.Info("Skip SimulationDataReady theme editor", true);
-                    return;
-                }
-                CSURUtil.Init();
-                if (NCSettings.GameConfig == null) {
-                    switch (Mode) {
-                        case LoadMode.NewGameFromScenario:
-                        case LoadMode.LoadScenario:
-                        case LoadMode.LoadMap:
-                            // no NC or old NC
-                            NCSettings.GameConfig = GameConfigT.LoadGameDefault;
-                            break;
-                        default:
-                            NCSettings.GameConfig = GameConfigT.NewGameDefault;
-                            break;
-                    }
-                }
-
-                LaneCache.Create();
-
-                HarmonyUtil.InstallHarmony(HARMONY_ID, forbidden:typeof(HotReloadPatchAttribute)); // game config is checked in patch.
-
-                NodeManager.Instance.OnLoad();
-                SegmentEndManager.Instance.OnLoad();
-                NodeManager.ValidateAndHeal(true);
-                Loaded = true;
-                Log.Succeeded();
-            } catch (Exception e) {
-                Log.Exception(e);
+        public override void SimulationDataReady() {
+            if (Scene == "ThemeEditor") {
+                Log.Info("Skip SimulationDataReady theme editor", true);
+                return;
             }
+            NCSettings.UpdateGameSettings();
         }
 
-        public static void OnLevelLoaded(LoadMode mode) {
-            // after level has been loaded.
-            if (Loaded) {
-                NodeControllerTool.Create();
-            }
+        public override void Load() {
+            NodeControllerTool.Create();
         }
 
         public static void Unload() {
-            if (!Loaded) return; //protect against disabling from main menu.
             Log.Info("LifeCycle.Unload() called");
+            NodeControllerTool.Remove();
+        }
+        public override void PreExit() {
             HarmonyUtil.UninstallHarmony(HARMONY_ID);
             NCSettings.GameConfig = null;
-            NodeControllerTool.Remove();
-            Loaded = false;
+            base.PreExit();
         }
     }
 }

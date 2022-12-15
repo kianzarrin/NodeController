@@ -6,6 +6,8 @@ namespace NodeController.LifeCycle
     using System;
     using NodeController.GUI;
     using KianCommons.Serialization;
+    using NodeController.Manager;
+    using UnityEngine.SceneManagement;
 
     [Serializable]
     public class NCState {
@@ -31,31 +33,45 @@ namespace NodeController.LifeCycle
         }
 
         public static void Deserialize(byte[] data) {
-            if (data == null) {
-                Log.Debug($"NCState.Deserialize(data=null)");
-                Instance = new NCState();
-            } else {
-                Log.Debug($"NCState.Deserialize(data): data.Length={data?.Length}");
-                Instance = SerializationUtil.Deserialize(data, default) as NCState;
-                if (Instance?.Version != null) { //2.1.1 or above
-                    Log.Debug("Deserializing V"+ Instance.Version);
-                    SerializationUtil.DeserializationVersion = new Version(Instance.Version);
+            try {
+                if (data == null) {
+                    Log.Debug($"NCState.Deserialize(data=null)");
+                    Instance = new NCState();
                 } else {
-                    // 2.0
-                    Log.Debug("Deserializing version 2.0");
-                    Instance.Version = "2.0";
-                    Instance.GameConfig = GameConfigT.LoadGameDefault; // for the sake of feature proofing.
-                    Instance.GameConfig.UnviversalSlopeFixes = true; // in this version I do apply slope fixes.
+                    Log.Debug($"NCState.Deserialize(data): data.Length={data?.Length}");
+                    Instance = SerializationUtil.Deserialize(data, default) as NCState;
+                    if (Instance?.Version != null) { //2.1.1 or above
+                        Log.Debug("Deserializing V" + Instance.Version);
+                        SerializationUtil.DeserializationVersion = new Version(Instance.Version);
+                    } else {
+                        // 2.0
+                        Log.Debug("Deserializing version 2.0");
+                        Instance.Version = "2.0";
+                        Instance.GameConfig = GameConfigT.LoadGameDefault; // for the sake of feature proofing.
+                        Instance.GameConfig.UnviversalSlopeFixes = true; // in this version I do apply slope fixes.
+                    }
                 }
-            }
-            Log.Debug($"setting UnviversalSlopeFixes to {Instance.GameConfig.UnviversalSlopeFixes}");
-            NCSettings.GameConfig = Instance.GameConfig;
-            NCSettings.UpdateGameSettings();
-            var version = new Version(Instance.Version);
-            SegmentEndManager.Deserialize(Instance.SegmentEndManagerData, version);
-            NodeManager.Deserialize(Instance.NodeManagerData, version);
-        }
+                NCSettings.GameConfig = Instance.GameConfig;
+                if (NCSettings.GameConfig == null) {
+                    switch (LifeCycle.Mode) {
+                        case LoadMode.NewGameFromScenario:
+                        case LoadMode.LoadScenario:
+                        case LoadMode.LoadMap:
+                            // no NC or old NC
+                            NCSettings.GameConfig = GameConfigT.LoadGameDefault;
+                            break;
+                        default:
+                            NCSettings.GameConfig = GameConfigT.NewGameDefault;
+                            break;
+                    }
+                }
+                Log.Debug($"UnviversalSlopeFixes = {Instance.GameConfig.UnviversalSlopeFixes}");
 
+                var version = new Version(Instance.Version);
+                SegmentEndManager.Deserialize(Instance.SegmentEndManagerData, version);
+                NodeManager.Deserialize(Instance.NodeManagerData, version);
+            } catch (Exception ex) { ex.Log(); }
+        }
     }
 
     [UsedImplicitly]
@@ -72,28 +88,39 @@ namespace NodeController.LifeCycle
 
         public override void OnLoadData() => Load();
         public static void Load() {
-            Log.Called();
-            Log.Info(Helpers.WhatIsCurrentThread());
-            Log.Debug("SimulationPaused=" + SimulationManager.instance.SimulationPaused);
-            byte[] data = SerializableData.LoadData(DATA_ID);
-            if (data != null) {
-                LoadingVersion = 2;
-                NCState.Deserialize(data);
-            } else {
-                // convert to new version
-                LoadingVersion = 1;
-                data = SerializableData.LoadData(DATA_ID1)
-                    ?? SerializableData.LoadData(DATA_ID0);
-                NodeManager.Deserialize(data, new Version(1, 0));
-            }
+            try {
+                Log.Called();
+                Log.Info(Helpers.WhatIsCurrentThread());
+                Log.Debug("SimulationPaused=" + SimulationManager.instance.SimulationPaused);
+                byte[] data = SerializableData.LoadData(DATA_ID);
+                if (data != null) {
+                    LoadingVersion = 2;
+                    NCState.Deserialize(data);
+                } else {
+                    // convert to new version
+                    LoadingVersion = 1;
+                    data = SerializableData.LoadData(DATA_ID1)
+                        ?? SerializableData.LoadData(DATA_ID0);
+                    NodeManager.Deserialize(data, new Version(1, 0));
+                }
+
+                LaneCache.Create();
+                NodeManager.ValidateAndHeal(true);
+                NodeManager.Instance.OnLoad();
+                SegmentEndManager.Instance.OnLoad();
+
+                LifeCycle.LoadingStage = LifeCycle.Stage.DataLoaded;
+                Log.Succeeded();
+            } catch(Exception ex) { ex.Log(); }
         }
 
         public override void OnSaveData() => Save();
         public static void Save() {
-            Log.Called();
-            Log.Info(Helpers.WhatIsCurrentThread());
-            byte[] data = NCState.Serialize();
-            SerializableData.SaveData(DATA_ID, data);
+            try {
+                Log.Called();
+                byte[] data = NCState.Serialize();
+                SerializableData.SaveData(DATA_ID, data);
+            }catch(Exception ex) { ex.Log(); }
         }
     }
 }

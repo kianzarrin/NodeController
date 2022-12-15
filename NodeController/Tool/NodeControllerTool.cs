@@ -51,7 +51,7 @@ namespace NodeController.Tool {
         protected override void Awake() {
             Log.Info("NodeControllerTool.Awake() called");
             base.Awake();
-            string path = UUIHelpers.GetFullPath<NodeControllerMod>("uui_node_controller.png");
+            string path = UUIHelpers.GetFullPath<LifeCycle>("uui_node_controller.png");
             button_ = UUIHelpers.RegisterToolButton(
                 name:"NodeController",
                 groupName:null,
