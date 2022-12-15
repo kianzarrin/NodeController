@@ -5,14 +5,16 @@ namespace NodeController.Patches.HideCrosswalksMod {
     using HarmonyLib;
     using KianCommons;
     using KianCommons.Plugins;
+    using NodeController.Util;
+    using HideCrosswalks.Patches;
 
     [HarmonyPatch]
     public static class ShouldHideCrossing {
-        static bool Prepare() => PluginUtil.GetHideCrossings().IsActive();
+        static bool Prepare() => HTCUtil.IsActive;
 
         public static MethodBase TargetMethod() {
-            return typeof(HideCrosswalks.Patches.CalculateMaterialCommons).
-                GetMethod(nameof(HideCrosswalks.Patches.CalculateMaterialCommons.ShouldHideCrossing));
+            return HTCUtil.Type_CalculateMaterialCommons.
+                GetMethod(nameof(CalculateMaterialCommons.ShouldHideCrossing), throwOnError: true);
         }
 
         public static bool Prefix(ushort nodeID, ushort segmentID, ref bool __result) {

@@ -12,6 +12,7 @@ namespace NodeController.LifeCycle {
     using NodeController.Patches;
     using KianCommons.IImplict;
     using System.Threading;
+    using KianCommons.Plugins;
 
     public abstract class AdvancedLifeCycleBase : ILoadingExtension, IMod, IUserMod, IModWithSettings {
         public enum Stage {
@@ -98,6 +99,7 @@ namespace NodeController.LifeCycle {
         private void OnLevelPreLoaded() {
             try {
                 Log.Called();
+                PluginUtil.LogPlugins(detailed: false);
                 Preload();
                 LoadingStage = Stage.Preloaded;
                 Log.Succeeded();

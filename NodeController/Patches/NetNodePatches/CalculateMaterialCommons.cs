@@ -107,11 +107,11 @@ namespace NodeController.Patches {
                 InsertInstructions(codes, newInstructions, insertIndex2);
             }
 
-            { // Insert ShouldHideCrossing(nodeID, segmentID)
+            { // Insert ShouldContinueMedian(nodeID, segmentID)
                 var newInstructions = new[]{
                     LDArg_NodeID,
                     LDLoc_segmentID,
-                    new CodeInstruction(OpCodes.Call, mShouldContinueMedian), // call Material mShouldHideCrossing(nodeID, segmentID).
+                    new CodeInstruction(OpCodes.Call, mShouldContinueMedian), // call Material ShouldContinueMedian(nodeID, segmentID).
                     new CodeInstruction(OpCodes.Or) };
 
                 InsertInstructions(codes, newInstructions, insertIndex1);

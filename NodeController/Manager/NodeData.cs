@@ -762,9 +762,8 @@ namespace NodeController {
         public bool CanModifyTextures() => IsRoad && !IsCSUR;
         public bool ShowNoMarkingsToggle() => CanModifyTextures() && NodeType == NodeTypeT.Custom;
 
-        bool CrossingIsRemoved(ushort segmentId) =>
-            HideCrosswalks.Patches.CalculateMaterialCommons.
-            ShouldHideCrossing(NodeID, segmentId);
+        private bool CrossingIsRemoved(ushort segmentId) => HTCUtil.ShouldHideCrossing(nodeID: NodeID, segmentID: segmentId);
+            
         public bool NeedsTransitionFlag() =>
             SegmentCount == 2 &&
             (NodeType == NodeTypeT.Custom ||

@@ -10,6 +10,7 @@ namespace NodeController {
     using KianCommons.Serialization;
     using NodeController.GUI;
     using NodeController.Tool;
+    using NodeController.Util;
     using System;
     using System.Runtime.Serialization;
     using UnityEngine;
@@ -448,8 +449,7 @@ namespace NodeController {
             }
         }
 
-        bool CrossingIsRemoved() =>
-            HideCrosswalks.Patches.CalculateMaterialCommons.ShouldHideCrossing(NodeID, SegmentID);
+        private bool CrossingIsRemoved() => HTCUtil.ShouldHideCrossing(nodeID: NodeID, segmentID: SegmentID);
 
         #region show/hide in UI
         public bool IsCSUR => NetUtil.IsCSUR(Info);
