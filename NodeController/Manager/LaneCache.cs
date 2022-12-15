@@ -55,10 +55,10 @@ namespace NodeController.Manager {
         }
         private void UpdateLanes(ushort segmentID, bool startNode) {
             var lanes = NetUtil.IterateLanes(segmentID, startNode: startNode).ToArray();
-            bool twoSegments = TwoSegments(segmentID.ToSegment().GetNode(startNode));
+            ushort nodeID = segmentID.ToSegment().GetNode(startNode);
             bool hide;
 
-            if (twoSegments) {
+            if (nodeID.ToNode().flags.IsFlagSet(NetNode.FlagsLong.OneWayOut)) {
                 NetLane.Flags flags = 0;
                 foreach (var lane in lanes) {
                     flags |= lane.Flags;
