@@ -87,7 +87,7 @@ namespace NodeController.Patches {
             int insertIndex1 = index + 1; // at this point boloean is in stack
 
             CodeInstruction LDArg_NodeID = GetLDArg(method, "nodeID"); // push nodeID into stack
-            CodeInstruction LDLoc_segmentID = BuildSegnentLDLocFromPrevSTLoc(codes, index, counter: 1); // push segmentID into stack
+            CodeInstruction LDLoc_segmentID = BuildSegnentLDLocFromPrevSTLoc(codes, index, counter: 2); // push segmentID into stack
 
             { // Insert material = CalculateMaterial(material, nodeID, segmentID)
                 var newInstructions = new[] {
