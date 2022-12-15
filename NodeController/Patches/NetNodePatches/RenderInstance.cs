@@ -17,7 +17,7 @@ namespace NodeController.Patches.NetNodePatches {
         static MethodBase TargetMethod() {
             var ret = Target;
             Assertion.Assert(ret != null, "did not manage to find original function to patch");
-            Log("aquired method " + ret);
+            Log("acquired method " + ret);
             return ret;
         }
 
