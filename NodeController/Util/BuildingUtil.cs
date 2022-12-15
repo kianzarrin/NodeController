@@ -8,9 +8,11 @@ namespace NodeController.Util {
     using UnityEngine;
 
     public static class BuildingUtil {
-        private static ref Building ToBuilding(this ushort buildingId) =>
+        internal static ref Building ToBuilding(this ushort buildingId) =>
             ref BuildingManager.instance.m_buildings.m_buffer[buildingId];
 
+        internal static bool IsValid(this ref Building building, ushort buildingId)=>
+            buildingId != 0 && (building.m_flags & (Building.Flags.Created | Building.Flags.Deleted)) == Building.Flags.Created;
 
         public static void RelocatePillar(ushort buildingId, Vector3 position, float angle) {
             if (!KianCommons.Helpers.InSimulationThread()) {

@@ -803,15 +803,15 @@ namespace NodeController {
         public Vector3 GetPosition() => Node.m_position + Vector3.up * (Node.m_heightOffset / 64f);
 
         // same code as AN
-        public void ShiftPilar() {
+        private void ShiftPilarImpl() {
             ref NetNode node = ref Node;
             NetInfo info = node.Info;
             ushort buildingId = node.m_building;
-            ref var building = ref BuildingManager.instance.m_buildings.m_buffer[node.m_building];
-            bool isValid = info != null && buildingId != 0 &&
-                (building.m_flags & (Building.Flags.Created | Building.Flags.Deleted)) == Building.Flags.Created;
+            ref var building = ref buildingId.ToBuilding();
+            bool isValid = node.IsValid() && building.IsValid(buildingId);
             if (!isValid)
                 return;
+
             info.m_netAI.GetNodeBuilding(NodeID, ref node, out BuildingInfo buildingInfo, out float heightOffset);
             Vector3 center = default;
             int counter = 0;
@@ -824,6 +824,52 @@ namespace NodeController {
 
             BuildingUtil.RelocatePillar(buildingId, center, building.m_angle);
             building.m_position = center;
+        }
+
+        public static void ShiftPillar(ushort nodeID) {
+            ref NetNode node = ref nodeID.ToNode();
+            if (NodeManager.Instance.buffer[nodeID] is NodeData nodeData) {
+                nodeData.ShiftPilarImpl();
+                return;
+            }
+
+            ushort buildingId = node.m_building;
+            ref var building = ref buildingId.ToBuilding();
+            bool isValid = node.IsValid() && building.IsValid(buildingId);
+            bool middle = node.IsMiddle();
+            bool untouchable = node.m_flags.IsFlagSet(NetNode.Flags.Untouchable);
+            if (isValid && !middle && !untouchable && !HasSlope(nodeID)) {
+                Vector3 center = GetCenter(nodeID);
+                node.Info.m_netAI.GetNodeBuilding(nodeID, ref node, out BuildingInfo buildingInfo, out float heightOffset);
+                center.y += heightOffset;
+                BuildingUtil.RelocatePillar(buildingId, center, building.m_angle);
+
+            }
+
+            static Vector3 GetCenter(ushort nodeID) {
+                Vector3 center = default;
+                int count = 0;
+                foreach (ushort segmentID in nodeID.ToNode().IterateSegments()) {
+                    ref NetSegment segment = ref segmentID.ToSegment();
+                    bool startNode = segment.IsStartNode(nodeID);
+                    foreach (bool left in HelpersExtensions.ALL_BOOL) {
+                        segment.CalculateCorner(
+                            segmentID, heightOffset: true, start: startNode, leftSide: left,
+                            out var corner, out _, out _);
+                        center += corner;
+                        count++;
+                    }
+                }
+                return center;
+            }
+
+            static bool HasSlope(ushort nodeID) {
+                foreach (ushort segmentID in nodeID.ToNode().IterateSegments()) {
+                    if (!segmentID.ToSegment().Info.m_flatJunctions)
+                        return true;
+                }
+                return false;
+            }
         }
 
         #region External Mods
