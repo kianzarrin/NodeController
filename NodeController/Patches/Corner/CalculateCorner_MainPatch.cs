@@ -111,8 +111,8 @@ namespace NodeController.Patches.Corner {
                     cornerPos: ref cornerPos, cornerDirection: ref cornerDirection);
 
                 SegmentEndData data = SegmentEndManager.Instance.GetAt(segmentID, start);
-                Assertion.AssertNotNull(NCSettings.GameConfig, "Settings.GameConfig");
-                if (data == null && !NCSettings.GameConfig.UnviversalSlopeFixes)
+                
+                if (data == null && NCSettings.GameConfig?.UnviversalSlopeFixes != true)
                     return;
 
                 //Log.Debug($"CalculateCorner2.PostFix(segmentID={segmentID} start={start} leftSide={leftSide}): cornerDir={cornerDirection}");

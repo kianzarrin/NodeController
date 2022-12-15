@@ -12,8 +12,8 @@ namespace NodeController.Patches {
                 SegmentEndData segEnd = SegmentEndManager.Instance.GetAt(segmentID, false);
                 segStart?.OnAfterCalculate();
                 segEnd?.OnAfterCalculate();
-                segStart?.NodeData.ShiftPilar();
-                segEnd?.NodeData.ShiftPilar();
+                segStart?.NodeData?.ShiftPilar();
+                segEnd?.NodeData?.ShiftPilar();
              } catch(Exception ex) {
                 ex.Log($"segment:{segmentID}");
             }

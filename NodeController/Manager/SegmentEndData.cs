@@ -616,7 +616,7 @@ namespace NodeController {
                     cornerPos.y += d * (cornerDir.y - corner.Dir00.y);
                 }
 
-                if (NCSettings.GameConfig.UnviversalSlopeFixes) {
+                if (NCSettings.GameConfig?.UnviversalSlopeFixes == true) {
                     // this must be done after readjusting cornerPos.y
                     // make sure direction vector is not too big.
                     float absY = Mathf.Abs(cornerDir.y);
