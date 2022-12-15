@@ -2,6 +2,7 @@ namespace NodeController.Patches;
 using HarmonyLib;
 using KianCommons;
 using System;
+using NodeController.LifeCycle;
 
 internal static class UpdateSegmentsCommons {
     internal static void Postfix(ushort segmentID, bool startNode) {
@@ -11,8 +12,8 @@ internal static class UpdateSegmentsCommons {
             segStart?.OnAfterCalculate();
 
             ref NetSegment segment = ref segmentID.ToSegment();
-            ushort nodeId = segment.GetNode(startNode);
-            NodeData.ShiftPillar(nodeId);
+            ushort nodeID = segment.GetNode(startNode);
+            SimulationManager.instance.AddAction(() => NodeData.FixPillar(nodeID));
         } catch (Exception ex) { ex.Log($"segment:{segmentID}"); }
     }
 }

@@ -632,7 +632,7 @@ namespace NodeController {
                 Vector3 deltaDir = default;
                 {
                     // embankment:
-                    float embankmentVelocityRad = GetEmbankmentVelocityDeg().LogRet($"GetEmbankmentVelocityDeg({SegmentID}, {IsStartNode})") * Mathf.Deg2Rad;
+                    float embankmentVelocityRad = GetEmbankmentVelocityDeg() * Mathf.Deg2Rad;
                     if (leftSide) embankmentVelocityRad = -embankmentVelocityRad;
                     float sin = Mathf.Sin(embankmentVelocityRad);
                     float cos = Mathf.Cos(embankmentVelocityRad);
@@ -641,7 +641,7 @@ namespace NodeController {
                     deltaDir.y = -sin * r; // vertical
 
                     // Stretch:
-                    float stretchVelocity = GetStretchVelocity().LogRet($"GetStretchVelocity({SegmentID}, {IsStartNode})%") * 0.01f;
+                    float stretchVelocity = GetStretchVelocity() * 0.01f;
                     deltaDir.x += -stretchVelocity * cos * r; // outward
                     deltaDir.y += -stretchVelocity * sin * r; // vertical
                 }

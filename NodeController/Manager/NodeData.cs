@@ -829,6 +829,7 @@ namespace NodeController {
         }
 
         public static void FixPillar(ushort nodeID) {
+            //Log.Called(nodeID);
             ref NetNode node = ref nodeID.ToNode();
             if (NodeManager.Instance.buffer[nodeID] is NodeData nodeData) {
                 nodeData.ShiftPillar();
@@ -840,7 +841,7 @@ namespace NodeController {
             bool isValid = node.IsValid() && building.IsValid(buildingId);
             bool middle = node.IsMiddle();
             bool untouchable = node.m_flags.IsFlagSet(NetNode.Flags.Untouchable);
-            if (isValid && !middle && !untouchable && !HasSlope(nodeID)) {
+            if (isValid && !middle && !untouchable && HasSlope(nodeID)) {
                 Vector3 center = GetCenter(nodeID);
                 node.Info.m_netAI.GetNodeBuilding(nodeID, ref node, out BuildingInfo buildingInfo, out float heightOffset);
                 center.y += heightOffset;
@@ -864,7 +865,7 @@ namespace NodeController {
                         count++;
                     }
                 }
-                return center;
+                return center / count;
             }
 
             static bool HasSlope(ushort nodeID) {

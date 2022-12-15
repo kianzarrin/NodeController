@@ -1,9 +1,6 @@
 namespace NodeController.Util {
     using ColossalFramework;
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.Threading;
     using UnityEngine;
 
@@ -17,6 +14,7 @@ namespace NodeController.Util {
         public static void RelocatePillar(ushort buildingId, Vector3 position, float angle) {
             if (!KianCommons.Helpers.InSimulationThread()) {
                 SimulationManager.instance.AddAction(() => RelocatePillar(buildingId, position, angle));
+                return;
             }
 
             ref Building building = ref buildingId.ToBuilding();
@@ -33,10 +31,13 @@ namespace NodeController.Util {
 
             building.m_position = position;
             building.m_angle = (angle + Mathf.PI * 2) % (Mathf.PI * 2);
-
             AddToGrid(buildingId, ref building);
-            building.CalculateBuilding(buildingId);
-            BuildingManager.instance.UpdateBuildingRenderer(buildingId, true);
+            if (building.Info != null) {
+                building.CalculateBuilding(buildingId);
+                BuildingManager.instance.UpdateBuildingRenderer(buildingId, false);
+            } else {
+                BuildingManager.instance.UpdateBuilding(buildingId);
+            }
         }
 
         private static void AddToGrid(ushort buildingID, ref Building data) {
