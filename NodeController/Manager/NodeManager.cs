@@ -235,5 +235,15 @@ namespace NodeController {
             Instance.Validate(m2, true);
             SegmentEndManager.Instance.Validate(m2, true);
         }
+
+        public static int CountUpdatingNodes() {
+            int ret = 0;
+            if (NetManager.instance.m_nodesUpdated) {
+                foreach (var block in NetManager.instance.m_updatedNodes) {
+                    ret += EnumBitMaskExtensions.CountOnes(block);
+                }
+            }
+            return ret;
+        }
     }
 }

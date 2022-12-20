@@ -180,5 +180,14 @@ namespace NodeController {
                     buffer[i] = null;
             }
         }
+        public static int CountUpdatingSegments() {
+            int ret = 0;
+            if (NetManager.instance.m_segmentsUpdated) {
+                foreach (var block in NetManager.instance.m_updatedSegments) {
+                    ret += EnumBitMaskExtensions.CountOnes(block);
+                }
+            }
+            return ret;
+        }
     }
 }

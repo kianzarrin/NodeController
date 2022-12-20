@@ -97,8 +97,9 @@ namespace NodeController.LifeCycle
         public static void Load() {
             try {
                 Log.Called();
-                Log.Info(Helpers.WhatIsCurrentThread());
+                Log.Debug(Helpers.WhatIsCurrentThread());
                 Log.Debug("SimulationPaused=" + SimulationManager.instance.SimulationPaused);
+                Log.Debug($"[before] NetManger to update {NodeManager.CountUpdatingNodes()} nodes and {SegmentEndManager.CountUpdatingSegments()} segments.");
                 byte[] data = SerializableData.LoadData(DATA_ID);
                 if (data != null) {
                     LoadingVersion = 2;
@@ -114,7 +115,7 @@ namespace NodeController.LifeCycle
                 NodeManager.ValidateAndHeal(true);
                 NodeManager.Instance.OnLoad();
                 SegmentEndManager.Instance.OnLoad();
-
+                Log.Info($"[after] NetManger to update {NodeManager.CountUpdatingNodes()} nodes and {SegmentEndManager.CountUpdatingSegments()} segments.");
                 NCLifeCycle.LoadingStage = NCLifeCycle.Stage.DataLoaded;
                 Log.Succeeded();
             } catch(Exception ex) { ex.Log(); }
