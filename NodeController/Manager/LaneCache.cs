@@ -1,5 +1,7 @@
 namespace NodeController.Manager {
     using KianCommons;
+    using NodeController.Util;
+    using System.Diagnostics;
     using System.Linq;
     using TrafficManager.API.Notifier;
 
@@ -19,8 +21,10 @@ namespace NodeController.Manager {
         }
         public bool ShouldHideArrows(uint laneId) => buffer[laneId].HideArrows;
 
+        static Timer timer = new("Notifier_EventModified()", 100);
         private void Notifier_EventModified(OnModifiedEventArgs obj) {
             SimulationManager.instance.m_ThreadingWrapper.QueueSimulationThread(delegate () {
+                timer.Start();
                 Log.DebugCalled(obj.InstanceID);
                 if (obj.InstanceID.Type == InstanceType.NetSegment) {
                     UpdateLanes(obj.InstanceID.NetSegment);
@@ -31,7 +35,9 @@ namespace NodeController.Manager {
                         UpdateLanes(segmentId);
                     }
                 }
+                timer.End();
             });
+
         }
 
         public void OnTMPELoaded() {

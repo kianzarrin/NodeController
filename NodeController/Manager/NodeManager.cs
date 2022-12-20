@@ -4,6 +4,7 @@ namespace NodeController {
     using System;
     using static KianCommons.Assertion;
     using KianCommons.Serialization;
+    using System.Linq;
 
     [Serializable]
     public class NodeManager {
@@ -13,13 +14,19 @@ namespace NodeController {
         public static byte[] Serialize() => SerializationUtil.Serialize(Instance);
 
         public static void Deserialize(byte[] data, Version version) {
-            if (data == null) {
+            try {
+                Log.Called(data, version);
+                if (data == null) {
+                    Instance = new NodeManager();
+                } else {
+                    Log.Debug($"data.Length={data?.Length}");
+                    Instance = SerializationUtil.Deserialize(data, version) as NodeManager;
+                    Assertion.NotNull(Instance);
+                    Log.Info($"{ReflectionHelpers.ThisMethod} : {Instance.CustomCount} Custom Nodes");
+                }
+            } catch(Exception ex) {
+                Log.Exception(ex);
                 Instance = new NodeManager();
-                Log.Debug($"NodeBlendManager.Deserialize(data=null)");
-
-            } else {
-                Log.Debug($"NodeBlendManager.Deserialize(data): data.Length={data?.Length}");
-                Instance = SerializationUtil.Deserialize(data, version) as NodeManager;
             }
         }
 
@@ -30,6 +37,8 @@ namespace NodeController {
         #endregion LifeCycle
 
         public NodeData[] buffer = new NodeData[NetManager.MAX_NODE_COUNT];
+
+        public int CustomCount => buffer.Count(item => item != null);
 
         #region MoveIT backward compatiblity.
 

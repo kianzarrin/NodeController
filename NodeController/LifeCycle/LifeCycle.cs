@@ -223,6 +223,7 @@ namespace NodeController.LifeCycle {
         private static bool harmonyInstalled_ = false;
         public override void Preload() {
             if (Scene == "ThemeEditor") return;
+            TrafficManager.API.Implementations.Notifier.EventLevelLoaded -= TMPE_Loaded;
             TrafficManager.API.Implementations.Notifier.EventLevelLoaded += TMPE_Loaded;
             CSURUtil.Init();
             NCSettings.GameConfig = GameConfigT.NewGameDefault;
