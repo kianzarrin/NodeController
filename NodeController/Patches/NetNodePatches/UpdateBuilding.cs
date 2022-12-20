@@ -1,4 +1,3 @@
-#if DEBUG
 namespace NodeController.Patches; 
 using ColossalFramework;
 using HarmonyLib;
@@ -12,4 +11,3 @@ class UpdateBuilding {
         BuilidingManger_SimulationStep_Patch.FixPillarNodeIDs.Add(nodeID);
     }
 }
-#endif
