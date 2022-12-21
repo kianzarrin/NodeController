@@ -628,7 +628,7 @@ namespace NodeController {
 
         public void Update() {
             // update nearby nodes too to calculate velocity
-            NetManager.instance.UpdateNode(NodeID, 0, -1);
+            NetManager.instance.UpdateNode(NodeID);
         }
 
         public void RefreshAndUpdate() {

@@ -137,7 +137,7 @@ namespace NodeController {
             SetNullNodeAndSegmentEnds(nodeID);
 
             // update nearby nodes too to calculate velocity
-            NetManager.instance.UpdateNode(nodeID, 0, -1);
+            NetManager.instance.UpdateNode(nodeID);
         }
 
         public void UpdateAll() {
