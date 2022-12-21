@@ -15,11 +15,10 @@ namespace NodeController {
 
         public static void Deserialize(byte[] data, Version version) {
             try {
-                Log.Called(data, version);
+                Log.Called("data.Length=" + (data?.Length).ToSTR(), version);
                 if (data == null) {
                     Instance = new NodeManager();
                 } else {
-                    Log.Debug($"data.Length={data?.Length}");
                     Instance = SerializationUtil.Deserialize(data, version) as NodeManager;
                     Assertion.NotNull(Instance);
                     Log.Info($"{ReflectionHelpers.ThisMethod} : {Instance.CustomCount} Custom Nodes");

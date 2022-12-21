@@ -24,7 +24,7 @@ namespace NodeController.Util {
             var ms = sw.ElapsedMilliseconds;
             if (ms > last + step) {
                 last = ms;
-                Log.Info($"{name}: {counter} times took {ms}ms: {ms / counter}ms/iteration");
+                Log.Info($"{name}: {counter} times took {ms}ms: {(float)ms / counter}ms/iteration");
             }
         }
     }
