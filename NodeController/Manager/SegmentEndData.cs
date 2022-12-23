@@ -14,6 +14,7 @@ namespace NodeController {
     using System;
     using System.Runtime.Serialization;
     using UnityEngine;
+    using UnityEngine.Networking.Types;
     using static KianCommons.Assertion;
     using static KianCommons.ReflectionHelpers;
     using CSURUtil = Util.CSURUtil;
@@ -214,10 +215,9 @@ namespace NodeController {
                 Twist = false;
         }
 
-        public void Update() {
-            // update nearby nodes too to calculate velocity
-            NetManager.instance.UpdateNode(NodeID, 0, -1);
-        }
+        public void Update() => NodeManager.UpdateNode(NodeID);
+
+
 
         public void RefreshAndUpdate() {
             Refresh();

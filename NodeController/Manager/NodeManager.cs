@@ -5,6 +5,7 @@ namespace NodeController {
     using static KianCommons.Assertion;
     using KianCommons.Serialization;
     using System.Linq;
+    using UnityEngine.Networking.Types;
 
     [Serializable]
     public class NodeManager {
@@ -130,14 +131,14 @@ namespace NodeController {
 
         public void ResetNodeToDefault(ushort nodeID) {
             if (buffer[nodeID] != null)
-                Log.Debug($"node:{nodeID} reset to defualt");
+                Log.Debug($"node:{nodeID} reset to default");
             else
-                Log.Debug($"node:{nodeID} is alreadey null. no need to reset to default");
+                Log.Debug($"node:{nodeID} is already null. no need to reset to default");
 
             SetNullNodeAndSegmentEnds(nodeID);
 
             // update nearby nodes too to calculate velocity
-            NetManager.instance.UpdateNode(nodeID, 0, -1);
+            NodeManager.UpdateNode(nodeID);
         }
 
         public void UpdateAll() {
@@ -148,6 +149,11 @@ namespace NodeController {
                 else
                     ResetNodeToDefault(nodeData.NodeID);
             }
+        }
+
+        public static void UpdateNode(ushort nodeID) {
+            // update nearby nodes too to calculate velocity
+            NetManager.instance.UpdateNode(nodeID, fromSegment: 0, level: -1);
         }
 
         /// <summary>
